@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>蘇打石器：公益服 | 重返尼斯大陸</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Babel (Fixed Version) -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.3.1?dev",
+            "react-dom": "https://esm.sh/react-dom@18.3.1?dev",
+            "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?dev",
+            "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
+            "framer-motion": "https://esm.sh/framer-motion@10.16.4?external=react,react-dom",
+            "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react"
+        }
+    }
+    </script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        display: ['"Zen Maru Gothic"', 'sans-serif'],
+                    },
+                    colors: {
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1', 400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c', 800: '#4a4036', 900: '#2d2520', 950: '#1a1614' },
+                        fire: { 400: '#ff8e8e', 500: '#ff6b6b', 600: '#e05252' },
+                        water: { 400: '#7ed4e6', 500: '#4fc3dc', 600: '#2b9db3' },
+                        wind: { 400: '#6ce0ba', 500: '#42ca9f', 600: '#2da881' },
+                        earth: { 400: '#fad390', 500: '#f6b93b', 600: '#e58e26' },
+                        gold: { 400: '#ffeaa7', 500: '#fdcb6e', 600: '#e1b12c' },
+                        discord: { 500: '#5865F2', 600: '#4752C4' },
+                        line: { 500: '#06C755', 600: '#05B34C' },
+                        sand: { 100: '#fdf6e3', 400: '#e6cca0', 500: '#d4b483', 600: '#b08d55' },
+                        wood: { 600: '#8b5a2b', 700: '#6d4c41' }
+                    },
+                    backgroundImage: {
+                        'stone-texture': "url('https://www.transparenttextures.com/patterns/concrete-wall.png')",
+                        'noise': "url('https://www.transparenttextures.com/patterns/stardust.png')",
+                        'gradient-tribal': 'linear-gradient(135deg, #fbf6e9 0%, #fff5d7 100%)',
+                    },
+                    boxShadow: {
+                        'stone': '6px 6px 0px rgba(139, 90, 43, 0.2)',
+                        'stone-hover': '3px 3px 0px rgba(139, 90, 43, 0.2)',
+                        'card': '0 12px 24px -8px rgba(139, 90, 43, 0.12)',
+                        'btn': '0 6px 0 rgba(0,0,0,0.15)',
+                        'btn-press': '0 0 0 rgba(0,0,0,0)',
+                        'glow-gold': '0 0 25px rgba(253, 203, 110, 0.5)',
+                        'glow-fire': '0 0 25px rgba(255, 107, 107, 0.4)',
+                    },
+                    animation: {
+                        'float': 'float 8s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s infinite',
+                        'shimmer': 'shimmer 2.5s linear infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'scale(0.98) translateY(10px)' },
+                            '100%': { opacity: 1, transform: 'scale(1) translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #fbf6e9;
+            color: #4a4036;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        #root:empty::before {
+            content: '正在前往尼斯大陸...';
+            display: block;
+            text-align: center;
+            padding-top: 20vh;
+            color: #d4b483;
+            font-weight: bold;
+            font-size: 1.5rem;
+            font-family: "Zen Maru Gothic", sans-serif;
+        }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #fbf6e9; }
+        ::-webkit-scrollbar-thumb { 
+            background: #d4b483; 
+            border-radius: 5px; 
+            border: 2px solid #fbf6e9;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #b08d55; }
+        
+        .stone-panel {
+            background-color: #ffffff;
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            border: 3px solid #e6cca0;
+            border-radius: 32px;
+            box-shadow: 8px 8px 0px rgba(212, 180, 131, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .stone-panel:hover {
+            box-shadow: 10px 10px 0px rgba(212, 180, 131, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .text-outline {
+            text-shadow: 2px 2px 0px rgba(139, 90, 43, 0.2);
+        }
+        
+        .btn-shine {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background-size: 200% 100%;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        ::selection {
+            background: #ffeaa7;
+            color: #57534e;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, memo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+        import { motion, AnimatePresence } from 'framer-motion';
+        import { 
+            ShieldCheck, Star, Home, Download, MessageSquare, 
+            Heart, CreditCard, Landmark, Smartphone, 
+            Menu, X, CheckCircle, AlertCircle, Loader2, Sparkles, Sword, Crown, ScrollText, Coins,
+            HeartHandshake, Eye, ExternalLink, User, Mail, Send, LayoutDashboard, Flame, Wind, Bell, ChevronDown,
+            Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
+            Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen
+        } from 'lucide-react';
+        
+        // --- 靜態資料與素材 ---
+        const ASSETS = {
+            LOGO: 'logo.jpg', 
+            HERO: '首頁.jpg', 
+            LINE_LOGO: 'LINE_logo.jpg',
+            LINE_PAY_LOGO: 'LINEPAY.jpg', 
+            JKOPAY_LOGO: 'jkopay.jpg', 
+            APPLE_PAY_LOGO: 'applepay.jpg',
+            BGM: '伊甸園.mp3', 
+            LOVE_BG: 'LOVE.jpg',
+            LINE_QRS: {
+                100: 'LINE100QR.jpg',
+                300: 'LINE300QR.jpg',
+                500: 'LINE500QR.jpg',
+                1000: 'LINE1000QR.jpg',
+                3000: 'LINE3000QR.jpg',
+                5000: 'LINE5000QR.jpg',
+                10000: 'LINE10000QR.jpg'
+            }
+        };
+
+        const PLANS = [
+            { amount: 100, base: 10000, bonus: 0, total: 10000, rate: "0%", popular: false, url: "https://pl.sl-pay.com/gcsrOdM1" },
+            { amount: 300, base: 30000, bonus: 2000, total: 32000, rate: "~6.6%", popular: false, url: "https://pl.sl-pay.com/zFORm0Ky" },
+            { amount: 500, base: 50000, bonus: 5000, total: 55000, rate: "10%", popular: false, url: "https://pl.sl-pay.com/6BEURGBk" },
+            { amount: 1000, base: 100000, bonus: 15000, total: 115000, rate: "15%", popular: true, url: "https://pl.sl-pay.com/tcgjExHC" },
+            { amount: 3000, base: 300000, bonus: 60000, total: 360000, rate: "20%", popular: false, url: "https://pl.sl-pay.com/H89Lwdll" },
+            { amount: 5000, base: 500000, bonus: 125000, total: 625000, rate: "25%", popular: false, url: "https://pl.sl-pay.com/i6TtEizE" },
+            { amount: 10000, base: 1000000, bonus: 300000, total: 1300000, rate: "30%", popular: false, url: "https://pl.sl-pay.com/fzfkBZko" }
+        ];
+
+        const PAYMENT_METHODS = [
+            { 
+                id: 'shopline', 
+                name: 'SHOPLINE 整合支付', 
+                subLabel: '刷卡 / ATM / Apple Pay', 
+                icons: [CreditCard, Landmark],
+                img: ASSETS.APPLE_PAY_LOGO 
+            },
+            { id: 'linepay', name: 'LINE PAY', img: ASSETS.LINE_PAY_LOGO },
+            { id: 'jkopay', name: '街口支付', img: ASSETS.JKOPAY_LOGO }
+        ];
+
+        const EVENT_TAGS = [
+            { id: 'event', label: '🔥 活動', color: 'bg-fire-500 text-white' },
+            { id: 'announcement', label: '📢 公告', color: 'bg-water-500 text-white' },
+            { id: 'maintenance', label: '🔧 維護', color: 'bg-stone-500 text-white' },
+            { id: 'bonus', label: '🎁 福利', color: 'bg-gold-500 text-white' },
+        ];
+
+        // --- 本地儲存模擬資料庫 ---
+        const LS_KEYS = {
+            SPONSORSHIPS: 'soda_stone_sponsorships',
+            ADMINS: 'soda_stone_admins',
+            EVENTS: 'soda_stone_events',
+            PLAYLIST: 'soda_stone_playlist' 
+        };
+
+        const getLocalData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const setLocalData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+        // 初始化預設資料
+        if (!localStorage.getItem(LS_KEYS.ADMINS) || getLocalData(LS_KEYS.ADMINS).length === 0) {
+            setLocalData(LS_KEYS.ADMINS, [
+                { username: 'admin', password: '888888' }
+            ]);
+        }
+
+        if (!localStorage.getItem(LS_KEYS.EVENTS)) {
+            setLocalData(LS_KEYS.EVENTS, [
+                { 
+                    id: 'e1', 
+                    title: '🎉 蘇打石器正式公測開跑！', 
+                    content: '親愛的馴獸師們：\n\n感謝大家的耐心等待，蘇打石器於今日正式開啟公測！\n我們準備了豐富的開服活動，登入即送強力寵物，還有更多驚喜等你來發現。\n\n趕快下載遊戲，一起重返尼斯大陸吧！🦖', 
+                    tag: 'event', 
+                    timestamp: Date.now() 
+                },
+                { 
+                    id: 'e2', 
+                    title: '🔧 伺服器例行維護公告', 
+                    content: '為了提供更穩定的遊戲環境，我們將於每週三上午 10:00 - 12:00 進行例行維護。\n維護期間將無法登入遊戲，請各位玩家提前做好準備。', 
+                    tag: 'maintenance', 
+                    timestamp: Date.now() - 86400000 
+                }
+            ]);
+        }
+
+        // 初始化播放清單
+        if (!localStorage.getItem(LS_KEYS.PLAYLIST) || getLocalData(LS_KEYS.PLAYLIST).length === 0) {
+            setLocalData(LS_KEYS.PLAYLIST, [
+                { id: '1', title: '伊甸園 (預設)', url: ASSETS.BGM },
+                { id: '2', title: '部落慶典 (備用)', url: 'https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3' }
+            ]);
+        }
+
+        // --- 純呈現組件優化 ---
+        const DiscordIcon = memo(({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1432-.1064.2868-.2132.4233-.3251a.0743.0743 0 01.0786-.0102c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1365.1119.2801.2187.4233.3251a.076.076 0 01-.0076.1277 12.2573 12.2573 0 01-1.8722.8923.077.077 0 00-.0416.1057c.3658.71.7773 1.3749 1.226 1.9942a.076.076 0 00.0842.0276c1.961-.6066 3.9495-1.5218 6.0023-3.0294a.077.077 0 00.0313-.0561c.693-5.1917-.2962-9.6379-1.3793-13.6655a.061.061 0 00-.032-.0277zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z"/></svg>
+        ));
+
+        const LineIcon = memo(({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17.15 14.53C17.15 14.78 16.96 15 16.7 15H15.15C15 15 14.88 14.93 14.79 14.82L13.2 12.72V14.53C13.2 14.78 13.01 15 12.75 15H11.95C11.69 15 11.5 14.78 11.5 14.53V9.47C11.5 9.22 11.69 9 11.95 9H13.5C13.65 9 13.77 9.07 13.86 9.18L15.45 11.28V9.47C15.45 9.22 15.64 9 15.9 9H16.7C16.96 9 17.15 9.22 17.15 9.47V14.53ZM9.9 14.53C9.9 14.78 9.71 15 9.45 15H7.05C6.79 15 6.6 14.78 6.6 14.53V9.47C6.6 9.22 6.79 9 7.05 9H7.85V11.6H9.45C9.71 11.6 9.9 11.81 9.9 12.07V12.53C9.9 12.79 9.71 13 9.45 13H7.85V14.53H9.9Z"/></svg>
+        ));
+
+        const SmartImage = memo(({ src, alt, className, fallbackType = 'hero' }) => {
+            const [imgSrc, setImgSrc] = useState(src);
+            const FALLBACKS = {
+                hero: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=2000', 
+                logo: 'https://cdn-icons-png.flaticon.com/512/3034/3034870.png',
+            };
+            return <img src={imgSrc} alt={alt} className={className} onError={() => setImgSrc(FALLBACKS[fallbackType])} loading="lazy" />;
+        });
+
+        // --- 組件 ---
+        const MusicPlayer = () => {
+            const [playlist, setPlaylist] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [hasError, setHasError] = useState(false);
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                const loadPlaylist = () => {
+                    const list = getLocalData(LS_KEYS.PLAYLIST);
+                    if (list.length > 0) setPlaylist(list);
+                };
+                loadPlaylist();
+                window.addEventListener('storage-update', loadPlaylist);
+                return () => window.removeEventListener('storage-update', loadPlaylist);
+            }, []);
+
+            useEffect(() => {
+                if (audioRef.current) {
+                    audioRef.current.volume = 0.3; // 預設音量
+                }
+            }, []);
+
+            useEffect(() => {
+                if (playlist.length > 0 && isPlaying && audioRef.current) {
+                    audioRef.current.load();
+                    audioRef.current.play().catch(e => console.log("Auto-play failed:", e));
+                }
+            }, [currentIndex, playlist]);
+
+            const currentTrack = playlist[currentIndex] || { url: '', title: '' };
+
+            const togglePlay = () => {
+                if (!audioRef.current || playlist.length === 0) return;
+                
+                if (isPlaying) {
+                    audioRef.current.pause();
+                    setIsPlaying(false);
+                } else {
+                    audioRef.current.play()
+                        .then(() => {
+                            setIsPlaying(true);
+                            setHasError(false);
+                        })
+                        .catch(err => {
+                            console.error("播放失敗:", err);
+                            handleAudioError(); 
+                        });
+                }
+            };
+
+            const playNext = () => {
+                if (playlist.length === 0) return;
+                setHasError(false);
+                setCurrentIndex((prev) => (prev + 1) % playlist.length);
+                setIsPlaying(true);
+            };
+
+            const handleAudioError = () => {
+                console.warn(`Audio Error for: ${currentTrack.title}`);
+                if (playlist.length > 1) {
+                    playNext();
+                } else {
+                    setHasError(true);
+                    setIsPlaying(false);
+                }
+            };
+
+            if (playlist.length === 0) return null;
+
+            return (
+                <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md rounded-full py-2 px-3 border border-stone-200 shadow-sm transition-all hover:shadow-md hover:bg-white">
+                    <audio 
+                        ref={audioRef} 
+                        src={currentTrack.url} 
+                        loop={false}
+                        onEnded={playNext}
+                        preload="auto" 
+                        onError={handleAudioError}
+                    />
+                    
+                    <button 
+                        onClick={togglePlay} 
+                        className={`p-2 rounded-full hover:bg-sand-100 transition-colors ${hasError ? 'text-red-500' : 'text-stone-600'}`}
+                        title={hasError ? "無法讀取" : (isPlaying ? "暫停" : "播放")}
+                    >
+                        {hasError ? <AlertCircle size={18}/> : (isPlaying ? <Volume2 size={18} className="text-gold-600"/> : <VolumeX size={18}/>)}
+                    </button>
+
+                    <div className="flex flex-col max-w-[120px] hidden md:flex px-1">
+                        <span className="text-[10px] text-stone-400 font-bold leading-none tracking-wider mb-0.5">NOW PLAYING</span>
+                        <span className="text-xs text-stone-700 font-bold truncate leading-tight">{currentTrack.title}</span>
+                    </div>
+
+                    <div className="w-px h-5 bg-stone-200 mx-1 hidden md:block"></div>
+
+                    <button 
+                        onClick={playNext}
+                        className="p-1.5 rounded-full hover:bg-sand-100 text-stone-400 hover:text-gold-600 transition-colors"
+                        title="下一首"
+                    >
+                        <SkipForward size={16} />
+                    </button>
+                </div>
+            );
+        };
+
+        const PaymentModal = ({ method, plan, gameAccount, onClose }) => {
+            if (!method || !plan) return null;
+            
+            const ReminderSection = () => (
+                <div className="bg-red-50/50 border-2 border-red-200 rounded-3xl p-6 mb-8 relative overflow-hidden">
+                    <div className="flex gap-4">
+                        <div className="bg-red-100 p-3 rounded-full h-fit text-red-500 shrink-0">
+                            <AlertCircle size={24} />
+                        </div>
+                        <div>
+                            <p className="text-red-600 font-black text-lg mb-1">付款後請務必截圖！</p>
+                            <p className="text-stone-600 font-medium text-sm leading-relaxed">
+                                為了確保您的權益，請將支付佐證傳送給 <span className="text-stone-800 font-bold border-b border-red-300">官方客服</span> 以領取金幣。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const AmountInfo = () => (
+                <div className="bg-stone-50/80 rounded-3xl p-6 border border-stone-100 mb-6 space-y-4">
+                    <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
+                        <span className="text-stone-500 font-bold text-sm tracking-wide">遊戲帳號</span>
+                        <span className="text-lg font-black text-stone-700 font-mono tracking-wide">{gameAccount}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
+                        <span className="text-stone-500 font-bold text-sm tracking-wide">支付金額</span>
+                        <span className="text-xl font-black text-stone-800">NT$ {plan.amount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1">
+                        <span className="text-stone-500 font-bold text-sm tracking-wide">獲得金幣</span>
+                        <div className="text-right flex items-baseline gap-1 justify-end">
+                            <span className="text-2xl font-black text-gold-500">{plan.total.toLocaleString()}</span>
+                            <span className="text-xs font-bold text-gold-600 uppercase">Gold</span>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const ModalWrapper = ({ children, borderColor = "border-line-500" }) => (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-fade-in">
+                    <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className={`bg-white rounded-[2.5rem] p-6 md:p-10 max-w-md w-full shadow-2xl relative border-0 max-h-[95vh] overflow-y-auto`}>
+                        <button onClick={onClose} className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 p-2 hover:bg-stone-100 rounded-full transition-colors z-10" aria-label="關閉"><X size={24} /></button>
+                        {children}
+                    </motion.div>
+                </div>
+            );
+
+            if (method === 'linepay') {
+                const qrImage = ASSETS.LINE_QRS[plan.amount];
+                return (
+                    <ModalWrapper borderColor="border-line-500">
+                        <div className="text-center">
+                            <div className="w-16 h-16 mx-auto bg-line-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-200"><img src={ASSETS.LINE_PAY_LOGO} alt="LINE Pay" className="w-10 h-auto object-contain brightness-0 invert" /></div>
+                            <h3 className="text-2xl font-black text-stone-800 mb-2">LINE Pay 掃碼</h3>
+                            <p className="text-stone-500 font-medium mb-6 text-sm">請使用手機掃描下方條碼</p>
+                            
+                            <div className="bg-white p-4 rounded-3xl border border-stone-100 mb-8 inline-block shadow-sm">
+                                {qrImage && !qrImage.includes('placeholder') ? <img src={qrImage} alt={`NT$ ${plan.amount}`} className="w-48 h-48 object-contain rounded-xl mix-blend-multiply" /> : <div className="w-48 h-48 flex flex-col items-center justify-center text-stone-400"><AlertCircle size={40} className="mb-2"/><span className="text-sm text-center">QR Code 測試中<br/>(請聯繫客服)</span></div>}
+                            </div>
+                            
+                            <AmountInfo />
+                            <ReminderSection />
+                            <Button variant="line" className="w-full py-4 text-lg rounded-2xl" onClick={onClose}>我已完成支付</Button>
+                        </div>
+                    </ModalWrapper>
+                );
+            }
+            
+            if (method === 'shopline') {
+                return (
+                    <ModalWrapper borderColor="border-gold-400">
+                        <div className="text-center">
+                            <div className="w-16 h-16 mx-auto bg-stone-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                                <img src={ASSETS.APPLE_PAY_LOGO} alt="SHOPLINE" className="w-10 h-auto object-contain invert brightness-0" />
+                            </div>
+                            <h3 className="text-2xl font-black text-stone-800 mb-6">即將前往付款頁面</h3>
+                            
+                            <AmountInfo />
+                            <ReminderSection />
+
+                            <Button variant="gold" className="w-full py-4 text-lg rounded-2xl" onClick={() => {
+                                window.open(plan.url, '_blank');
+                                onClose();
+                            }}>
+                                前往外部支付頁面 <ExternalLink size={20} className="ml-2"/>
+                            </Button>
+                        </div>
+                    </ModalWrapper>
+                );
+            }
+            
+            return (
+                <ModalWrapper borderColor="border-red-500">
+                    <div className="text-center">
+                        <div className="w-16 h-16 mx-auto bg-red-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-200">
+                            <img src={ASSETS.JKOPAY_LOGO} alt="JKOPAY" className="w-10 h-auto object-contain rounded-lg" />
+                        </div>
+                        <h3 className="text-2xl font-black text-stone-800 mb-6">街口支付</h3>
+                        
+                        <AmountInfo />
+                        
+                        <div className="bg-stone-50 border border-stone-200 rounded-3xl p-6 mb-8 text-left">
+                            <p className="text-stone-800 font-bold mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500"></div> 此方式需聯繫客服索取代碼：</p>
+                            <ol className="list-decimal list-inside text-stone-600 space-y-3 font-medium text-sm pl-2">
+                                <li>加入官方 LINE 帳號</li>
+                                <li>告知客服您欲使用街口支付</li>
+                                <li>提供您的贊助金額 <span className="text-red-500 font-bold bg-red-50 px-1 rounded">NT$ {plan.amount}</span></li>
+                                <li>完成轉帳後回傳截圖</li>
+                            </ol>
+                        </div>
+                        
+                        <ReminderSection />
+
+                        <Button variant="line" className="w-full py-4 text-lg rounded-2xl" onClick={() => {
+                            window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: 街口客服連結
+                            onClose();
+                        }}>
+                            聯繫客服索取 <ExternalLink size={20} className="ml-2"/>
+                        </Button>
+                    </div>
+                </ModalWrapper>
+            );
+        };
+
+        const LoadingScreen = () => (
+            <motion.div 
+                initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
+                className="fixed inset-0 z-[100] bg-[#fbf6e9] flex flex-col items-center justify-center text-stone-800"
+            >
+                <div className="w-24 h-24 mb-8 relative">
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} className="w-full h-full border-[6px] border-stone-200 border-t-gold-500 rounded-full"></motion.div>
+                </div>
+                <h2 className="text-2xl font-display font-bold tracking-widest text-stone-600">正在前往尼斯大陸...</h2>
+            </motion.div>
+        );
+
+        const ScrollToTop = () => {
+            const { pathname } = useLocation();
+            useLayoutEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+            return null;
+        };
+
+        // 按鈕樣式調整：更圓潤、陰影更柔和
+        const BUTTON_VARIANTS = {
+            primary: "bg-fire-500 text-white shadow-lg shadow-fire-200 hover:bg-fire-600 border-2 border-transparent",
+            secondary: "bg-stone-100 text-stone-600 hover:bg-stone-200 border-2 border-stone-200",
+            gold: "bg-gradient-to-br from-gold-400 to-gold-500 text-white shadow-lg shadow-gold-200 hover:to-gold-600 border-2 border-transparent",
+            discord: "bg-[#5865F2] text-white shadow-lg shadow-indigo-200 hover:bg-[#4752C4] border-2 border-transparent",
+            line: "bg-[#06C755] text-white shadow-lg shadow-green-200 hover:bg-[#05B34C] border-2 border-transparent"
+        };
+
+        const Button = ({ children, className = "", onClick, variant = "primary", disabled = false, icon: Icon, ...props }) => {
+            return (
+                <button 
+                    disabled={disabled} 
+                    onClick={onClick} 
+                    className={`relative overflow-hidden px-8 py-3.5 rounded-2xl font-bold tracking-wide transition-all duration-200 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-3 text-lg ${BUTTON_VARIANTS[variant]} ${className}`}
+                    {...props}
+                >
+                    <div className="relative flex items-center gap-2">
+                        {Icon && <Icon size={24} className="group-hover:rotate-12 transition-transform duration-300" />}
+                        {children}
+                    </div>
+                </button>
+            );
+        };
+
+        const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-fire-500" }) => (
+            <div className="text-center mb-16 relative z-10">
+                <div className="flex justify-center mb-6">
+                    <div className="p-5 bg-white rounded-[2rem] border-[3px] border-stone-100 shadow-xl shadow-stone-200/50 animate-float">
+                        {Icon && <Icon size={48} className={color} strokeWidth={1.5} />}
+                    </div>
+                </div>
+                <h1 className="text-4xl md:text-6xl font-black text-stone-800 mb-4 tracking-tight drop-shadow-sm font-display">{title}</h1>
+                <div className="w-16 h-1.5 bg-stone-200 mx-auto mb-6 rounded-full"></div>
+                <p className="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto font-medium px-4 leading-relaxed">{subtitle}</p>
+            </div>
+        ));
+
+        // --- Mobile Nav ---
+        const MobileBottomNav = () => {
+            const location = useLocation();
+            const navItems = useMemo(() => [
+                { path: '/', label: '首頁', icon: Home },
+                { path: '/events', label: '活動', icon: Calendar },
+                { path: '/recharge', label: '金幣', icon: Coins },
+                { path: '/support', label: '客服', icon: MessageSquare },
+                { path: '/admin', label: '後台', icon: Lock },
+            ], []);
+
+            return (
+                <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-stone-100 z-50 pb-safe md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                    <div className="flex justify-around items-center h-20">
+                        {navItems.map((item) => {
+                            const isActive = location.pathname === item.path;
+                            return (
+                                <Link key={item.path} to={item.path} className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-wood-600' : 'text-stone-400'}`}>
+                                    <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-sand-100 scale-105' : ''}`}>
+                                        <item.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
+                                    </div>
+                                    <span className={`text-[10px] font-bold tracking-wide ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Pages ---
+        const HomePage = () => {
+            const handleDownload = () => alert("【系統提示】感謝您的熱情！目前為展示階段，正式開服後將開放下載。");
+            const handleDiscord = () => window.open('https://discord.gg/your-code', '_blank'); // FIXED: Discord
+            const handleLineCommunity = () => window.open('https://line.me/ti/g2/k7x6Y9Y0BkSAAQm6LD-UuG1ihCORUPeCfoixMg?utm_source=invitation&utm_medium=link_copy&utm_campaign=default', '_blank'); // FIXED: LINE 社群
+            
+            const [events, setEvents] = useState([]);
+            
+            // Load Events for Marquee
+            useEffect(() => {
+                const loadedEvents = getLocalData(LS_KEYS.EVENTS);
+                setEvents(loadedEvents.sort((a, b) => b.timestamp - a.timestamp));
+                
+                const handleStorageChange = () => {
+                    const updatedEvents = getLocalData(LS_KEYS.EVENTS);
+                    setEvents(updatedEvents.sort((a, b) => b.timestamp - a.timestamp));
+                };
+                
+                window.addEventListener('storage-update', handleStorageChange);
+                return () => window.removeEventListener('storage-update', handleStorageChange);
+            }, []);
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                    <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-tribal">
+                        <div className="absolute inset-0 z-0 opacity-100">
+                            <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
+                                <SmartImage src={ASSETS.HERO} alt="Hero" className="w-full h-full object-cover" />
+                            </motion.div>
+                            <div className="absolute inset-0 bg-gradient-to-b from-[#fbf6e9]/60 via-transparent to-[#fbf6e9] z-10"></div>
+                        </div>
+
+                        <div className="relative z-20 text-center max-w-7xl px-6 pt-12 md:pt-20">
+                            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-16 md:-mt-24">
+                                <div className="mb-8 md:mb-10 animate-float drop-shadow-lg">
+                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" />
+                                </div>
+
+                                <div className="inline-flex items-center gap-3 md:gap-4 px-6 md:px-8 py-2.5 rounded-full bg-white/80 border border-stone-200 text-stone-600 font-bold mb-6 md:mb-10 shadow-sm backdrop-blur-md text-sm md:text-base tracking-wide">
+                                    <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                                    <span className="">2.5 經典版本</span>
+                                    <span className="text-stone-300">|</span>
+                                    <span className="">火熱公測中</span>
+                                </div>
+
+                                <p className="text-4xl md:text-6xl text-stone-800 font-display font-black mb-6 md:mb-8 max-w-4xl mx-auto tracking-wide leading-tight drop-shadow-sm">
+                                    最初的感動，最純粹的冒險
+                                </p>
+                                
+                                <div className="mb-10 md:mb-14">
+                                    <p className="text-base md:text-lg text-stone-600 font-medium bg-white/60 rounded-full px-6 py-2 backdrop-blur-sm inline-block border border-white shadow-sm">
+                                        ❤️ 承諾將 1% 營收捐贈公益，讓遊戲更有溫度
+                                    </p>
+                                </div>
+                                
+                                <div className="flex flex-col md:flex-row gap-4 justify-center items-center px-4 flex-wrap">
+                                    <Button className="w-full md:w-auto min-w-[200px]" icon={Download} onClick={handleDownload}>立即下載</Button>
+                                    <Button variant="line" className="w-full md:w-auto min-w-[200px]" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
+                                    <Button variant="secondary" className="w-full md:w-auto min-w-[200px]" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
+                                </div>
+
+                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-slow opacity-40 hidden md:block">
+                                    <ChevronDown className="text-stone-400 w-10 h-10"/>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </section>
+
+                    {/* News Section (Powered by Events) */}
+                    <section className="bg-white border-y border-stone-100 py-3 relative z-20 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-6 flex items-center gap-6 overflow-hidden">
+                            <div className="bg-stone-800 text-white text-sm font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex items-center gap-2">
+                                <Megaphone size={16} /> 最新情報
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <Link to="/events" className="whitespace-nowrap text-stone-600 text-sm md:text-base font-medium flex gap-12 hover:text-stone-800 transition-colors">
+                                    {events.length > 0 ? events.map((item) => {
+                                        const tag = EVENT_TAGS.find(t => t.id === item.tag)?.label || '📢';
+                                        return <span key={item.id} className="flex items-center gap-2"><span className="text-xs opacity-70">{tag}</span> {item.title}</span>
+                                    }) : (
+                                        <span>暫無最新公告...</span>
+                                    )}
+                                </Link>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="py-24 md:py-32 px-6 relative mb-20 md:mb-0">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="text-center mb-16 md:mb-24">
+                                <h2 className="text-3xl md:text-5xl font-display font-black text-stone-800 mb-4 inline-block relative">
+                                    部落生存法則
+                                    <span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200/50 -z-10 rounded-full"></span>
+                                </h2>
+                                <p className="text-stone-500 font-medium text-lg md:text-xl mt-4">四大屬性加持，打造最平衡的尼斯大陸。</p>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-8 md:gap-10">
+                                {[
+                                    { t: "純淨環境", d: "拒絕台幣戰士，商城僅售便利道具，極品裝備全靠雙手獲得。", i: ShieldCheck, color: "text-wind-600", bg: "bg-wind-50", border: "border-wind-200" },
+                                    { t: "經典設定", d: "完美復刻 2.5 版本數值。地水火風屬性相剋，策略才是王道。", i: Flame, color: "text-fire-500", bg: "bg-fire-50", border: "border-fire-200" },
+                                    { t: "長久穩定", d: "採用商業級分佈式架構，數據異地備份，承諾永久保存。", i: Home, color: "text-earth-600", bg: "bg-earth-50", border: "border-earth-200" }
+                                ].map((item, idx) => (
+                                    <motion.div key={idx} whileHover={{ y: -5 }} className="stone-panel p-8 md:p-12 text-center group bg-white">
+                                        <div className={`w-20 h-20 mx-auto rounded-3xl ${item.bg} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                                            <item.i size={36} className={item.color} />
+                                        </div>
+                                        <h3 className="text-2xl font-bold mb-4 text-stone-700 tracking-wide">{item.t}</h3>
+                                        <p className="text-stone-500 font-medium leading-relaxed">{item.d}</p>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                </motion.div>
+            );
+        };
+
+        const EventsPage = () => {
+            const [events, setEvents] = useState([]);
+
+            useEffect(() => {
+                const loadedEvents = getLocalData(LS_KEYS.EVENTS);
+                setEvents(loadedEvents.sort((a, b) => b.timestamp - a.timestamp));
+
+                const handleStorageChange = () => {
+                    const updatedEvents = getLocalData(LS_KEYS.EVENTS);
+                    setEvents(updatedEvents.sort((a, b) => b.timestamp - a.timestamp));
+                };
+
+                window.addEventListener('storage-update', handleStorageChange);
+                return () => window.removeEventListener('storage-update', handleStorageChange);
+            }, []);
+
+            return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
+                    
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        {events.length === 0 ? (
+                            <div className="stone-panel p-16 text-center text-stone-400">
+                                <div className="bg-stone-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Megaphone size={32} className="opacity-30"/>
+                                </div>
+                                <p className="text-xl font-bold">目前沒有活動公告...</p>
+                            </div>
+                        ) : (
+                            events.map((event) => {
+                                const tag = EVENT_TAGS.find(t => t.id === event.tag) || EVENT_TAGS[0];
+                                return (
+                                    <div key={event.id} className="stone-panel p-8 md:p-10 hover:shadow-lg transition-all duration-300 group">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`${tag.color} px-3 py-1 rounded-lg text-sm font-bold tracking-wide shadow-sm`}>
+                                                    {tag.label}
+                                                </span>
+                                                <span className="text-stone-400 font-mono text-sm">
+                                                    {new Date(event.timestamp).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-wood-600 transition-colors">
+                                            {event.title}
+                                        </h3>
+                                        <div className="text-stone-600 text-lg leading-loose whitespace-pre-wrap font-medium">
+                                            {event.content}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const RechargePage = () => {
+            const [gameAccount, setGameAccount] = useState('');
+            const [selectedMethod, setSelectedMethod] = useState(null);
+            const [selectedPlan, setSelectedPlan] = useState(null);
+            const [showModal, setShowModal] = useState(false);
+
+            const saveSponsorshipRecord = async () => {
+                const record = {
+                    id: Date.now().toString(),
+                    gameAccount: gameAccount,
+                    amount: selectedPlan.amount,
+                    method: selectedMethod,
+                    planTotal: selectedPlan.total,
+                    status: 'pending',
+                    timestamp: Date.now()
+                };
+                
+                const existing = getLocalData(LS_KEYS.SPONSORSHIPS);
+                setLocalData(LS_KEYS.SPONSORSHIPS, [...existing, record]);
+                window.dispatchEvent(new Event('storage-update'));
+            };
+
+            const handlePayment = () => {
+                if (!gameAccount.trim()) {
+                    alert('請先填寫遊戲帳號！');
+                    document.getElementById('gameAccountInput')?.focus();
+                    return;
+                }
+                if (!selectedMethod) {
+                    alert('請先選擇支付方式 (步驟 1)');
+                    return;
+                }
+                if (!selectedPlan) {
+                    alert('請選擇贊助方案 (步驟 2)');
+                    return;
+                }
+                
+                saveSponsorshipRecord();
+                setShowModal(true);
+            };
+
+            return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
+                    
+                    {showModal && selectedPlan && (
+                        <PaymentModal 
+                            method={selectedMethod}
+                            plan={selectedPlan} 
+                            gameAccount={gameAccount}
+                            onClose={() => setShowModal(false)} 
+                        />
+                    )}
+
+                    <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-10 md:gap-12">
+                        <div className="lg:col-span-2 space-y-8 md:space-y-10">
+                             <div className="stone-panel p-8 md:p-10 border-stone-200 bg-white">
+                                <div className="flex items-center gap-4 mb-6 border-b border-stone-100 pb-6">
+                                    <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
+                                    <h3 className="text-2xl font-bold text-stone-700">請輸入遊戲帳號</h3>
+                                </div>
+                                <input 
+                                    id="gameAccountInput"
+                                    type="text" 
+                                    value={gameAccount}
+                                    onChange={(e) => setGameAccount(e.target.value)}
+                                    placeholder="例如：soda123456"
+                                    className="w-full text-xl font-bold p-5 rounded-2xl border-2 border-stone-100 focus:border-gold-400 focus:ring-4 focus:ring-gold-100 focus:outline-none bg-stone-50/50 text-stone-700 placeholder-stone-300 transition-all"
+                                />
+                                <p className="text-stone-400 font-medium mt-3 ml-2 text-sm flex items-center gap-1"><CheckCircle size={14}/> 請務必填寫正確，以便客服核對發放金幣。</p>
+                            </div>
+
+                            <div className="stone-panel p-8 md:p-10 border-gold-300/50 shadow-sm">
+                                <div className="flex items-center gap-4 mb-8 pb-6 border-b border-stone-100">
+                                    <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><CreditCard size={28} /></div>
+                                    <h3 className="text-2xl font-bold text-stone-700">1. 選擇支付方式</h3>
+                                </div>
+                                <div className="flex flex-wrap gap-4">
+                                    {PAYMENT_METHODS.map((method, i) => {
+                                        let ShoplineIcon1, ShoplineIcon2;
+                                        if (method.id === 'shopline') {
+                                            ShoplineIcon1 = method.icons[0];
+                                            ShoplineIcon2 = method.icons[1];
+                                        }
+                                        const isSelected = selectedMethod === method.id;
+
+                                        return (
+                                            <div 
+                                                key={i} 
+                                                onClick={() => setSelectedMethod(method.id)}
+                                                className={`flex flex-col items-center justify-center p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 w-40 md:w-48 relative h-40
+                                                ${isSelected ? 'border-gold-400 bg-gold-50/50 shadow-md transform -translate-y-1' : 'border-stone-100 bg-white hover:border-gold-200 hover:shadow-sm'}`}
+                                            >
+                                                {isSelected && <div className="absolute top-3 right-3 text-gold-500 animate-fade-in"><CheckCircle size={22} fill="currentColor" className="text-white"/></div>}
+                                                {method.id === 'shopline' ? (
+                                                    <>
+                                                        <div className="flex items-center justify-center gap-2 mb-3 bg-stone-50 px-2 py-1.5 rounded-lg w-full">
+                                                            <ShoplineIcon1 size={16} className="text-stone-500"/>
+                                                            <ShoplineIcon2 size={16} className="text-stone-500"/>
+                                                            <img src={method.img} alt="Apple Pay" className="h-3.5 w-auto object-contain" />
+                                                        </div>
+                                                        <span className="text-stone-700 font-bold text-base mb-1 text-center leading-tight">{method.name}</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="h-12 flex items-center justify-center mb-3">
+                                                            <img src={method.img} alt={method.name} className="h-full w-auto object-contain drop-shadow-sm" />
+                                                        </div>
+                                                        <span className="text-stone-700 font-bold text-lg">{method.name}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                
+                                <div className="flex items-center gap-6 mb-8 mt-12 pb-6 border-b border-stone-100">
+                                    <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><Coins size={28} /></div>
+                                    <h3 className="text-2xl font-bold text-stone-700">2. 選擇贊助方案</h3>
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-5 md:gap-6">
+                                    {PLANS.map((plan, i) => {
+                                        const isSelected = selectedPlan === plan;
+                                        return (
+                                            <div 
+                                                key={i} 
+                                                onClick={() => setSelectedPlan(plan)}
+                                                className={`relative p-6 rounded-3xl bg-white border-2 cursor-pointer group transition-all duration-300
+                                                ${isSelected ? 'border-gold-400 ring-2 ring-gold-100 bg-gold-50/30 shadow-md' : 'border-stone-100 hover:border-gold-300 hover:shadow-sm'}`}
+                                            >
+                                                {plan.popular && (
+                                                    <div className="absolute top-0 left-0 bg-gold-400 text-white text-[10px] font-bold px-3 py-1 rounded-br-xl z-10 tracking-wider">
+                                                        熱門
+                                                    </div>
+                                                )}
+                                                {isSelected && <div className="absolute top-4 right-4 text-gold-500"><CheckCircle size={24} fill="currentColor" className="text-white"/></div>}
+
+                                                {plan.bonus > 0 && !isSelected && (
+                                                    <div className="absolute top-4 right-4 bg-red-100 text-red-500 text-xs font-bold px-2 py-1 rounded-lg">
+                                                        +{plan.rate}
+                                                    </div>
+                                                )}
+                                                <div className="relative z-10 mt-1">
+                                                    <div className="text-2xl md:text-3xl font-black text-stone-700 mb-3">NT$ {plan.amount.toLocaleString()}</div>
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-baseline gap-2">
+                                                            <span className="text-stone-400 text-sm font-bold">實拿</span>
+                                                            <span className="text-xl md:text-2xl font-bold text-gold-600">{plan.total.toLocaleString()}</span>
+                                                            <span className="text-gold-600 text-xs font-bold uppercase">Gold</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-8">
+                            <div className="stone-panel p-8 bg-white border-2 border-stone-200 sticky top-32 shadow-xl shadow-stone-200/50">
+                                <h3 className="text-xl font-bold mb-6 text-stone-700 flex items-center gap-2"><ScrollText size={20} className="text-stone-400"/> 訂單確認</h3>
+                                
+                                <div className="bg-stone-50/50 p-5 rounded-2xl border border-stone-100 mb-6 space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-stone-400 font-bold">支付方式</span>
+                                        <span className={`font-bold ${selectedMethod ? 'text-stone-700' : 'text-stone-300'}`}>
+                                            {selectedMethod ? PAYMENT_METHODS.find(m => m.id === selectedMethod).name : '尚未選擇'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-stone-400 font-bold">贊助金額</span>
+                                        <span className={`font-bold ${selectedPlan ? 'text-gold-600' : 'text-stone-300'}`}>
+                                            {selectedPlan ? `NT$ ${selectedPlan.amount.toLocaleString()}` : '尚未選擇'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-3 border-t border-stone-200/50 border-dashed text-sm">
+                                        <span className="text-stone-400 font-bold">遊戲帳號</span>
+                                        <span className={`font-bold ${gameAccount ? 'text-stone-700' : 'text-red-400'}`}>
+                                            {gameAccount || '尚未填寫'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-0">
+                                    <Button 
+                                        variant="gold" 
+                                        className="w-full text-lg py-4 shadow-xl shadow-gold-200/50" 
+                                        icon={ExternalLink} 
+                                        onClick={handlePayment}
+                                        disabled={!selectedMethod || !selectedPlan || !gameAccount}
+                                    >
+                                        前往支付
+                                    </Button>
+                                    <p className="text-center text-stone-400 text-xs mt-4 font-medium">安全支付由第三方金流提供</p>
+                                </div>
+                                
+                                <ul className="space-y-2 text-stone-400 font-medium text-xs mt-6 border-t border-stone-100 pt-6">
+                                    <li className="flex gap-2 items-start"><CheckCircle className="text-stone-300 shrink-0 mt-0.5" size={14}/> <span>資金用於支付機房與公益捐款。</span></li>
+                                    <li className="flex gap-2 items-start"><CheckCircle className="text-stone-300 shrink-0 mt-0.5" size={14}/> <span>虛擬商品售出後無法退還。</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 公益承諾 */}
+                    <div className="max-w-7xl mx-auto mt-24 md:mt-32">
+                        <div 
+                            className="stone-panel p-10 md:p-20 relative overflow-hidden shadow-2xl border-0"
+                            style={{ 
+                                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url(${ASSETS.LOVE_BG})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center'
+                            }}
+                        >
+                            <div className="text-center mb-16 relative z-10">
+                                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-50 text-red-500 font-bold mb-6 text-sm tracking-wide">
+                                    <Heart className="fill-red-500" size={16} />
+                                    <span>公益承諾</span>
+                                </div>
+                                <h2 className="text-4xl md:text-5xl font-display font-black text-stone-800 mb-6">營收 1% 捐給公益</h2>
+                                <p className="text-lg md:text-xl text-stone-500 font-medium max-w-2xl mx-auto leading-relaxed">
+                                    讓遊戲的歡樂延伸到現實世界，幫助更多需要的人。
+                                </p>
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-16 relative z-10">
+                                {[
+                                    {t: "透明公開", d: "不定期公佈捐款明細，有跡可循", i: Eye, c: "text-water-500", b: "bg-water-50"},
+                                    {t: "持續承諾", d: "長期穩定的計畫，非一時噱頭", i: Star, c: "text-gold-500", b: "bg-gold-50"},
+                                    {t: "共同參與", d: "每位玩家的支持，都是一份愛心", i: HeartHandshake, c: "text-fire-500", b: "bg-fire-50"}
+                                ].map((item, i) => (
+                                    <div key={i} className="bg-white/80 p-8 rounded-3xl border border-stone-100 text-center hover:shadow-lg transition-all duration-500 backdrop-blur-sm">
+                                        <div className={`w-16 h-16 mx-auto ${item.b} rounded-2xl flex items-center justify-center mb-6 ${item.c}`}>
+                                            <item.i size={32} />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-stone-700 mb-3">{item.t}</h3>
+                                        <p className="text-stone-500 text-sm font-medium leading-relaxed">{item.d}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-stone-900 p-10 md:p-14 rounded-[2.5rem] relative z-10 text-white shadow-2xl">
+                                <div className="flex flex-col md:flex-row gap-10 items-center">
+                                    <div className="flex-1 space-y-6">
+                                        <h3 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-3 text-gold-400">
+                                            <ScrollText className="text-stone-500" /> 我們的公益理念
+                                        </h3>
+                                        <div className="space-y-4 text-stone-300 font-medium leading-loose text-base md:text-lg">
+                                            <p>蘇打石器始終相信，遊戲不僅是娛樂，更是一種連結人心的方式。 我們希望透過這個平台，讓玩家在享受遊戲樂趣的同時，也能為社會帶來正面的影響。</p>
+                                            <p>我們承諾將遊戲商城營收的 1% 捐贈給合格的公益機構， 包括兒童福利、教育援助、弱勢關懷等領域。</p>
+                                            <p className="text-white/90 border-l-4 border-gold-500 pl-4 py-1 mt-4">感謝每一位馴獸師的支持，您的每一次儲值，都在為這個世界帶來一點溫暖。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const SupportPage = () => {
+            const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
+
+            return (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen flex items-center justify-center">
+                    <div className="max-w-2xl w-full">
+                        <PageHeader title="部落客服中心" subtitle="遇到困難了嗎？請聯繫我們的官方 LINE 客服。" icon={MessageSquare} color="text-line-500" />
+                        
+                        <div className="stone-panel p-10 md:p-16 text-center shadow-xl bg-white">
+                            <div className="w-28 h-28 md:w-36 md:h-36 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+                                <SmartImage src={ASSETS.LINE_LOGO} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" />
+                            </div>
+                            
+                            <h3 className="text-3xl md:text-4xl font-display font-black text-stone-800 mb-4">加入官方 LINE</h3>
+                            <p className="text-stone-500 font-medium text-lg mb-10 max-w-md mx-auto leading-relaxed">
+                                專人一對一服務，解決您的遊戲問題、儲值異常或違規檢舉。
+                            </p>
+
+                            <div className="bg-stone-50 rounded-3xl p-8 mb-10 border border-stone-100 inline-block w-full max-w-sm">
+                                <p className="text-stone-400 text-xs font-bold mb-2 uppercase tracking-widest">官方 LINE ID</p>
+                                <p className="text-3xl md:text-4xl font-black text-stone-700 tracking-wider font-mono">@soda_gm</p>
+                            </div>
+
+                            <div className="flex justify-center">
+                                <Button variant="line" className="w-full md:w-auto min-w-[280px] py-4 text-xl rounded-2xl shadow-lg shadow-green-100" icon={LineIcon} onClick={handleLine}>
+                                    立即加入好友
+                                </Button>
+                            </div>
+                            
+                            <p className="text-stone-400 text-xs font-medium mt-10 bg-stone-50 inline-block px-4 py-1.5 rounded-full">
+                                服務時間：每日 10:00 - 22:00
+                            </p>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const AdminPage = () => {
+            const [data, setData] = useState([]);
+            const [events, setEvents] = useState([]);
+            const [admins, setAdmins] = useState([]);
+            const [playlist, setPlaylist] = useState([]);
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [currentUser, setCurrentUser] = useState(null);
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [currentTab, setCurrentTab] = useState('sponsorships');
+            
+            // Settings State
+            const [oldPassword, setOldPassword] = useState('');
+            const [newPassword, setNewPassword] = useState('');
+            const [confirmPassword, setConfirmPassword] = useState('');
+            const [newAdminUsername, setNewAdminUsername] = useState('');
+            const [newAdminPassword, setNewAdminPassword] = useState('');
+            
+            // Events Form State
+            const [eventTitle, setEventTitle] = useState('');
+            const [eventContent, setEventContent] = useState('');
+            const [eventTag, setEventTag] = useState(EVENT_TAGS[0].id);
+            const [editingEventId, setEditingEventId] = useState(null);
+
+            // Music Form State
+            const [newTrackTitle, setNewTrackTitle] = useState('');
+            const [newTrackUrl, setNewTrackUrl] = useState('');
+
+            useEffect(() => {
+                const storedAdmins = getLocalData(LS_KEYS.ADMINS);
+                if (storedAdmins.length === 0) {
+                    const defaultAdmin = { username: 'admin', password: '888888' };
+                    setLocalData(LS_KEYS.ADMINS, [defaultAdmin]);
+                    setAdmins([defaultAdmin]);
+                } else {
+                    setAdmins(storedAdmins);
+                }
+            }, []);
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const foundAdmin = admins.find(a => a.username === username && a.password === password);
+                if (foundAdmin) {
+                    setIsLoggedIn(true);
+                    setCurrentUser(foundAdmin);
+                    setError('');
+                } else {
+                    setError('帳號或密碼錯誤');
+                }
+            };
+
+            const handleLogout = () => {
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+                setUsername('');
+                setPassword('');
+            };
+
+            const handleChangePassword = () => {
+                if (oldPassword !== currentUser.password) {
+                    alert("舊密碼錯誤，請重新輸入");
+                    return;
+                }
+                if (newPassword.length < 6) {
+                    alert("新密碼長度需至少 6 位");
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    alert("兩次新密碼輸入不一致");
+                    return;
+                }
+
+                const updatedAdmins = admins.map(a => 
+                    a.username === currentUser.username ? { ...a, password: newPassword } : a
+                );
+                
+                setAdmins(updatedAdmins);
+                setLocalData(LS_KEYS.ADMINS, updatedAdmins);
+                setCurrentUser({ ...currentUser, password: newPassword });
+                
+                setOldPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                alert("密碼修改成功！");
+            };
+
+            const handleAddAdmin = () => {
+                if (!newAdminUsername.trim() || !newAdminPassword.trim()) {
+                    alert("請輸入完整的帳號與密碼");
+                    return;
+                }
+                if (admins.some(a => a.username === newAdminUsername)) {
+                    alert("此帳號已存在");
+                    return;
+                }
+                if (newAdminPassword.length < 6) {
+                    alert("密碼長度需至少 6 位");
+                    return;
+                }
+
+                const newAdmin = { username: newAdminUsername, password: newAdminPassword };
+                const updatedAdmins = [...admins, newAdmin];
+                
+                setAdmins(updatedAdmins);
+                setLocalData(LS_KEYS.ADMINS, updatedAdmins);
+                
+                setNewAdminUsername('');
+                setNewAdminPassword('');
+                alert(`管理員 ${newAdminUsername} 新增成功！`);
+            };
+
+            const handleDeleteAdmin = (targetUsername) => {
+                if (targetUsername === currentUser.username) {
+                    alert("無法刪除自己");
+                    return;
+                }
+                if (!confirm(`確定要刪除管理員 ${targetUsername} 嗎？`)) return;
+
+                const updatedAdmins = admins.filter(a => a.username !== targetUsername);
+                setAdmins(updatedAdmins);
+                setLocalData(LS_KEYS.ADMINS, updatedAdmins);
+            };
+
+            const updateStatus = (id, newStatus) => {
+                const newData = data.map(item => item.id === id ? { ...item, status: newStatus } : item);
+                setLocalData(LS_KEYS.SPONSORSHIPS, newData);
+                window.dispatchEvent(new Event('storage-update'));
+            };
+
+            const handleDelete = (id) => {
+                if (!confirm('確定要刪除這筆紀錄嗎？')) return;
+                const newData = data.filter(item => item.id !== id);
+                setLocalData(LS_KEYS.SPONSORSHIPS, newData);
+                window.dispatchEvent(new Event('storage-update'));
+            };
+
+            const handleSaveEvent = () => {
+                if (!eventTitle.trim() || !eventContent.trim()) {
+                    alert('請填寫標題與內容');
+                    return;
+                }
+
+                let updatedEvents;
+                if (editingEventId) {
+                    updatedEvents = events.map(ev => 
+                        ev.id === editingEventId 
+                            ? { ...ev, title: eventTitle, content: eventContent, tag: eventTag }
+                            : ev
+                    );
+                } else {
+                    const newEvent = {
+                        id: Date.now().toString(),
+                        title: eventTitle,
+                        content: eventContent,
+                        tag: eventTag,
+                        timestamp: Date.now()
+                    };
+                    updatedEvents = [newEvent, ...events];
+                }
+
+                setLocalData(LS_KEYS.EVENTS, updatedEvents);
+                window.dispatchEvent(new Event('storage-update'));
+                
+                setEventTitle('');
+                setEventContent('');
+                setEventTag(EVENT_TAGS[0].id);
+                setEditingEventId(null);
+            };
+
+            const startEditingEvent = (ev) => {
+                setEventTitle(ev.title);
+                setEventContent(ev.content);
+                setEventTag(ev.tag);
+                setEditingEventId(ev.id);
+                document.querySelector('.admin-content')?.scrollTo(0,0);
+            };
+
+            const handleDeleteEvent = (id) => {
+                if (!confirm('確定要刪除此活動嗎？')) return;
+                const updatedEvents = events.filter(e => e.id !== id);
+                setLocalData(LS_KEYS.EVENTS, updatedEvents);
+                window.dispatchEvent(new Event('storage-update'));
+            };
+
+            // Music Management
+            const handleAddMusic = () => {
+                if (!newTrackTitle.trim() || !newTrackUrl.trim()) {
+                    alert('請輸入歌名與連結');
+                    return;
+                }
+                const newTrack = { id: Date.now().toString(), title: newTrackTitle, url: newTrackUrl };
+                const updatedPlaylist = [...playlist, newTrack];
+                setPlaylist(updatedPlaylist);
+                setLocalData(LS_KEYS.PLAYLIST, updatedPlaylist);
+                window.dispatchEvent(new Event('storage-update'));
+                setNewTrackTitle('');
+                setNewTrackUrl('');
+            };
+
+            const handleFileSelect = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setNewTrackUrl(file.name);
+                    setNewTrackTitle(file.name.replace(/\.[^/.]+$/, "")); // Remove extension
+                }
+            };
+
+            const handleDeleteMusic = (id) => {
+                if (!confirm('確定要刪除這首歌曲嗎？')) return;
+                const updatedPlaylist = playlist.filter(t => t.id !== id);
+                setPlaylist(updatedPlaylist);
+                setLocalData(LS_KEYS.PLAYLIST, updatedPlaylist);
+                window.dispatchEvent(new Event('storage-update'));
+            };
+
+            useEffect(() => {
+                if (!isLoggedIn) return;
+
+                const loadData = () => {
+                    const loadedSponsorships = getLocalData(LS_KEYS.SPONSORSHIPS);
+                    setData(loadedSponsorships.sort((a, b) => b.timestamp - a.timestamp));
+
+                    const loadedEvents = getLocalData(LS_KEYS.EVENTS);
+                    setEvents(loadedEvents.sort((a, b) => b.timestamp - a.timestamp));
+
+                    const loadedPlaylist = getLocalData(LS_KEYS.PLAYLIST);
+                    setPlaylist(loadedPlaylist);
+                };
+
+                loadData();
+                window.addEventListener('storage-update', loadData);
+                return () => window.removeEventListener('storage-update', loadData);
+            }, [isLoggedIn]);
+            
+            const filteredData = data.filter(item => {
+                const name = item.gameAccount || item.characterName || '';
+                const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchStatus = filterStatus === 'all' || item.status === filterStatus;
+                return matchSearch && matchStatus;
+            });
+            
+            const totalAmount = data.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+            const pendingCount = data.filter(d => d.status === 'pending').length;
+
+            if (!isLoggedIn) {
+                return (
+                    <div className="pt-32 pb-20 px-4 min-h-screen bg-stone-900 flex items-center justify-center">
+                        <div className="bg-stone-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-stone-700">
+                            <h2 className="text-2xl font-bold text-white mb-6 text-center">後台管理系統</h2>
+                            
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div>
+                                    <label className="block text-stone-400 font-bold mb-1 text-sm">帳號</label>
+                                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full p-3 bg-stone-900 border border-stone-600 rounded-xl text-white font-bold focus:border-gold-500 outline-none transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-stone-400 font-bold mb-1 text-sm">密碼</label>
+                                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 bg-stone-900 border border-stone-600 rounded-xl text-white font-bold focus:border-gold-500 outline-none transition-colors" />
+                                </div>
+                                {error && <p className="text-red-400 font-bold text-center text-sm">{error}</p>}
+                                <button type="submit" className="w-full bg-gold-600 text-white font-bold py-3 rounded-xl hover:bg-gold-500 transition-colors mt-2">登入</button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="pt-24 md:pt-32 pb-24 md:pb-20 px-4 md:px-6 min-h-screen bg-stone-900 text-white admin-content">
+                    <div className="max-w-7xl mx-auto">
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="bg-stone-800 p-5 rounded-2xl border border-stone-700/50">
+                                <p className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">本月總營收</p>
+                                <p className="text-2xl font-black text-gold-500">NT$ {totalAmount.toLocaleString()}</p>
+                            </div>
+                            <div className="bg-stone-800 p-5 rounded-2xl border border-stone-700/50">
+                                <p className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">待處理贊助</p>
+                                <p className="text-2xl font-black text-fire-500">{pendingCount}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+                            <div className="flex flex-wrap gap-2">
+                                <button onClick={() => setCurrentTab('sponsorships')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${currentTab === 'sponsorships' ? 'bg-gold-500 text-white shadow-lg shadow-gold-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>贊助管理</button>
+                                <button onClick={() => setCurrentTab('events')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${currentTab === 'events' ? 'bg-water-500 text-white shadow-lg shadow-water-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>活動管理</button>
+                                <button onClick={() => setCurrentTab('music')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${currentTab === 'music' ? 'bg-fire-500 text-white shadow-lg shadow-fire-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}><Music size={16}/> 音樂</button>
+                                <button onClick={() => setCurrentTab('settings')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${currentTab === 'settings' ? 'bg-stone-700 text-white shadow-lg' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}><Settings size={16}/> 設定</button>
+                            </div>
+                            
+                            {currentTab === 'sponsorships' && (
+                                <div className="flex gap-3 w-full lg:w-auto">
+                                    <div className="relative flex-1 lg:w-64">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" size={16}/>
+                                        <input type="text" placeholder="搜尋遊戲帳號..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800 border border-stone-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-stone-500 focus:border-gold-500 outline-none transition-colors"/>
+                                    </div>
+                                    <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none cursor-pointer hover:border-stone-600 transition-colors">
+                                        <option value="all">全部狀態</option>
+                                        <option value="pending">待處理</option>
+                                        <option value="completed">已完成</option>
+                                        <option value="cancelled">已取消</option>
+                                    </select>
+                                    <button onClick={handleLogout} className="px-3 py-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-red-500/30"><LogOut size={18}/></button>
+                                </div>
+                            )}
+                             {currentTab !== 'sponsorships' && (
+                                 <button onClick={handleLogout} className="px-3 py-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-red-500/30 self-end lg:self-auto"><LogOut size={18}/></button>
+                             )}
+                        </div>
+                        
+                        {currentTab === 'sponsorships' && (
+                            <div className="bg-stone-800 rounded-3xl p-6 overflow-x-auto border border-stone-700 shadow-xl">
+                                {filteredData.length === 0 ? (
+                                    <div className="text-stone-500 text-center py-20 flex flex-col items-center"><Clipboard size={48} className="mb-4 opacity-20"/><p>暫無資料</p></div>
+                                ) : (
+                                    <div className="min-w-[900px]">
+                                        <div className="grid grid-cols-7 gap-4 mb-4 text-stone-500 font-bold px-4 text-xs uppercase tracking-wider">
+                                            <div className="col-span-2">遊戲帳號</div>
+                                            <div className="col-span-1">金額</div>
+                                            <div className="col-span-1">實拿金幣</div>
+                                            <div className="col-span-1">方式</div>
+                                            <div className="col-span-1">時間</div>
+                                            <div className="col-span-1 text-right">狀態</div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {filteredData.map(item => (
+                                                <div key={item.id} className="bg-stone-900/30 hover:bg-stone-900 p-4 rounded-xl grid grid-cols-7 gap-4 items-center border border-transparent hover:border-stone-700 transition-colors group">
+                                                    <div className="col-span-2 flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center text-gold-500 font-black shrink-0 text-sm">{(item.gameAccount || '?')[0]}</div>
+                                                        <div className="truncate"><p className="font-bold text-white text-base">{item.gameAccount}</p><button onClick={() => navigator.clipboard.writeText(item.gameAccount)} className="text-stone-500 text-xs hover:text-gold-500 flex items-center gap-1 mt-1"><Copy size={12}/> 複製帳號</button></div>
+                                                    </div>
+                                                    <div className="col-span-1 text-white font-mono font-bold">NT$ {item.amount?.toLocaleString()}</div>
+                                                    <div className="col-span-1 text-gold-500 font-mono font-bold">{item.planTotal?.toLocaleString()} G</div>
+                                                    <div className="col-span-1 text-stone-400 text-sm"><span className="bg-stone-800 px-2 py-1 rounded text-xs">{item.method === 'shopline' ? 'SHOPLINE' : item.method === 'linepay' ? 'LINE Pay' : item.method}</span></div>
+                                                    <div className="col-span-1 text-stone-500 text-xs font-mono">{item.timestamp ? new Date(item.timestamp).toLocaleString() : '-'}</div>
+                                                    <div className="col-span-1 text-right flex justify-end gap-2">
+                                                        <select value={item.status} onChange={(e) => updateStatus(item.id, e.target.value)} className={`bg-stone-800 text-xs font-bold px-2 py-1.5 rounded-lg outline-none cursor-pointer border border-stone-600 ${item.status === 'completed' ? 'text-green-500 border-green-900' : item.status === 'pending' ? 'text-yellow-500 border-yellow-900' : 'text-red-500 border-red-900'}`}>
+                                                            <option value="pending">待處理</option>
+                                                            <option value="completed">已完成</option>
+                                                            <option value="cancelled">已取消</option>
+                                                        </select>
+                                                        <button onClick={() => handleDelete(item.id)} className="text-stone-600 hover:text-red-500 p-1.5 rounded-lg transition-colors" title="刪除紀錄"><Trash2 size={16}/></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {currentTab === 'events' && (
+                            <div className="space-y-8">
+                                <div className="bg-stone-800 rounded-3xl p-6 border border-stone-700 shadow-xl">
+                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                        {editingEventId ? <Edit2 size={20} className="text-water-500"/> : <Plus size={20} className="text-fire-500"/>} 
+                                        {editingEventId ? '編輯活動' : '發布新活動'}
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            <div className="md:col-span-3">
+                                                <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} placeholder="活動標題 (可輸入 Emoji)" className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-water-500 outline-none text-base"/>
+                                            </div>
+                                            <div>
+                                                <select value={eventTag} onChange={(e) => setEventTag(e.target.value)} className="w-full h-full bg-stone-900 border border-stone-600 rounded-xl px-4 text-white focus:border-water-500 outline-none text-base">
+                                                    {EVENT_TAGS.map(tag => <option key={tag.id} value={tag.id}>{tag.label.replace(' ','')}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <textarea value={eventContent} onChange={(e) => setEventContent(e.target.value)} placeholder="活動內容 (支援換行與 Emoji)..." rows="6" className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-water-500 outline-none text-base resize-none leading-relaxed"></textarea>
+                                        <div className="flex justify-end gap-3">
+                                            {editingEventId && <button onClick={() => { setEditingEventId(null); setEventTitle(''); setEventContent(''); }} className="px-6 py-2 rounded-xl text-stone-400 hover:text-white font-bold transition-colors">取消</button>}
+                                            <button onClick={handleSaveEvent} className={`px-8 py-2.5 rounded-xl font-bold shadow-lg transition-transform active:scale-95 text-white ${editingEventId ? 'bg-water-600 hover:bg-water-500' : 'bg-fire-600 hover:bg-fire-500'}`}>
+                                                {editingEventId ? '儲存變更' : '發布活動'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-bold text-stone-400 px-2 uppercase tracking-wider">已發布活動 ({events.length})</h3>
+                                    {events.map((event) => {
+                                        const tag = EVENT_TAGS.find(t => t.id === event.tag) || EVENT_TAGS[0];
+                                        return (
+                                            <div key={event.id} className="bg-stone-800 p-6 rounded-2xl border border-stone-700 flex flex-col md:flex-row gap-6 relative group hover:border-stone-600 transition-colors">
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <span className={`text-xs px-2 py-0.5 rounded ${tag.color} bg-opacity-20 border border-current`}>{tag.label}</span>
+                                                        <span className="text-stone-500 text-xs font-mono">{new Date(event.timestamp).toLocaleString()}</span>
+                                                    </div>
+                                                    <h4 className="text-xl font-bold text-white">{event.title}</h4>
+                                                    <p className="text-stone-400 whitespace-pre-wrap line-clamp-2 text-sm leading-relaxed">{event.content}</p>
+                                                </div>
+                                                <div className="flex md:flex-col gap-2 justify-end">
+                                                    <button onClick={() => startEditingEvent(event)} className="bg-stone-700 hover:bg-water-600 text-white p-2 rounded-lg transition-colors"><Edit2 size={18}/></button>
+                                                    <button onClick={() => handleDeleteEvent(event.id)} className="bg-stone-700 hover:bg-red-600 text-white p-2 rounded-lg transition-colors"><Trash2 size={18}/></button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {currentTab === 'music' && (
+                            <div className="space-y-8">
+                                <div className="bg-stone-800 rounded-3xl p-6 border border-stone-700 shadow-xl">
+                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><Plus size={20} className="text-fire-500"/> 新增曲目</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <input type="text" value={newTrackTitle} onChange={(e) => setNewTrackTitle(e.target.value)} placeholder="曲目名稱" className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-fire-500 outline-none text-base"/>
+                                        <input type="text" value={newTrackUrl} onChange={(e) => setNewTrackUrl(e.target.value)} placeholder="MP3 連結" className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-fire-500 outline-none text-base"/>
+                                    </div>
+                                    
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <label className="bg-stone-700 hover:bg-stone-600 text-stone-300 text-sm px-4 py-2 rounded-xl cursor-pointer transition-colors flex items-center gap-2">
+                                            <FolderOpen size={16}/>
+                                            <span className="font-bold">選取檔案</span>
+                                            <input type="file" accept="audio/*" className="hidden" onChange={handleFileSelect} />
+                                        </label>
+                                        <span className="text-xs text-stone-500">支援 .mp3</span>
+                                    </div>
+
+                                    <div className="flex justify-end mt-4">
+                                        <button onClick={handleAddMusic} className="bg-fire-600 hover:bg-fire-500 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg transition-transform active:scale-95">新增</button>
+                                    </div>
+                                </div>
+
+                                <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">
+                                    <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">播放清單 ({playlist.length})</h3>
+                                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                        {playlist.map((track, idx) => (
+                                            <div key={track.id} className="flex justify-between items-center bg-stone-900 p-4 rounded-xl border border-stone-700 hover:border-stone-600 transition-colors">
+                                                <div className="flex items-center gap-4 overflow-hidden">
+                                                    <div className="w-8 h-8 rounded-full bg-stone-700 flex items-center justify-center text-xs font-bold text-stone-400">{idx + 1}</div>
+                                                    <span className="font-bold truncate text-base">{track.title}</span>
+                                                </div>
+                                                <button onClick={() => handleDeleteMusic(track.id)} className="text-stone-500 hover:text-red-500 p-2"><Trash2 size={18}/></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {currentTab === 'settings' && (
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">
+                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4"><Edit size={20} className="text-gold-500"/> 修改我的密碼</h3>
+                                    <div className="space-y-4">
+                                        <div><label className="block text-stone-400 text-sm font-bold mb-1">目前密碼</label><input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"/></div>
+                                        <div><label className="block text-stone-400 text-sm font-bold mb-1">新密碼</label><input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"/></div>
+                                        <div><label className="block text-stone-400 text-sm font-bold mb-1">確認新密碼</label><input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"/></div>
+                                        <button onClick={handleChangePassword} className="w-full bg-gold-600 hover:bg-gold-500 text-white font-bold py-3 rounded-xl transition-colors mt-2">確認修改</button>
+                                    </div>
+                                </div>
+                                <div className="space-y-8">
+                                    <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">
+                                        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4"><UserPlus size={20} className="text-fire-500"/> 新增管理員</h3>
+                                        <div className="space-y-4">
+                                            <div><label className="block text-stone-400 text-sm font-bold mb-1">新管理員帳號</label><input type="text" value={newAdminUsername} onChange={e => setNewAdminUsername(e.target.value)} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-fire-500 outline-none transition-colors"/></div>
+                                            <div><label className="block text-stone-400 text-sm font-bold mb-1">設定密碼</label><input type="password" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-fire-500 outline-none transition-colors"/></div>
+                                            <button onClick={handleAddAdmin} className="w-full bg-fire-600 hover:bg-fire-500 text-white font-bold py-3 rounded-xl transition-colors mt-2">新增人員</button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">
+                                        <h3 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">現有管理員 ({admins.length})</h3>
+                                        <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                                            {admins.map((admin, idx) => (
+                                                <div key={idx} className="flex justify-between items-center bg-stone-900 p-3 rounded-xl border border-stone-700">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-stone-700 flex items-center justify-center text-xs font-bold">{admin.username[0].toUpperCase()}</div>
+                                                        <span className="font-bold">{admin.username}</span>
+                                                        {admin.username === currentUser.username && <span className="text-xs bg-gold-500/20 text-gold-500 px-2 py-0.5 rounded">You</span>}
+                                                    </div>
+                                                    {admin.username !== currentUser.username && (
+                                                        <button onClick={() => handleDeleteAdmin(admin.username)} className="text-stone-500 hover:text-red-500"><Trash2 size={18}/></button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const Layout = () => {
+            const [isScrolled, setIsScrolled] = useState(false);
+            const [isLoading, setIsLoading] = useState(true);
+            const location = useLocation();
+
+            useEffect(() => {
+                const handleScroll = () => setIsScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                setTimeout(() => setIsLoading(false), 1500);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <div className="min-h-screen flex flex-col font-sans pb-20 md:pb-0 text-stone-800">
+                    <AnimatePresence>
+                        {isLoading && <LoadingScreen key="loader" />}
+                    </AnimatePresence>
+
+                    <ScrollToTop />
+                    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'py-3 bg-white/90 backdrop-blur-md shadow-sm border-b border-stone-100' : 'py-6 bg-transparent'}`}>
+                        <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
+                            <Link to="/" className="flex items-center gap-4 group">
+                                <div className="h-10 md:h-14 w-auto overflow-visible group-hover:scale-105 transition-transform drop-shadow-sm">
+                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain" />
+                                </div>
+                            </Link>
+
+                            <div className={`hidden lg:flex items-center gap-2 px-2 py-1.5 rounded-full transition-all duration-500 ${isScrolled ? 'bg-stone-100/50' : 'bg-white/70 backdrop-blur-md border border-white/50 shadow-sm'}`}>
+                                {['部落首頁', '金幣贊助', '官方客服'].map((label, i) => {
+                                    const path = i === 0 ? '/' : i === 1 ? '/recharge' : '/support';
+                                    const isActive = location.pathname === path;
+                                    return (
+                                        <Link key={path} to={path}>
+                                            <div className={`px-5 py-2 rounded-full text-base font-bold transition-all duration-300 ${isActive ? 'bg-white text-stone-800 shadow-sm transform scale-105' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+                                                {label}
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                                 <Link key="events" to="/events">
+                                    <div className={`px-5 py-2 rounded-full text-base font-bold transition-all duration-300 ${location.pathname === '/events' ? 'bg-white text-stone-800 shadow-sm transform scale-105' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+                                        最新活動
+                                    </div>
+                                </Link>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <MusicPlayer />
+                                <Link to="/admin" className="hidden lg:flex p-2.5 text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-sm" title="後台管理">
+                                    <Lock className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <MobileBottomNav />
+
+                    <div className="flex-grow">
+                        <AnimatePresence mode="wait">
+                            <Routes location={location} key={location.pathname}>
+                                <Route path="/" element={<HomePage />} />
+                                <Route path="/recharge" element={<RechargePage />} />
+                                <Route path="/support" element={<SupportPage />} />
+                                <Route path="/events" element={<EventsPage />} />
+                                <Route path="/admin" element={<AdminPage />} />
+                            </Routes>
+                        </AnimatePresence>
+                    </div>
+
+                    <footer className="bg-stone-900 py-16 px-6 border-t-8 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                            <div className="flex items-center gap-6 opacity-80">
+                                <div className="h-10 w-auto overflow-hidden opacity-80 grayscale hover:grayscale-0 transition-all">
+                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" />
+                                </div>
+                                <span className="font-bold text-sm tracking-widest border-l border-stone-700 pl-6 h-8 flex items-center">SODA STONE AGE</span>
+                            </div>
+                            <p className="text-xs font-mono tracking-wide opacity-50">© 2026 Fan-made Project. Designed for Community.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const App = () => {
+            return <Layout />;
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(
+            <HashRouter>
+                <App />
+            </HashRouter>
+        );
+    </script>
+</body>
+</html>
