@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>蘇打石器：公益服 | 重返尼斯大陸</title>
+    <title>蘇打石器：公益服 | 最人情味的石器時代</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -92,13 +92,15 @@
     </script>
 
     <style>
+        html { scroll-behavior: smooth; }
         body { 
             background-color: #fbf6e9;
             color: #4a4036;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.65;
+            letter-spacing: 0.01em;
         }
         #root:empty::before {
             content: '正在前往尼斯大陸...';
@@ -110,27 +112,37 @@
             font-size: 1.5rem;
             font-family: "Zen Maru Gothic", sans-serif;
         }
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #fbf6e9; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f0e6; }
         ::-webkit-scrollbar-thumb { 
-            background: #d4b483; 
-            border-radius: 5px; 
+            background: linear-gradient(180deg, #d4b483, #b08d55); 
+            border-radius: 4px; 
             border: 2px solid #fbf6e9;
         }
         ::-webkit-scrollbar-thumb:hover { background: #b08d55; }
+        
+        /* 焦點可見性：無障礙友善 */
+        *:focus-visible {
+            outline: 2px solid #d4b483;
+            outline-offset: 2px;
+        }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid #d4b483;
+            outline-offset: 2px;
+        }
         
         .stone-panel {
             background-color: #ffffff;
             background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
             border: 3px solid #e6cca0;
-            border-radius: 32px;
-            box-shadow: 8px 8px 0px rgba(212, 180, 131, 0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 28px;
+            box-shadow: 6px 6px 0px rgba(212, 180, 131, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
         
         .stone-panel:hover {
-            box-shadow: 10px 10px 0px rgba(212, 180, 131, 0.6);
-            transform: translateY(-2px);
+            box-shadow: 8px 8px 0px rgba(212, 180, 131, 0.5);
+            transform: translateY(-3px);
         }
         
         .text-outline {
@@ -142,12 +154,28 @@
             background-size: 200% 100%;
         }
         .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         
         ::selection {
             background: #ffeaa7;
             color: #57534e;
+        }
+        
+        /* 跑馬燈動畫 */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-content {
+            display: inline-flex;
+            animation: marquee 30s linear infinite;
+        }
+        .marquee-content:hover { animation-play-state: paused; }
+        
+        /* 觸控優化：最小 44px 點擊區 */
+        @media (max-width: 768px) {
+            button, a[href], [role="button"] { min-height: 44px; min-width: 44px; }
         }
     </style>
 </head>
@@ -353,7 +381,7 @@
             if (playlist.length === 0) return null;
 
             return (
-                <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md rounded-full py-2 px-3 border border-stone-200 shadow-sm transition-all hover:shadow-md hover:bg-white">
+                <div className="flex items-center gap-2 bg-white/90 backdrop-blur-lg rounded-2xl py-2 px-3 md:px-4 border border-stone-200/80 shadow-md shadow-stone-200/20 transition-all duration-200 hover:shadow-lg hover:bg-white">
                     <audio 
                         ref={audioRef} 
                         src={currentTrack.url} 
@@ -516,13 +544,18 @@
 
         const LoadingScreen = () => (
             <motion.div 
-                initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }}
+                initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}
                 className="fixed inset-0 z-[100] bg-[#fbf6e9] flex flex-col items-center justify-center text-stone-800"
             >
-                <div className="w-24 h-24 mb-8 relative">
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} className="w-full h-full border-[6px] border-stone-200 border-t-gold-500 rounded-full"></motion.div>
+                <div className="w-20 h-20 mb-8 relative">
+                    <motion.div 
+                        animate={{ rotate: 360 }} 
+                        transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }} 
+                        className="w-full h-full border-4 border-sand-200 border-t-gold-500 rounded-full"
+                    />
                 </div>
-                <h2 className="text-2xl font-display font-bold tracking-widest text-stone-600">正在前往尼斯大陸...</h2>
+                <h2 className="text-xl md:text-2xl font-display font-bold tracking-widest text-stone-600">正在前往尼斯大陸...</h2>
+                <p className="text-stone-400 text-sm mt-2 font-medium">請稍候</p>
             </motion.div>
         );
 
@@ -530,6 +563,42 @@
             const { pathname } = useLocation();
             useLayoutEffect(() => { window.scrollTo(0, 0); }, [pathname]);
             return null;
+        };
+
+        // Toast 通知（取代 alert）
+        const showToast = (message, type = 'info') => {
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+        };
+
+        const ToastContainer = () => {
+            const [toast, setToast] = useState(null);
+            useEffect(() => {
+                const handler = (e) => setToast(e.detail);
+                window.addEventListener('show-toast', handler);
+                return () => window.removeEventListener('show-toast', handler);
+            }, []);
+            useEffect(() => {
+                if (!toast) return;
+                const t = setTimeout(() => setToast(null), 3000);
+                return () => clearTimeout(t);
+            }, [toast]);
+
+            const bg = toast?.type === 'success' ? 'bg-wind-500' : toast?.type === 'warning' ? 'bg-fire-500' : 'bg-stone-700';
+            return (
+                <AnimatePresence>
+                    {toast && (
+                        <motion.div
+                            key="toast"
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className={`fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[70] ${bg} text-white px-6 py-4 rounded-2xl shadow-xl font-bold text-sm md:text-base max-w-[90vw] text-center`}
+                        >
+                            {toast.message}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            );
         };
 
         // 按鈕樣式調整：更圓潤、陰影更柔和
@@ -546,11 +615,11 @@
                 <button 
                     disabled={disabled} 
                     onClick={onClick} 
-                    className={`relative overflow-hidden px-8 py-3.5 rounded-2xl font-bold tracking-wide transition-all duration-200 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-3 text-lg ${BUTTON_VARIANTS[variant]} ${className}`}
+                    className={`relative overflow-hidden px-8 py-3.5 rounded-2xl font-bold tracking-wide transition-all duration-200 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 group flex items-center justify-center gap-2.5 text-base md:text-lg min-h-[48px] ${BUTTON_VARIANTS[variant]} ${className}`}
                     {...props}
                 >
                     <div className="relative flex items-center gap-2">
-                        {Icon && <Icon size={24} className="group-hover:rotate-12 transition-transform duration-300" />}
+                        {Icon && <Icon size={22} strokeWidth={2.5} className="group-hover:scale-110 transition-transform duration-200 shrink-0" />}
                         {children}
                     </div>
                 </button>
@@ -558,15 +627,15 @@
         };
 
         const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-fire-500" }) => (
-            <div className="text-center mb-16 relative z-10">
-                <div className="flex justify-center mb-6">
-                    <div className="p-5 bg-white rounded-[2rem] border-[3px] border-stone-100 shadow-xl shadow-stone-200/50 animate-float">
-                        {Icon && <Icon size={48} className={color} strokeWidth={1.5} />}
+            <div className="text-center mb-12 md:mb-16 relative z-10">
+                <div className="flex justify-center mb-5">
+                    <div className="p-4 md:p-5 bg-white rounded-2xl border-2 border-stone-100 shadow-lg shadow-stone-200/40 animate-float">
+                        {Icon && <Icon size={44} className={color} strokeWidth={1.5} />}
                     </div>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black text-stone-800 mb-4 tracking-tight drop-shadow-sm font-display">{title}</h1>
-                <div className="w-16 h-1.5 bg-stone-200 mx-auto mb-6 rounded-full"></div>
-                <p className="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto font-medium px-4 leading-relaxed">{subtitle}</p>
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-stone-800 mb-3 tracking-tight drop-shadow-sm font-display px-2">{title}</h1>
+                <div className="w-14 md:w-16 h-1 bg-stone-200 mx-auto mb-5 rounded-full"></div>
+                <p className="text-stone-500 text-base md:text-lg max-w-2xl mx-auto font-medium px-4 leading-relaxed">{subtitle}</p>
             </div>
         ));
 
@@ -582,16 +651,21 @@
             ], []);
 
             return (
-                <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-stone-100 z-50 pb-safe md:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                    <div className="flex justify-around items-center h-20">
+                <div className="fixed bottom-0 left-0 w-full bg-white/98 backdrop-blur-xl border-t border-stone-200/80 z-50 pb-safe md:hidden shadow-[0_-8px_30px_rgba(139,90,43,0.08)]">
+                    <div className="flex justify-around items-center h-[72px] px-2">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path;
                             return (
-                                <Link key={item.path} to={item.path} className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-wood-600' : 'text-stone-400'}`}>
-                                    <div className={`p-2 rounded-2xl transition-all duration-300 ${isActive ? 'bg-sand-100 scale-105' : ''}`}>
-                                        <item.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
+                                <Link 
+                                    key={item.path} 
+                                    to={item.path} 
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 px-1 rounded-2xl transition-all duration-200 active:scale-95 ${isActive ? 'text-wood-600' : 'text-stone-400'}`}
+                                    aria-current={isActive ? 'page' : undefined}
+                                >
+                                    <div className={`p-2.5 rounded-2xl transition-all duration-200 ${isActive ? 'bg-sand-100 scale-110' : 'active:bg-stone-50'}`}>
+                                        <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                                     </div>
-                                    <span className={`text-[10px] font-bold tracking-wide ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                                    <span className={`text-[11px] font-bold tracking-wide mt-0.5 truncate max-w-full ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -602,8 +676,8 @@
 
         // --- Pages ---
         const HomePage = () => {
-            const handleDownload = () => alert("【系統提示】感謝您的熱情！目前為展示階段，正式開服後將開放下載。");
-            const handleDiscord = () => window.open('https://discord.gg/your-code', '_blank'); // FIXED: Discord
+            const handleDownload = () => showToast("感謝您的熱情！目前為展示階段，正式開服後將開放下載。", "info");
+            const handleDiscord = () => showToast("Discord 社群連結籌備中，敬請期待！正式開服後將開放。", "info");
             const handleLineCommunity = () => window.open('https://line.me/ti/g2/k7x6Y9Y0BkSAAQm6LD-UuG1ihCORUPeCfoixMg?utm_source=invitation&utm_medium=link_copy&utm_campaign=default', '_blank'); // FIXED: LINE 社群
             
             const [events, setEvents] = useState([]);
@@ -638,14 +712,14 @@
                                     <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" />
                                 </div>
 
-                                <div className="inline-flex items-center gap-3 md:gap-4 px-6 md:px-8 py-2.5 rounded-full bg-white/80 border border-stone-200 text-stone-600 font-bold mb-6 md:mb-10 shadow-sm backdrop-blur-md text-sm md:text-base tracking-wide">
-                                    <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                                    <span className="">2.5 經典版本</span>
+                                <div className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-7 py-2.5 rounded-full bg-white/90 border border-stone-200/80 text-stone-600 font-bold mb-6 md:mb-10 shadow-md shadow-stone-200/30 backdrop-blur-md text-base md:text-lg tracking-wide">
+                                    <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500 animate-pulse ring-2 ring-green-200"></span>
+                                    <span>2.5 經典版本</span>
                                     <span className="text-stone-300">|</span>
-                                    <span className="">火熱公測中</span>
+                                    <span>火熱公測中</span>
                                 </div>
 
-                                <p className="text-4xl md:text-6xl text-stone-800 font-display font-black mb-6 md:mb-8 max-w-4xl mx-auto tracking-wide leading-tight drop-shadow-sm">
+                                <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#8B1538] font-display font-black mb-6 md:mb-8 max-w-4xl mx-auto tracking-tight leading-[1.15] px-2 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_8px_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.4)]">
                                     最初的感動，最純粹的冒險
                                 </p>
                                 
@@ -658,7 +732,7 @@
                                 <div className="flex flex-col md:flex-row gap-4 justify-center items-center px-4 flex-wrap">
                                     <Button className="w-full md:w-auto min-w-[200px]" icon={Download} onClick={handleDownload}>立即下載</Button>
                                     <Button variant="line" className="w-full md:w-auto min-w-[200px]" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
-                                    <Button variant="secondary" className="w-full md:w-auto min-w-[200px]" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
+                                    <Button variant="discord" className="w-full md:w-auto min-w-[200px]" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
                                 </div>
 
                                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-slow opacity-40 hidden md:block">
@@ -669,18 +743,24 @@
                     </section>
 
                     {/* News Section (Powered by Events) */}
-                    <section className="bg-white border-y border-stone-100 py-3 relative z-20 shadow-sm">
-                        <div className="max-w-7xl mx-auto px-6 flex items-center gap-6 overflow-hidden">
-                            <div className="bg-stone-800 text-white text-sm font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex items-center gap-2">
-                                <Megaphone size={16} /> 最新情報
-                            </div>
-                            <div className="flex-1 overflow-hidden">
-                                <Link to="/events" className="whitespace-nowrap text-stone-600 text-sm md:text-base font-medium flex gap-12 hover:text-stone-800 transition-colors">
-                                    {events.length > 0 ? events.map((item) => {
-                                        const tag = EVENT_TAGS.find(t => t.id === item.tag)?.label || '📢';
-                                        return <span key={item.id} className="flex items-center gap-2"><span className="text-xs opacity-70">{tag}</span> {item.title}</span>
-                                    }) : (
-                                        <span>暫無最新公告...</span>
+                    <section className="bg-white/95 border-y border-stone-100 py-4 relative z-20 shadow-sm backdrop-blur-sm">
+                        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center gap-4 md:gap-6 overflow-hidden">
+                            <Link to="/events" className="bg-stone-800 text-white text-sm font-bold px-4 py-2 rounded-xl whitespace-nowrap flex items-center gap-2 shrink-0 hover:bg-stone-700 transition-colors shadow-sm">
+                                <Megaphone size={18} /> 最新情報
+                            </Link>
+                            <div className="flex-1 overflow-hidden min-w-0">
+                                <Link to="/events" className="block text-stone-600 text-sm md:text-base font-medium hover:text-stone-800 transition-colors py-1">
+                                    {events.length > 0 ? (
+                                        <div className="flex overflow-hidden">
+                                            <div className={`flex gap-12 ${events.length >= 2 ? 'marquee-content' : ''}`}>
+                                                {(events.length >= 2 ? [...events, ...events] : events).map((item, idx) => {
+                                                    const tag = EVENT_TAGS.find(t => t.id === item.tag)?.label || '📢';
+                                                    return <span key={`${item.id}-${idx}`} className="flex items-center gap-2 shrink-0"><span className="text-xs opacity-70">{tag}</span> {item.title}</span>
+                                                })}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-stone-400">暫無最新公告...</span>
                                     )}
                                 </Link>
                             </div>
@@ -702,12 +782,12 @@
                                     { t: "經典設定", d: "完美復刻 2.5 版本數值。地水火風屬性相剋，策略才是王道。", i: Flame, color: "text-fire-500", bg: "bg-fire-50", border: "border-fire-200" },
                                     { t: "長久穩定", d: "採用商業級分佈式架構，數據異地備份，承諾永久保存。", i: Home, color: "text-earth-600", bg: "bg-earth-50", border: "border-earth-200" }
                                 ].map((item, idx) => (
-                                    <motion.div key={idx} whileHover={{ y: -5 }} className="stone-panel p-8 md:p-12 text-center group bg-white">
-                                        <div className={`w-20 h-20 mx-auto rounded-3xl ${item.bg} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                                    <motion.div key={idx} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="stone-panel p-8 md:p-10 text-center group bg-white cursor-default">
+                                        <div className={`w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl ${item.bg} flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform duration-300`}>
                                             <item.i size={36} className={item.color} />
                                         </div>
-                                        <h3 className="text-2xl font-bold mb-4 text-stone-700 tracking-wide">{item.t}</h3>
-                                        <p className="text-stone-500 font-medium leading-relaxed">{item.d}</p>
+                                        <h3 className="text-xl md:text-2xl font-bold mb-3 text-stone-700 tracking-wide">{item.t}</h3>
+                                        <p className="text-stone-500 font-medium text-sm md:text-base leading-relaxed">{item.d}</p>
                                     </motion.div>
                                 ))}
                             </div>
@@ -780,6 +860,10 @@
             const [selectedMethod, setSelectedMethod] = useState(null);
             const [selectedPlan, setSelectedPlan] = useState(null);
             const [showModal, setShowModal] = useState(false);
+            const [formErrors, setFormErrors] = useState({ gameAccount: '', method: '', plan: '' });
+            const accountRef = useRef(null);
+            const methodRef = useRef(null);
+            const planRef = useRef(null);
 
             const saveSponsorshipRecord = async () => {
                 const record = {
@@ -798,20 +882,17 @@
             };
 
             const handlePayment = () => {
-                if (!gameAccount.trim()) {
-                    alert('請先填寫遊戲帳號！');
-                    document.getElementById('gameAccountInput')?.focus();
+                const errors = { gameAccount: '', method: '', plan: '' };
+                if (!gameAccount.trim()) errors.gameAccount = '請填寫遊戲帳號';
+                if (!selectedMethod) errors.method = '請選擇支付方式';
+                if (!selectedPlan) errors.plan = '請選擇贊助方案';
+                setFormErrors(errors);
+
+                if (errors.gameAccount || errors.method || errors.plan) {
+                    const first = errors.gameAccount ? accountRef : errors.method ? methodRef : planRef;
+                    first.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
-                if (!selectedMethod) {
-                    alert('請先選擇支付方式 (步驟 1)');
-                    return;
-                }
-                if (!selectedPlan) {
-                    alert('請選擇贊助方案 (步驟 2)');
-                    return;
-                }
-                
                 saveSponsorshipRecord();
                 setShowModal(true);
             };
@@ -831,7 +912,7 @@
 
                     <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-10 md:gap-12">
                         <div className="lg:col-span-2 space-y-8 md:space-y-10">
-                             <div className="stone-panel p-8 md:p-10 border-stone-200 bg-white">
+                             <div ref={accountRef} className="stone-panel p-8 md:p-10 border-stone-200 bg-white">
                                 <div className="flex items-center gap-4 mb-6 border-b border-stone-100 pb-6">
                                     <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
                                     <h3 className="text-2xl font-bold text-stone-700">請輸入遊戲帳號</h3>
@@ -840,19 +921,22 @@
                                     id="gameAccountInput"
                                     type="text" 
                                     value={gameAccount}
-                                    onChange={(e) => setGameAccount(e.target.value)}
+                                    onChange={(e) => { setGameAccount(e.target.value); setFormErrors(prev => ({ ...prev, gameAccount: '' })); }}
                                     placeholder="例如：soda123456"
-                                    className="w-full text-xl font-bold p-5 rounded-2xl border-2 border-stone-100 focus:border-gold-400 focus:ring-4 focus:ring-gold-100 focus:outline-none bg-stone-50/50 text-stone-700 placeholder-stone-300 transition-all"
+                                    autoComplete="username"
+                                    className={`w-full text-lg md:text-xl font-bold p-4 md:p-5 rounded-2xl border-2 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400 transition-all duration-200 ${formErrors.gameAccount ? 'border-fire-400 focus:border-fire-400' : 'border-stone-200 focus:border-gold-400'}`}
                                 />
+                                {formErrors.gameAccount && <p className="text-fire-500 font-bold mt-2 ml-2 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.gameAccount}</p>}
                                 <p className="text-stone-400 font-medium mt-3 ml-2 text-sm flex items-center gap-1"><CheckCircle size={14}/> 請務必填寫正確，以便客服核對發放金幣。</p>
                             </div>
 
-                            <div className="stone-panel p-8 md:p-10 border-gold-300/50 shadow-sm">
+                            <div ref={methodRef} className="stone-panel p-8 md:p-10 border-gold-300/50 shadow-sm">
                                 <div className="flex items-center gap-4 mb-8 pb-6 border-b border-stone-100">
                                     <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><CreditCard size={28} /></div>
                                     <h3 className="text-2xl font-bold text-stone-700">1. 選擇支付方式</h3>
                                 </div>
-                                <div className="flex flex-wrap gap-4">
+                                {formErrors.method && <p className="text-fire-500 font-bold mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.method}</p>}
+                                <div className="flex flex-wrap gap-3 md:gap-4">
                                     {PAYMENT_METHODS.map((method, i) => {
                                         let ShoplineIcon1, ShoplineIcon2;
                                         if (method.id === 'shopline') {
@@ -864,9 +948,12 @@
                                         return (
                                             <div 
                                                 key={i} 
-                                                onClick={() => setSelectedMethod(method.id)}
-                                                className={`flex flex-col items-center justify-center p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 w-40 md:w-48 relative h-40
-                                                ${isSelected ? 'border-gold-400 bg-gold-50/50 shadow-md transform -translate-y-1' : 'border-stone-100 bg-white hover:border-gold-200 hover:shadow-sm'}`}
+                                                onClick={() => { setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); }}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
+                                                className={`flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 w-36 md:w-44 h-36 md:h-40
+                                                ${isSelected ? 'border-gold-400 bg-gold-50/60 shadow-lg ring-2 ring-gold-200/50' : 'border-stone-200 bg-white hover:border-gold-300 hover:bg-stone-50/50'}`}
                                             >
                                                 {isSelected && <div className="absolute top-3 right-3 text-gold-500 animate-fade-in"><CheckCircle size={22} fill="currentColor" className="text-white"/></div>}
                                                 {method.id === 'shopline' ? (
@@ -891,19 +978,24 @@
                                     })}
                                 </div>
                                 
-                                <div className="flex items-center gap-6 mb-8 mt-12 pb-6 border-b border-stone-100">
-                                    <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><Coins size={28} /></div>
-                                    <h3 className="text-2xl font-bold text-stone-700">2. 選擇贊助方案</h3>
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-5 md:gap-6">
+                                <div ref={planRef}>
+                                    <div className="flex items-center gap-6 mb-8 mt-12 pb-6 border-b border-stone-100">
+                                        <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><Coins size={28} /></div>
+                                        <h3 className="text-2xl font-bold text-stone-700">2. 選擇贊助方案</h3>
+                                    </div>
+                                    {formErrors.plan && <p className="text-fire-500 font-bold mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.plan}</p>}
+                                    <div className="grid sm:grid-cols-2 gap-5 md:gap-6">
                                     {PLANS.map((plan, i) => {
                                         const isSelected = selectedPlan === plan;
                                         return (
                                             <div 
                                                 key={i} 
-                                                onClick={() => setSelectedPlan(plan)}
-                                                className={`relative p-6 rounded-3xl bg-white border-2 cursor-pointer group transition-all duration-300
-                                                ${isSelected ? 'border-gold-400 ring-2 ring-gold-100 bg-gold-50/30 shadow-md' : 'border-stone-100 hover:border-gold-300 hover:shadow-sm'}`}
+                                                onClick={() => { setSelectedPlan(plan); setFormErrors(prev => ({ ...prev, plan: '' })); }}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlan(plan); setFormErrors(prev => ({ ...prev, plan: '' })); } }}
+                                                className={`relative p-5 md:p-6 rounded-2xl bg-white border-2 cursor-pointer group transition-all duration-200
+                                                ${isSelected ? 'border-gold-400 ring-2 ring-gold-200/50 bg-gold-50/40 shadow-lg' : 'border-stone-200 hover:border-gold-300 hover:shadow-md'}`}
                                             >
                                                 {plan.popular && (
                                                     <div className="absolute top-0 left-0 bg-gold-400 text-white text-[10px] font-bold px-3 py-1 rounded-br-xl z-10 tracking-wider">
@@ -930,6 +1022,7 @@
                                             </div>
                                         );
                                     })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -965,7 +1058,6 @@
                                         className="w-full text-lg py-4 shadow-xl shadow-gold-200/50" 
                                         icon={ExternalLink} 
                                         onClick={handlePayment}
-                                        disabled={!selectedMethod || !selectedPlan || !gameAccount}
                                     >
                                         前往支付
                                     </Button>
@@ -1584,37 +1676,39 @@
                         {isLoading && <LoadingScreen key="loader" />}
                     </AnimatePresence>
 
+                    <ToastContainer />
+
                     <ScrollToTop />
-                    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'py-3 bg-white/90 backdrop-blur-md shadow-sm border-b border-stone-100' : 'py-6 bg-transparent'}`}>
+                    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2.5 bg-white/95 backdrop-blur-xl shadow-md shadow-stone-200/30 border-b border-stone-100' : 'py-5 bg-transparent'}`}>
                         <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
-                            <Link to="/" className="flex items-center gap-4 group">
-                                <div className="h-10 md:h-14 w-auto overflow-visible group-hover:scale-105 transition-transform drop-shadow-sm">
+                            <Link to="/" className="flex items-center gap-4 group min-h-[44px] min-w-[44px] md:min-w-0">
+                                <div className="h-10 md:h-12 w-auto overflow-visible group-hover:scale-105 transition-transform duration-200 drop-shadow-sm">
                                     <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain" />
                                 </div>
                             </Link>
 
-                            <div className={`hidden lg:flex items-center gap-2 px-2 py-1.5 rounded-full transition-all duration-500 ${isScrolled ? 'bg-stone-100/50' : 'bg-white/70 backdrop-blur-md border border-white/50 shadow-sm'}`}>
+                            <div className={`hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-2xl transition-all duration-300 ${isScrolled ? 'bg-stone-100/60' : 'bg-white/80 backdrop-blur-lg border border-white/60 shadow-lg shadow-stone-200/20'}`}>
                                 {['部落首頁', '金幣贊助', '官方客服'].map((label, i) => {
                                     const path = i === 0 ? '/' : i === 1 ? '/recharge' : '/support';
                                     const isActive = location.pathname === path;
                                     return (
-                                        <Link key={path} to={path}>
-                                            <div className={`px-5 py-2 rounded-full text-base font-bold transition-all duration-300 ${isActive ? 'bg-white text-stone-800 shadow-sm transform scale-105' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+                                        <Link key={path} to={path} className="rounded-xl">
+                                            <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${isActive ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700 hover:bg-white/60'}`}>
                                                 {label}
                                             </div>
                                         </Link>
                                     );
                                 })}
-                                 <Link key="events" to="/events">
-                                    <div className={`px-5 py-2 rounded-full text-base font-bold transition-all duration-300 ${location.pathname === '/events' ? 'bg-white text-stone-800 shadow-sm transform scale-105' : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+                                <Link key="events" to="/events" className="rounded-xl">
+                                    <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${location.pathname === '/events' ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700 hover:bg-white/60'}`}>
                                         最新活動
                                     </div>
                                 </Link>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 md:gap-3">
                                 <MusicPlayer />
-                                <Link to="/admin" className="hidden lg:flex p-2.5 text-stone-400 hover:text-stone-600 transition-colors bg-white hover:bg-stone-50 border border-stone-200 rounded-full shadow-sm" title="後台管理">
+                                <Link to="/admin" className="hidden lg:flex p-2.5 text-stone-400 hover:text-stone-600 transition-colors bg-white/80 hover:bg-stone-50 border border-stone-200 rounded-xl shadow-sm min-h-[40px] min-w-[40px] items-center justify-center" title="後台管理">
                                     <Lock className="w-4 h-4" />
                                 </Link>
                             </div>
@@ -1635,15 +1729,15 @@
                         </AnimatePresence>
                     </div>
 
-                    <footer className="bg-stone-900 py-16 px-6 border-t-8 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                            <div className="flex items-center gap-6 opacity-80">
-                                <div className="h-10 w-auto overflow-hidden opacity-80 grayscale hover:grayscale-0 transition-all">
+                    <footer className="bg-stone-900 py-12 md:py-16 px-6 border-t-4 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex items-center gap-5 opacity-90">
+                                <div className="h-9 md:h-10 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
                                     <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" />
                                 </div>
-                                <span className="font-bold text-sm tracking-widest border-l border-stone-700 pl-6 h-8 flex items-center">SODA STONE AGE</span>
+                                <span className="font-bold text-sm tracking-widest border-l border-stone-600 pl-5 h-8 flex items-center">SODA STONE AGE</span>
                             </div>
-                            <p className="text-xs font-mono tracking-wide opacity-50">© 2026 Fan-made Project. Designed for Community.</p>
+                            <p className="text-xs font-mono tracking-wide opacity-60">© 2026 Fan-made Project. Designed for Community.</p>
                         </div>
                     </footer>
                 </div>
