@@ -19,6 +19,9 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Import Map -->
     <script type="importmap">
     {
@@ -196,13 +199,64 @@
             Menu, X, CheckCircle, AlertCircle, Loader2, Sparkles, Sword, Crown, ScrollText, Coins,
             HeartHandshake, Eye, ExternalLink, User, Mail, Send, LayoutDashboard, Flame, Wind, Bell, ChevronDown,
             Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
-            Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen
+            Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
         const SUPABASE_URL = 'https://pheoswycciabslxpsjyw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZW9zd3ljY2lhYnNseHBzanl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTA4NDcsImV4cCI6MjA4NTY2Njg0N30.zQm1nL1mbg4ClpCEo_upK4eHVKODF6gy9hB-JevXb38';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // --- Authentication Helper Functions ---
+        const authHelpers = {
+            // 註冊新用戶
+            signUp: async (email, password, gameAccount = '') => {
+                const { data, error } = await supabase.auth.signUp({ 
+                    email, 
+                    password,
+                    options: {
+                        data: {
+                            game_accounts: [{ // 儲存為陣列，支援多個遊戲帳號（最多5個）
+                                id: Date.now().toString(),
+                                name: gameAccount,
+                                is_primary: true,
+                                created_at: Date.now()
+                            }]
+                        }
+                    }
+                });
+                return { data, error };
+            },
+            
+            // 登入
+            signIn: async (email, password) => {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                return { data, error };
+            },
+            
+            // 登出
+            signOut: async () => {
+                const { error } = await supabase.auth.signOut();
+                return { error };
+            },
+            
+            // 獲取當前用戶
+            getCurrentUser: async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                return user;
+            },
+            
+            // 監聽認證狀態變化
+            onAuthStateChange: (callback) => {
+                return supabase.auth.onAuthStateChange(callback);
+            },
+            
+            // 更新密碼
+            updatePassword: async (newPassword) => {
+                const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+                return { data, error };
+            }
+        };
         
         // --- 靜態資料與素材 ---
         const ASSETS = {
@@ -212,6 +266,7 @@
             LINE_PAY_LOGO: 'LINEPAY.jpg', 
             JKOPAY_LOGO: 'jkopay.jpg', 
             APPLE_PAY_LOGO: 'applepay.jpg',
+            SHOPLINE_LOGO: 'shopline.jpg',
             BGM: '伊甸園.mp3', 
             LOVE_BG: 'LOVE.jpg',
             LINE_QRS: {
@@ -469,7 +524,7 @@
             if (!method || !plan) return null;
             
             const ReminderSection = () => (
-                <div className="bg-red-50/50 border-2 border-red-200 rounded-3xl p-6 mb-8 relative overflow-hidden">
+                <div className="bg-red-50/50 border-2 border-red-200 rounded-3xl p-6 mb-8 relative overflow-hidden space-y-4">
                     <div className="flex gap-4">
                         <div className="bg-red-100 p-3 rounded-full h-fit text-red-500 shrink-0">
                             <AlertCircle size={24} />
@@ -480,6 +535,11 @@
                                 為了確保您的權益，請將支付佐證傳送給 <span className="text-stone-800 font-bold border-b border-red-300">官方客服</span> 以領取金幣。
                             </p>
                         </div>
+                    </div>
+                    <div className="bg-red-100/50 border border-red-300 rounded-2xl p-4">
+                        <p className="text-red-700 font-bold text-sm leading-relaxed">
+                            ⚠️ <strong>如儲值有問題</strong>，請務必截圖<strong className="underline">官網頁面</strong>與<strong className="underline">轉帳紀錄</strong>，並聯繫客服查核。
+                        </p>
                     </div>
                 </div>
             );
@@ -538,8 +598,8 @@
                 return (
                     <ModalWrapper borderColor="border-gold-400">
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto bg-stone-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                                <img src={ASSETS.APPLE_PAY_LOGO} alt="SHOPLINE" className="w-10 h-auto object-contain invert brightness-0" />
+                            <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg border-2 border-stone-200">
+                                <img src={ASSETS.SHOPLINE_LOGO} alt="SHOPLINE" className="w-12 h-auto object-contain" />
                             </div>
                             <h3 className="text-2xl font-black text-stone-800 mb-6">即將前往付款頁面</h3>
                             
@@ -624,6 +684,208 @@
                     <p className="text-stone-500 font-medium">{message}</p>
                 </div>
             );
+        };
+
+        // 圖表初始化組件
+        const StatsCharts = ({ data, methodStats, stats }) => {
+            useEffect(() => {
+                if (!window.Chart) return;
+                
+                // 銷毀舊圖表
+                const destroyChart = (id) => {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        const chart = window.Chart.getChart(canvas);
+                        if (chart) chart.destroy();
+                    }
+                };
+                
+                destroyChart('revenueChart');
+                destroyChart('paymentMethodChart');
+                destroyChart('orderStatusChart');
+                
+                // 1. 營收趨勢圖（過去 30 天）
+                const revenueCanvas = document.getElementById('revenueChart');
+                if (revenueCanvas && data.length > 0) {
+                    const ctx = revenueCanvas.getContext('2d');
+                    
+                    // 準備 30 天數據
+                    const days = [];
+                    const revenues = [];
+                    const now = Date.now();
+                    
+                    for (let i = 29; i >= 0; i--) {
+                        const date = new Date(now - i * 24 * 60 * 60 * 1000);
+                        const dayStart = new Date(date).setHours(0, 0, 0, 0);
+                        const dayEnd = new Date(date).setHours(23, 59, 59, 999);
+                        
+                        const dayRevenue = data
+                            .filter(item => item.timestamp >= dayStart && item.timestamp <= dayEnd)
+                            .reduce((sum, item) => sum + (item.amount || 0), 0);
+                        
+                        days.push(`${date.getMonth() + 1}/${date.getDate()}`);
+                        revenues.push(dayRevenue);
+                    }
+                    
+                    new window.Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: days,
+                            datasets: [{
+                                label: '每日營收',
+                                data: revenues,
+                                borderColor: '#d97706',
+                                backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#d97706',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    titleColor: '#fff',
+                                    bodyColor: '#fbbf24',
+                                    callbacks: {
+                                        label: (context) => `NT$ ${context.parsed.y.toLocaleString()}`
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: {
+                                        color: '#9ca3af',
+                                        callback: (value) => `$${value}`
+                                    }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // 2. 支付方式圓餅圖
+                const paymentCanvas = document.getElementById('paymentMethodChart');
+                if (paymentCanvas && Object.keys(methodStats).length > 0) {
+                    const ctx = paymentCanvas.getContext('2d');
+                    
+                    const methods = Object.keys(methodStats);
+                    const amounts = Object.values(methodStats);
+                    const colors = ['#d97706', '#06b6d4', '#f43f5e', '#8b5cf6', '#10b981'];
+                    
+                    new window.Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: methods,
+                            datasets: [{
+                                data: amounts,
+                                backgroundColor: colors.slice(0, methods.length),
+                                borderColor: '#1c1917',
+                                borderWidth: 3,
+                                hoverOffset: 10
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#fff',
+                                        padding: 15,
+                                        font: { size: 12, weight: 'bold' }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (context) => {
+                                            const label = context.label || '';
+                                            const value = context.parsed || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${label}: NT$ ${value.toLocaleString()} (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // 3. 訂單狀態圓環圖
+                const statusCanvas = document.getElementById('orderStatusChart');
+                if (statusCanvas && stats.count > 0) {
+                    const ctx = statusCanvas.getContext('2d');
+                    
+                    new window.Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['待處理', '已完成', '已取消'],
+                            datasets: [{
+                                data: [stats.pending, stats.completed, stats.cancelled],
+                                backgroundColor: ['#d97706', '#06b6d4', '#f43f5e'],
+                                borderColor: '#1c1917',
+                                borderWidth: 3,
+                                hoverOffset: 10
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#fff',
+                                        padding: 15,
+                                        font: { size: 12, weight: 'bold' }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (context) => {
+                                            const label = context.label || '';
+                                            const value = context.parsed || 0;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${label}: ${value} 筆 (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                return () => {
+                    destroyChart('revenueChart');
+                    destroyChart('paymentMethodChart');
+                    destroyChart('orderStatusChart');
+                };
+            }, [data, methodStats, stats]);
+            
+            return null;
         };
 
         const ScrollToTop = () => {
@@ -731,13 +993,27 @@
         // --- Mobile Nav ---
         const MobileBottomNav = () => {
             const location = useLocation();
+            const [user, setUser] = useState(null);
+            
+            useEffect(() => {
+                authHelpers.getCurrentUser().then(setUser);
+                const { data } = authHelpers.onAuthStateChange((event, session) => {
+                    setUser(session?.user ?? null);
+                });
+                return () => {
+                    if (data?.subscription) {
+                        data.subscription.unsubscribe();
+                    }
+                };
+            }, []);
+            
             const navItems = useMemo(() => [
                 { path: '/', label: '首頁', icon: Home },
                 { path: '/events', label: '活動', icon: Calendar },
                 { path: '/recharge', label: '金幣', icon: Coins },
-                { path: '/support', label: '客服', icon: MessageSquare },
+                { path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User },
                 { path: '/admin', label: '後台', icon: Lock },
-            ], []);
+            ], [user]);
 
             return (
                 <div className="fixed bottom-0 left-0 w-full bg-white/98 backdrop-blur-xl border-t border-stone-200/80 z-50 pb-safe md:hidden shadow-[0_-8px_30px_rgba(139,90,43,0.08)]">
@@ -764,6 +1040,905 @@
         };
 
         // --- Pages ---
+        
+        // 登入/註冊頁面
+        const AuthPage = () => {
+            const [isLogin, setIsLogin] = useState(true);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [confirmPassword, setConfirmPassword] = useState('');
+            const [gameAccount, setGameAccount] = useState(''); // 遊戲帳號
+            const [agreeTerms, setAgreeTerms] = useState(false); // 同意服務條款
+            const [showTermsModal, setShowTermsModal] = useState(false); // 顯示服務條款彈窗
+            const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false); // 顯示忘記密碼彈窗
+            const [resetEmail, setResetEmail] = useState(''); // 重設密碼用的 Email
+            const [resetLoading, setResetLoading] = useState(false);
+            const [resetMessage, setResetMessage] = useState('');
+            const [isRecoveryMode, setIsRecoveryMode] = useState(false); // 密碼重設模式
+            const [newPassword, setNewPassword] = useState(''); // 新密碼
+            const [newPasswordConfirm, setNewPasswordConfirm] = useState(''); // 確認新密碼
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+            
+            // 檢測是否為密碼重設模式
+            useEffect(() => {
+                const hash = window.location.hash;
+                // 檢查 URL 是否包含 access_token（密碼重設連結的標誌）
+                if (hash.includes('access_token') && hash.includes('type=recovery')) {
+                    setIsRecoveryMode(true);
+                }
+            }, []);
+            
+            // 處理密碼更新
+            const handleUpdatePassword = async (e) => {
+                e.preventDefault();
+                setError('');
+                
+                if (!newPassword || !newPasswordConfirm) {
+                    setError('請填寫所有欄位');
+                    return;
+                }
+                
+                if (newPassword.length < 6) {
+                    setError('密碼至少需要 6 個字元');
+                    return;
+                }
+                
+                if (newPassword !== newPasswordConfirm) {
+                    setError('密碼不一致');
+                    return;
+                }
+                
+                setLoading(true);
+                
+                try {
+                    const { error } = await supabase.auth.updateUser({
+                        password: newPassword
+                    });
+                    
+                    if (error) {
+                        setError(error.message);
+                    } else {
+                        showToast('密碼更新成功！請使用新密碼登入', 'success');
+                        setTimeout(() => {
+                            setIsRecoveryMode(false);
+                            setNewPassword('');
+                            setNewPasswordConfirm('');
+                            window.location.hash = '#/auth';
+                        }, 2000);
+                    }
+                } catch (err) {
+                    setError('發生錯誤，請稍後再試');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                
+                if (!email || !password) {
+                    setError('請填寫所有欄位');
+                    return;
+                }
+                
+                if (!isLogin) {
+                    if (!gameAccount.trim()) {
+                        setError('請填寫遊戲帳號');
+                        return;
+                    }
+                    if (password !== confirmPassword) {
+                        setError('密碼不一致');
+                        return;
+                    }
+                    if (!agreeTerms) {
+                        setError('請閱讀並同意服務條款');
+                        return;
+                    }
+                }
+                
+                if (password.length < 6) {
+                    setError('密碼至少需要 6 個字元');
+                    return;
+                }
+                
+                setLoading(true);
+                
+                try {
+                    if (isLogin) {
+                        const { error } = await authHelpers.signIn(email, password);
+                        if (error) {
+                            setError(error.message === 'Invalid login credentials' ? '帳號或密碼錯誤' : error.message);
+                        } else {
+                            showToast('登入成功！', 'success');
+                            window.location.hash = '#/member';
+                        }
+                    } else {
+                        const { error } = await authHelpers.signUp(email, password, gameAccount);
+                        if (error) {
+                            setError(error.message);
+                        } else {
+                            showToast('註冊成功！請檢查信箱驗證', 'success');
+                            setIsLogin(true);
+                        }
+                    }
+                } catch (err) {
+                    setError('發生錯誤，請稍後再試');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const handleForgotPassword = async () => {
+                if (!resetEmail) {
+                    setResetMessage('請輸入 Email');
+                    return;
+                }
+                
+                setResetLoading(true);
+                setResetMessage('');
+                
+                try {
+                    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                        redirectTo: window.location.origin + '/#/auth'
+                    });
+                    
+                    if (error) {
+                        setResetMessage('發送失敗：' + error.message);
+                    } else {
+                        setResetMessage('已發送密碼重設信件到您的信箱，請查收！');
+                        setTimeout(() => {
+                            setShowForgotPasswordModal(false);
+                            setResetEmail('');
+                            setResetMessage('');
+                        }, 3000);
+                    }
+                } catch (err) {
+                    setResetMessage('發生錯誤，請稍後再試');
+                } finally {
+                    setResetLoading(false);
+                }
+            };
+            
+            return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    {/* 服務條款彈窗 */}
+                    {showTermsModal && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-sm" onClick={() => setShowTermsModal(false)}>
+                            <motion.div 
+                                initial={{ scale: 0.95, opacity: 0 }} 
+                                animate={{ scale: 1, opacity: 1 }} 
+                                className="bg-white rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6 sticky top-0 bg-white pb-4 border-b border-stone-200 z-10">
+                                    <h2 className="text-2xl md:text-3xl font-black text-stone-800 flex items-center gap-3">
+                                        <ScrollText size={32} className="text-gold-500" />
+                                        服務條款與免責聲明
+                                    </h2>
+                                    <button 
+                                        onClick={() => setShowTermsModal(false)}
+                                        className="p-2 hover:bg-stone-100 rounded-xl transition-colors"
+                                    >
+                                        <X size={24} className="text-stone-600" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6 text-stone-700 text-sm leading-relaxed">
+                                    <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+                                        <h3 className="font-black text-red-700 mb-2">⚠️ 重要提醒</h3>
+                                        <ul className="space-y-1 ml-4 text-xs">
+                                            <li className="text-red-600 font-bold">• 本伺服器為非營利性質的粉絲私人伺服器</li>
+                                            <li className="text-red-600 font-bold">• 虛擬商品一經售出，恕不接受退款或換貨</li>
+                                            <li>• 虛寶由管理員人工審核後發放，非即時到帳</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 mb-2">帳號使用規範</h3>
+                                        <ul className="space-y-1 ml-4 text-xs">
+                                            <li>• 您必須提供真實且正確的註冊資訊</li>
+                                            <li>• 帳號密碼請妥善保管，不得轉讓或出借他人</li>
+                                            <li>• 一個 Email 最多可註冊 5 個遊戲帳號</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 mb-2 text-red-600">禁止事項</h3>
+                                        <ul className="space-y-1 ml-4 text-xs">
+                                            <li className="font-bold text-red-600">• 禁止使用任何外掛、腳本、修改器</li>
+                                            <li className="font-bold text-red-600">• 禁止利用遊戲漏洞進行不當獲利</li>
+                                            <li className="font-bold text-red-600">• 禁止進行遊戲幣、虛寶的真實金錢交易</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 mb-2">免責聲明</h3>
+                                        <p className="text-xs">
+                                            本服務可能因維護、更新、不可抗力等因素而中斷。對於服務中斷所造成的任何損失，本服務不負賠償責任。
+                                            若決定終止營運，將提前 30 天公告，所有虛擬物品及遊戲紀錄將永久失效，不予退款。
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-gold-50 border-2 border-gold-300 rounded-xl p-4">
+                                        <p className="text-xs font-bold text-gold-800">
+                                            未滿 18 歲的玩家進行儲值前，必須取得法定代理人（家長）同意。
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-8 pt-6 border-t border-stone-200">
+                                    <Link 
+                                        to="/terms"
+                                        target="_blank"
+                                        onClick={() => setShowTermsModal(false)}
+                                        className="flex-1 px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition-colors text-center text-sm"
+                                    >
+                                        查看完整版
+                                    </Link>
+                                    <button 
+                                        onClick={() => {
+                                            setAgreeTerms(true);
+                                            setShowTermsModal(false);
+                                        }}
+                                        className="flex-1 px-4 py-3 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle size={18} />
+                                        我已閱讀並同意
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    {/* 忘記密碼彈窗 */}
+                    {showForgotPasswordModal && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-sm" onClick={() => setShowForgotPasswordModal(false)}>
+                            <motion.div 
+                                initial={{ scale: 0.95, opacity: 0 }} 
+                                animate={{ scale: 1, opacity: 1 }} 
+                                className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-black text-stone-800 flex items-center gap-3">
+                                        <Key size={28} className="text-gold-500" />
+                                        忘記密碼
+                                    </h2>
+                                    <button 
+                                        onClick={() => setShowForgotPasswordModal(false)}
+                                        className="p-2 hover:bg-stone-100 rounded-xl transition-colors"
+                                    >
+                                        <X size={24} className="text-stone-600" />
+                                    </button>
+                                </div>
+
+                                <p className="text-stone-600 mb-6 text-sm">
+                                    請輸入您註冊時使用的 Email，我們會發送密碼重設信件給您。
+                                </p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-stone-700 font-bold mb-2 text-sm">Email</label>
+                                        <input
+                                            type="email"
+                                            value={resetEmail}
+                                            onChange={(e) => setResetEmail(e.target.value)}
+                                            placeholder="請輸入您的 Email"
+                                            className="w-full p-4 rounded-xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700"
+                                            disabled={resetLoading}
+                                        />
+                                    </div>
+
+                                    {resetMessage && (
+                                        <div className={`p-4 rounded-xl text-sm font-bold ${
+                                            resetMessage.includes('成功') || resetMessage.includes('已發送') 
+                                                ? 'bg-green-50 text-green-700 border-2 border-green-300' 
+                                                : 'bg-red-50 text-red-700 border-2 border-red-300'
+                                        }`}>
+                                            {resetMessage}
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowForgotPasswordModal(false)}
+                                            className="flex-1 px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition-colors"
+                                            disabled={resetLoading}
+                                        >
+                                            取消
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleForgotPassword}
+                                            className="flex-1 px-4 py-3 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                            disabled={resetLoading}
+                                        >
+                                            {resetLoading ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                                            {resetLoading ? '發送中...' : '發送重設信件'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 p-4 bg-wind-50 rounded-xl border border-wind-200">
+                                    <p className="text-wind-700 text-xs font-bold">
+                                        💡 提示：請檢查您的信箱（包括垃圾郵件），點擊信件中的連結即可重設密碼。
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    <div className="max-w-md mx-auto">
+                        <div className="stone-panel p-8 md:p-10">
+                            <h1 className="text-3xl md:text-4xl font-black text-stone-800 mb-2 text-center">
+                                {isRecoveryMode ? '設定新密碼' : (isLogin ? '會員登入' : '註冊帳號')}
+                            </h1>
+                            <p className="text-stone-500 text-center mb-8">
+                                {isRecoveryMode ? '請輸入您的新密碼' : (isLogin ? '歡迎回到蘇打石器' : '加入蘇打石器大家庭')}
+                            </p>
+                            
+                            {/* 密碼重設表單 */}
+                            {isRecoveryMode ? (
+                                <form onSubmit={handleUpdatePassword} className="space-y-4">
+                                    {error && (
+                                        <div className="bg-fire-50 border-2 border-fire-300 rounded-xl p-4 flex items-center gap-2">
+                                            <AlertCircle className="text-fire-500 shrink-0" size={20} />
+                                            <span className="text-fire-700 font-bold text-sm">{error}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div>
+                                        <label className="block text-stone-700 font-bold mb-2">新密碼</label>
+                                        <input
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            placeholder="至少 6 個字元"
+                                            className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-stone-700 font-bold mb-2">確認新密碼</label>
+                                        <input
+                                            type="password"
+                                            value={newPasswordConfirm}
+                                            onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                                            placeholder="再次輸入新密碼"
+                                            className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    
+                                    <Button
+                                        type="submit"
+                                        variant="gold"
+                                        className="w-full py-4 text-lg"
+                                        disabled={loading}
+                                    >
+                                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Key size={20} />}
+                                        <span>{loading ? '更新中...' : '更新密碼'}</span>
+                                    </Button>
+                                    
+                                    <div className="text-center mt-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsRecoveryMode(false);
+                                                window.location.hash = '#/auth';
+                                            }}
+                                            className="text-stone-500 hover:text-stone-700 transition-colors text-sm"
+                                        >
+                                            返回登入頁面
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <>
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                {error && (
+                                    <div className="bg-fire-50 border-2 border-fire-300 rounded-xl p-4 flex items-center gap-2">
+                                        <AlertCircle size={20} className="text-fire-500 shrink-0" />
+                                        <p className="text-fire-700 font-bold text-sm">{error}</p>
+                                    </div>
+                                )}
+                                
+                                <div>
+                                    <label className="block text-stone-700 font-bold mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="your@email.com"
+                                        className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                        disabled={loading}
+                                    />
+                                </div>
+                                
+                                {!isLogin && (
+                                    <div>
+                                        <label className="block text-stone-700 font-bold mb-2 flex items-center gap-2">
+                                            <User size={18} className="text-gold-500" />
+                                            遊戲帳號（遊戲ID）
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={gameAccount}
+                                            onChange={(e) => setGameAccount(e.target.value)}
+                                            placeholder="請輸入您的遊戲帳號（與遊戲內ID一致）"
+                                            className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                            disabled={loading}
+                                        />
+                                        <div className="bg-gold-50 border-2 border-gold-300 rounded-xl p-3 mt-3">
+                                            <p className="text-gold-800 font-bold text-sm flex items-start gap-2">
+                                                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                                                <span>
+                                                    <strong>⚠️ 重要提醒：</strong>請確認遊戲帳號（ID）與遊戲內完全一致！
+                                                    <br />
+                                                    <span className="text-xs text-gold-700 mt-1 inline-block">虛寶將由管理員人工審核後發放至此帳號，填寫錯誤將無法領取</span>
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-stone-700 font-bold">密碼</label>
+                                        {isLogin && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowForgotPasswordModal(true)}
+                                                className="text-gold-600 hover:text-gold-700 font-bold text-sm transition-colors"
+                                            >
+                                                忘記密碼？
+                                            </button>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="至少 6 個字元"
+                                        className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                        disabled={loading}
+                                    />
+                                </div>
+                                
+                                {!isLogin && (
+                                    <div>
+                                        <label className="block text-stone-700 font-bold mb-2">確認密碼</label>
+                                        <input
+                                            type="password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="再次輸入密碼"
+                                            className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                )}
+                                
+                                {/* 同意服務條款勾選 */}
+                                {!isLogin && (
+                                    <div className="bg-stone-50 rounded-xl p-4 border-2 border-stone-200">
+                                        <label className="flex items-start gap-3 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={agreeTerms}
+                                                onChange={(e) => setAgreeTerms(e.target.checked)}
+                                                className="mt-1 w-5 h-5 text-gold-500 border-2 border-stone-300 rounded focus:ring-2 focus:ring-gold-400 cursor-pointer"
+                                                disabled={loading}
+                                            />
+                                            <span className="text-stone-700 text-sm leading-relaxed">
+                                                我已閱讀並同意
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setShowTermsModal(true)}
+                                                    className="text-gold-600 hover:text-gold-700 font-bold mx-1 underline cursor-pointer"
+                                                >
+                                                    服務條款與免責聲明
+                                                </button>
+                                                ，了解虛擬商品售出後不可退款，且本服務為非營利性質的粉絲私人伺服器
+                                            </span>
+                                        </label>
+                                    </div>
+                                )}
+                                
+                                <Button
+                                    type="submit"
+                                    variant="gold"
+                                    className="w-full py-4 text-lg"
+                                    disabled={loading}
+                                >
+                                    {loading ? <Loader2 size={20} className="animate-spin" /> : null}
+                                    <span>{loading ? '處理中...' : (isLogin ? '登入' : '註冊')}</span>
+                                </Button>
+                                </form>
+                            
+                                <div className="mt-6 text-center">
+                                    <button
+                                        onClick={() => {
+                                            setIsLogin(!isLogin);
+                                            setError('');
+                                            setEmail('');
+                                            setPassword('');
+                                            setConfirmPassword('');
+                                            setGameAccount('');
+                                        }}
+                                        className="text-gold-600 font-bold hover:text-gold-700 transition-colors"
+                                    >
+                                        {isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入'}
+                                    </button>
+                                </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+        
+        // 會員中心頁面
+        const MemberPage = () => {
+            const [user, setUser] = useState(null);
+            const [sponsorships, setSponsorships] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [gameAccounts, setGameAccounts] = useState([]);
+            const [showAddAccount, setShowAddAccount] = useState(false);
+            const [newAccountName, setNewAccountName] = useState('');
+            const [editingAccountId, setEditingAccountId] = useState(null);
+            const [editingAccountName, setEditingAccountName] = useState('');
+            
+            useEffect(() => {
+                const loadUserData = async () => {
+                    const currentUser = await authHelpers.getCurrentUser();
+                    if (!currentUser) {
+                        window.location.hash = '#/auth';
+                        return;
+                    }
+                    
+                    setUser(currentUser);
+                    // 讀取遊戲帳號列表（支援舊格式和新格式）
+                    const accounts = currentUser.user_metadata?.game_accounts || 
+                                   (currentUser.user_metadata?.game_account ? [{
+                                       id: '1',
+                                       name: currentUser.user_metadata.game_account,
+                                       is_primary: true,
+                                       created_at: Date.now()
+                                   }] : []);
+                    setGameAccounts(accounts);
+                    
+                    // 載入用戶的贊助紀錄
+                    const userSponsorships = await getSupabaseData(DB_TABLES.SPONSORSHIPS);
+                    const filtered = userSponsorships.filter(s => s.user_id === currentUser.id);
+                    setSponsorships(filtered.sort((a, b) => b.timestamp - a.timestamp));
+                    setLoading(false);
+                };
+                
+                loadUserData();
+            }, []);
+            
+            const handleLogout = async () => {
+                if (confirm('確定要登出嗎？')) {
+                    await authHelpers.signOut();
+                    showToast('已登出', 'info');
+                    window.location.hash = '#/';
+                }
+            };
+            
+            const handleAddAccount = async () => {
+                if (!newAccountName.trim()) {
+                    showToast('請輸入遊戲帳號', 'error');
+                    return;
+                }
+                
+                if (gameAccounts.length >= 5) {
+                    showToast('最多只能新增 5 個遊戲帳號', 'error');
+                    return;
+                }
+                
+                try {
+                    const newAccount = {
+                        id: Date.now().toString(),
+                        name: newAccountName.trim(),
+                        is_primary: false,
+                        created_at: Date.now()
+                    };
+                    
+                    const updatedAccounts = [...gameAccounts, newAccount];
+                    
+                    const { error } = await supabase.auth.updateUser({
+                        data: { game_accounts: updatedAccounts }
+                    });
+                    
+                    if (error) {
+                        showToast('新增失敗：' + error.message, 'error');
+                    } else {
+                        setGameAccounts(updatedAccounts);
+                        setNewAccountName('');
+                        setShowAddAccount(false);
+                        showToast('遊戲帳號已新增', 'success');
+                        const currentUser = await authHelpers.getCurrentUser();
+                        setUser(currentUser);
+                    }
+                } catch (err) {
+                    showToast('新增失敗，請稍後再試', 'error');
+                }
+            };
+            
+            const handleUpdateAccount = async (accountId) => {
+                if (!editingAccountName.trim()) {
+                    showToast('遊戲帳號不能為空', 'error');
+                    return;
+                }
+                
+                try {
+                    const updatedAccounts = gameAccounts.map(acc => 
+                        acc.id === accountId ? { ...acc, name: editingAccountName.trim() } : acc
+                    );
+                    
+                    const { error } = await supabase.auth.updateUser({
+                        data: { game_accounts: updatedAccounts }
+                    });
+                    
+                    if (error) {
+                        showToast('更新失敗：' + error.message, 'error');
+                    } else {
+                        setGameAccounts(updatedAccounts);
+                        setEditingAccountId(null);
+                        setEditingAccountName('');
+                        showToast('遊戲帳號已更新', 'success');
+                        const currentUser = await authHelpers.getCurrentUser();
+                        setUser(currentUser);
+                    }
+                } catch (err) {
+                    showToast('更新失敗，請稍後再試', 'error');
+                }
+            };
+            
+            const handleDeleteAccount = async (accountId) => {
+                const account = gameAccounts.find(acc => acc.id === accountId);
+                if (account?.is_primary) {
+                    showToast('無法刪除主帳號', 'error');
+                    return;
+                }
+                
+                if (!confirm(`確定要刪除遊戲帳號「${account?.name}」嗎？`)) {
+                    return;
+                }
+                
+                try {
+                    const updatedAccounts = gameAccounts.filter(acc => acc.id !== accountId);
+                    
+                    const { error } = await supabase.auth.updateUser({
+                        data: { game_accounts: updatedAccounts }
+                    });
+                    
+                    if (error) {
+                        showToast('刪除失敗：' + error.message, 'error');
+                    } else {
+                        setGameAccounts(updatedAccounts);
+                        showToast('遊戲帳號已刪除', 'success');
+                        const currentUser = await authHelpers.getCurrentUser();
+                        setUser(currentUser);
+                    }
+                } catch (err) {
+                    showToast('刪除失敗，請稍後再試', 'error');
+                }
+            };
+            
+            if (loading) {
+                return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                        <LoadingSpinner message="載入中..." />
+                    </motion.div>
+                );
+            }
+            
+            return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <div className="max-w-4xl mx-auto">
+                        <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
+                        
+                        {/* 用戶資訊卡 */}
+                        <div className="stone-panel p-6 md:p-8 mb-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-black text-stone-800">個人資料</h2>
+                                <button
+                                    onClick={handleLogout}
+                                    className="px-4 py-2 bg-fire-500 hover:bg-fire-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2"
+                                >
+                                    <LogOut size={18} />
+                                    登出
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Mail size={20} className="text-stone-400" />
+                                    <span className="text-stone-700 font-bold">{user?.email}</span>
+                                </div>
+                                
+                                {/* 遊戲帳號列表 */}
+                                <div className="bg-gold-50 border-2 border-gold-200 rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <User size={20} className="text-gold-600" />
+                                            <span className="text-stone-700 font-bold">我的遊戲帳號</span>
+                                            <span className="text-xs text-stone-500">（最多 5 個）</span>
+                                        </div>
+                                        {gameAccounts.length < 5 && (
+                                            <button
+                                                onClick={() => setShowAddAccount(true)}
+                                                className="text-gold-600 hover:text-gold-700 font-bold text-sm flex items-center gap-1"
+                                            >
+                                                <Plus size={14} />
+                                                新增帳號
+                                            </button>
+                                        )}
+                                    </div>
+                                    
+                                    {/* 帳號列表 */}
+                                    <div className="space-y-2">
+                                        {gameAccounts.map((account) => (
+                                            <div key={account.id} className="bg-white rounded-lg p-3 border border-gold-200">
+                                                {editingAccountId === account.id ? (
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={editingAccountName}
+                                                            onChange={(e) => setEditingAccountName(e.target.value)}
+                                                            className="flex-1 px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm"
+                                                            placeholder="輸入遊戲帳號"
+                                                        />
+                                                        <button
+                                                            onClick={() => handleUpdateAccount(account.id)}
+                                                            className="px-3 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg transition-colors text-sm"
+                                                        >
+                                                            儲存
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingAccountId(null);
+                                                                setEditingAccountName('');
+                                                            }}
+                                                            className="px-3 py-2 bg-stone-300 hover:bg-stone-400 text-stone-700 font-bold rounded-lg transition-colors text-sm"
+                                                        >
+                                                            取消
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-gold-700 font-black">{account.name}</span>
+                                                            {account.is_primary && (
+                                                                <span className="px-2 py-0.5 bg-gold-500 text-white text-xs font-bold rounded">主帳號</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingAccountId(account.id);
+                                                                    setEditingAccountName(account.name);
+                                                                }}
+                                                                className="p-1.5 text-stone-500 hover:text-gold-600 transition-colors"
+                                                                title="編輯"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            {!account.is_primary && (
+                                                                <button
+                                                                    onClick={() => handleDeleteAccount(account.id)}
+                                                                    className="p-1.5 text-stone-500 hover:text-fire-600 transition-colors"
+                                                                    title="刪除"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        
+                                        {/* 新增帳號輸入框 */}
+                                        {showAddAccount && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                className="bg-white rounded-lg p-3 border-2 border-gold-400"
+                                            >
+                                                <div className="mb-2">
+                                                    <input
+                                                        type="text"
+                                                        value={newAccountName}
+                                                        onChange={(e) => setNewAccountName(e.target.value)}
+                                                        placeholder="輸入新的遊戲帳號（與遊戲內ID一致）"
+                                                        className="w-full px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm"
+                                                        autoFocus
+                                                    />
+                                                    <p className="text-xs text-gold-700 mt-1.5 ml-1">⚠️ 請確認與遊戲內帳號完全一致</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleAddAccount}
+                                                        className="flex-1 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
+                                                    >
+                                                        <Plus size={14} />
+                                                        新增
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowAddAccount(false);
+                                                            setNewAccountName('');
+                                                        }}
+                                                        className="px-4 py-2 bg-stone-300 hover:bg-stone-400 text-stone-700 font-bold rounded-lg transition-colors text-sm"
+                                                    >
+                                                        取消
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </div>
+                                    
+                                    {gameAccounts.length === 0 && (
+                                        <p className="text-center text-stone-500 text-sm py-4">尚未設定遊戲帳號</p>
+                                    )}
+                                    
+                                    <p className="text-xs text-stone-500 mt-3">💡 您最多可以新增 5 個遊戲帳號，每個帳號可創建 2 個角色</p>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <Calendar size={20} className="text-stone-400" />
+                                    <span className="text-stone-600">註冊時間：{new Date(user?.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* 贊助紀錄 */}
+                        <div className="stone-panel p-6 md:p-8">
+                            <h2 className="text-2xl font-black text-stone-800 mb-6">我的贊助紀錄</h2>
+                            
+                            {sponsorships.length === 0 ? (
+                                <div className="text-center py-16 text-stone-400">
+                                    <Heart size={48} className="mx-auto mb-4 opacity-20" />
+                                    <p className="text-xl font-bold">尚無贊助紀錄</p>
+                                    <p className="mt-2">趕快前往金幣贊助支持我們吧！</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {sponsorships.map((item) => (
+                                        <div key={item.id} className="bg-stone-50 rounded-2xl p-5 border-2 border-stone-100 hover:border-gold-200 transition-colors">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-gold-600 font-black text-lg">NT$ {item.amount}</span>
+                                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                    item.status === 'completed' ? 'bg-wind-100 text-wind-700' :
+                                                    item.status === 'pending' ? 'bg-gold-100 text-gold-700' :
+                                                    'bg-stone-200 text-stone-600'
+                                                }`}>
+                                                    {item.status === 'completed' ? '已完成' : item.status === 'pending' ? '處理中' : '已取消'}
+                                                </span>
+                                            </div>
+                                            <div className="text-stone-600 text-sm space-y-1">
+                                                <p><span className="font-bold">遊戲帳號：</span>{item.game_account}</p>
+                                                <p><span className="font-bold">支付方式：</span>{item.method}</p>
+                                                <p><span className="font-bold">獲得金幣：</span>{item.plan_total?.toLocaleString()} G</p>
+                                                <p><span className="font-bold">時間：</span>{new Date(item.timestamp).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+        
         const HomePage = () => {
             const handleDownload = () => showToast("感謝您的熱情！目前為展示階段，正式開服後將開放下載。", "info");
             const handleDiscord = () => showToast("Discord 社群連結籌備中，敬請期待！正式開服後將開放。", "info");
@@ -944,6 +2119,224 @@
             );
         };
 
+        const TermsPage = () => {
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50 pt-32 pb-20"
+                >
+                    <div className="max-w-4xl mx-auto px-4 md:px-6">
+                        {/* 頁面標題 */}
+                        <div className="text-center mb-12">
+                            <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 flex items-center justify-center gap-3">
+                                <ScrollText size={48} className="text-gold-500" />
+                                服務條款與免責聲明
+                            </h1>
+                            <p className="text-stone-600 text-lg">請仔細閱讀以下條款</p>
+                        </div>
+
+                        <div className="space-y-8">
+                            {/* 版權聲明 */}
+                            <div className="stone-panel p-8 md:p-10 bg-white">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <AlertCircle size={28} className="text-gold-500" />
+                                    版權聲明
+                                </h2>
+                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                    <p className="font-bold">
+                                        本伺服器為<strong className="text-red-600">非營利性質的粉絲私人伺服器</strong>，與原廠公司無任何關聯。
+                                    </p>
+                                    <ul className="space-y-2 ml-6 list-disc">
+                                        <li>本服務為<strong>非官方、非商業性質</strong>的玩家自架伺服器</li>
+                                        <li>僅供個人娛樂交流使用，不涉及任何商業行為</li>
+                                        <li>本伺服器不代表原廠立場，所有營運由玩家社群自行維護</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* 服務條款 */}
+                            <div className="stone-panel p-8 md:p-10 bg-white">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <CheckCircle size={28} className="text-wind-500" />
+                                    服務條款
+                                </h2>
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">1. 帳號使用規範</h3>
+                                        <ul className="space-y-2 text-stone-700 ml-6 list-disc">
+                                            <li>您必須提供真實且正確的註冊資訊</li>
+                                            <li>帳號密碼請妥善保管，不得轉讓或出借他人</li>
+                                            <li>一個 Email 最多可註冊 5 個遊戲帳號</li>
+                                            <li>因個人疏失導致的帳號遺失，本服務不負任何責任</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">2. 禁止事項</h3>
+                                        <ul className="space-y-2 text-stone-700 ml-6 list-disc">
+                                            <li className="text-red-600 font-bold">禁止使用任何外掛、腳本、修改器等第三方程式</li>
+                                            <li className="text-red-600 font-bold">禁止利用遊戲漏洞進行不當獲利</li>
+                                            <li className="text-red-600 font-bold">禁止進行遊戲幣、虛寶的真實金錢交易</li>
+                                            <li>禁止發表不當言論、騷擾、詐騙其他玩家</li>
+                                            <li>禁止使用不雅、攻擊性的角色名稱</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">3. 違規處理</h3>
+                                        <ul className="space-y-2 text-stone-700 ml-6 list-disc">
+                                            <li>經查證違反規定者，將處以<strong className="text-red-600">暫時停權或永久封鎖</strong></li>
+                                            <li>違規所獲得的虛擬物品、遊戲幣將予以<strong>沒收</strong></li>
+                                            <li>嚴重違規者將<strong>不予退還任何已付費用</strong></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 虛寶/儲值說明 */}
+                            <div className="stone-panel p-8 md:p-10 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <Coins size={28} className="text-orange-500" />
+                                    虛寶與儲值說明
+                                </h2>
+                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                    <div className="bg-white rounded-xl p-6 border-2 border-orange-400">
+                                        <h3 className="font-black text-orange-700 text-lg mb-3">⚠️ 重要提醒</h3>
+                                        <ul className="space-y-2 ml-6 list-disc font-bold">
+                                            <li className="text-red-600">虛擬物品不具任何實質價值，無法兌換現金</li>
+                                            <li className="text-red-600">虛擬商品一經售出，恕不接受退款或換貨</li>
+                                            <li>虛寶將由管理員人工審核後發放至您的遊戲帳號</li>
+                                            <li>請確認遊戲帳號填寫正確，填寫錯誤恕不補發</li>
+                                        </ul>
+                                    </div>
+                                    <p className="font-bold">
+                                        儲值金額將用於支付伺服器維護費用、頻寬成本及部分公益捐款。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 免責聲明 */}
+                            <div className="stone-panel p-8 md:p-10 bg-white">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <ShieldCheck size={28} className="text-fire-500" />
+                                    免責聲明
+                                </h2>
+                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">1. 服務中斷</h3>
+                                        <p>
+                                            本服務可能因維護、更新、不可抗力等因素而中斷。對於服務中斷所造成的任何損失，
+                                            <strong className="text-red-600">本服務不負任何賠償責任</strong>。
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">2. 資料遺失</h3>
+                                        <p>
+                                            本服務將盡力維護資料安全，但無法保證絕對不會發生資料遺失。
+                                            對於因系統故障、駭客攻擊等原因導致的資料遺失，
+                                            <strong className="text-red-600">本服務不承擔任何責任</strong>。
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">3. 服務終止</h3>
+                                        <p>
+                                            本服務保留隨時終止營運的權利。若決定終止營運，將提前<strong>30 天公告</strong>。
+                                            服務終止後，所有虛擬物品及遊戲紀錄將永久失效，<strong className="text-red-600">不予退款</strong>。
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">4. 損害賠償限制</h3>
+                                        <p>
+                                            在任何情況下，本服務對使用者的損害賠償責任，
+                                            最高以<strong className="text-orange-600">使用者過去 3 個月內的儲值總額</strong>為上限。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 隱私權政策 */}
+                            <div className="stone-panel p-8 md:p-10 bg-white">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <Lock size={28} className="text-wind-500" />
+                                    隱私權政策
+                                </h2>
+                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">資料收集範圍</h3>
+                                        <ul className="space-y-2 ml-6 list-disc">
+                                            <li>Email 帳號、遊戲帳號名稱</li>
+                                            <li>儲值紀錄、遊戲數據</li>
+                                            <li>IP 位址、瀏覽器資訊（用於安全防護）</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">資料使用目的</h3>
+                                        <ul className="space-y-2 ml-6 list-disc">
+                                            <li>提供遊戲服務、虛寶發放</li>
+                                            <li>帳號安全維護、違規查證</li>
+                                            <li>客服聯繫、重要公告通知</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-black text-stone-800 text-lg mb-3">資料保護</h3>
+                                        <p>
+                                            我們承諾<strong className="text-wind-600">不會將您的個人資料販售或提供給第三方</strong>。
+                                            所有資料均採用加密儲存，僅供本服務內部使用。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 年齡限制 */}
+                            <div className="stone-panel p-8 md:p-10 bg-gradient-to-br from-gold-50 to-yellow-50 border-2 border-gold-300">
+                                <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <User size={28} className="text-gold-500" />
+                                    年齡限制與家長同意
+                                </h2>
+                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                    <p className="font-bold text-lg">
+                                        本服務適用年齡：<strong className="text-gold-600">12 歲以上</strong>
+                                    </p>
+                                    <ul className="space-y-2 ml-6 list-disc">
+                                        <li><strong>未滿 18 歲</strong>的玩家進行儲值前，<strong className="text-red-600">必須取得法定代理人（家長）同意</strong></li>
+                                        <li>若發現未成年人未經家長同意進行儲值，家長可聯繫客服申請退款</li>
+                                        <li>退款申請需提供<strong>家長身分證明</strong>及<strong>未成年人證明</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* 條款修改 */}
+                            <div className="bg-stone-100 rounded-2xl p-6 text-center">
+                                <p className="text-stone-600 font-bold text-sm">
+                                    本服務條款最後更新日期：<strong className="text-stone-800">2026 年 2 月 1 日</strong>
+                                    <br />
+                                    我們保留隨時修改本條款的權利，修改後將於網站公告
+                                </p>
+                            </div>
+
+                            {/* 同意按鈕 */}
+                            <div className="text-center pt-4">
+                                <a
+                                    href="#/"
+                                    className="inline-flex items-center gap-2 px-8 py-4 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+                                >
+                                    <CheckCircle size={20} />
+                                    我已閱讀並同意
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
         const EventsPage = () => {
             const [events, setEvents] = useState([]);
             const [loading, setLoading] = useState(true);
@@ -1010,7 +2403,10 @@
         };
 
         const RechargePage = () => {
-            const [gameAccount, setGameAccount] = useState('');
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [gameAccounts, setGameAccounts] = useState([]);
+            const [selectedAccountId, setSelectedAccountId] = useState('');
             const [selectedMethod, setSelectedMethod] = useState(null);
             const [selectedPlan, setSelectedPlan] = useState(null);
             const [showModal, setShowModal] = useState(false);
@@ -1018,16 +2414,91 @@
             const accountRef = useRef(null);
             const methodRef = useRef(null);
             const planRef = useRef(null);
+            
+            // 檢查登入狀態並載入遊戲帳號
+            useEffect(() => {
+                let isMounted = true;
+                
+                const checkAuth = async () => {
+                    try {
+                        console.log('開始檢查登入狀態...');
+                        const currentUser = await authHelpers.getCurrentUser();
+                        console.log('getCurrentUser 結果:', currentUser);
+                        
+                        if (!isMounted) return;
+                        
+                        if (!currentUser) {
+                            console.log('未登入，跳轉到登入頁');
+                            setLoading(false);
+                            showToast('請先登入才能贊助', 'warning');
+                            setTimeout(() => {
+                                window.location.hash = '#/auth';
+                            }, 500);
+                            return;
+                        }
+                        
+                        console.log('已登入，載入遊戲帳號...');
+                        setUser(currentUser);
+                        
+                        // 讀取遊戲帳號列表（支援舊格式和新格式）
+                        const accounts = currentUser.user_metadata?.game_accounts || 
+                                       (currentUser.user_metadata?.game_account ? [{
+                                           id: '1',
+                                           name: currentUser.user_metadata.game_account,
+                                           is_primary: true,
+                                           created_at: Date.now()
+                                       }] : []);
+                        
+                        console.log('遊戲帳號列表:', accounts);
+                        setGameAccounts(accounts);
+                        
+                        // 預設選擇第一個（主帳號）
+                        if (accounts.length > 0) {
+                            setSelectedAccountId(accounts[0].id);
+                        }
+                        
+                        setLoading(false);
+                        console.log('載入完成');
+                    } catch (error) {
+                        console.error('載入失敗:', error);
+                        if (isMounted) {
+                            setLoading(false);
+                            showToast('載入失敗：' + error.message, 'error');
+                        }
+                    }
+                };
+                
+                // 加入超時保護，5秒後強制取消 loading
+                const timeout = setTimeout(() => {
+                    console.warn('載入超時，強制取消 loading');
+                    if (isMounted) {
+                        setLoading(false);
+                        showToast('載入超時，請重新整理頁面', 'error');
+                    }
+                }, 5000);
+                
+                checkAuth().finally(() => {
+                    clearTimeout(timeout);
+                });
+                
+                return () => {
+                    isMounted = false;
+                    clearTimeout(timeout);
+                };
+            }, []);
 
             const saveSponsorshipRecord = async () => {
+                const selectedAccount = gameAccounts.find(acc => acc.id === selectedAccountId);
+                
                 const record = {
                     id: Date.now().toString(),
-                    game_account: gameAccount,
+                    game_account: selectedAccount?.name || '', // 選擇的遊戲帳號
                     amount: selectedPlan.amount,
                     method: selectedMethod,
                     plan_total: selectedPlan.total,
                     status: 'pending',
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    user_id: user.id // 已強制登入，必定有 user_id
                 };
                 
                 await insertSupabaseData(DB_TABLES.SPONSORSHIPS, record);
@@ -1036,7 +2507,12 @@
 
             const handlePayment = () => {
                 const errors = { gameAccount: '', method: '', plan: '' };
-                if (!gameAccount.trim()) errors.gameAccount = '請填寫遊戲帳號';
+                
+                // 驗證遊戲帳號
+                if (!selectedAccountId) {
+                    errors.gameAccount = '請選擇遊戲帳號';
+                }
+                
                 if (!selectedMethod) errors.method = '請選擇支付方式';
                 if (!selectedPlan) errors.plan = '請選擇贊助方案';
                 setFormErrors(errors);
@@ -1050,15 +2526,57 @@
                 setShowModal(true);
             };
 
+            if (loading) {
+                return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                        <LoadingSpinner message="驗證登入中..." />
+                    </motion.div>
+                );
+            }
+            
             return (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
                     <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
+                    
+                    {/* 免責聲明提示 */}
+                    <div className="max-w-7xl mx-auto mb-8">
+                        <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-2xl p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="bg-orange-500 p-2 rounded-xl shrink-0">
+                                    <AlertCircle size={24} className="text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-black text-orange-800 mb-2 flex items-center gap-2">
+                                        ⚠️ 重要提醒
+                                    </h3>
+                                    <div className="text-stone-700 text-sm space-y-1">
+                                        <p className="font-bold">
+                                            • 虛擬商品一經售出，<strong className="text-red-600">恕不接受退款或換貨</strong>
+                                        </p>
+                                        <p className="font-bold">
+                                            • 虛寶由管理員<strong className="text-orange-700">人工審核後發放</strong>，非即時到帳
+                                        </p>
+                                        <p className="font-bold">
+                                            • 本服務為<strong className="text-orange-700">非官方私人伺服器</strong>，與原廠公司無關
+                                        </p>
+                                    </div>
+                                    <Link 
+                                        to="/terms" 
+                                        className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-bold text-sm mt-3 transition-colors"
+                                    >
+                                        查看完整服務條款
+                                        <ArrowRight size={14} />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     {showModal && selectedPlan && (
                         <PaymentModal 
                             method={selectedMethod}
                             plan={selectedPlan} 
-                            gameAccount={gameAccount}
+                            gameAccount={gameAccounts.find(acc => acc.id === selectedAccountId)?.name || ''}
                             onClose={() => setShowModal(false)} 
                         />
                     )}
@@ -1068,19 +2586,103 @@
                              <div ref={accountRef} className="stone-panel p-8 md:p-10 border-stone-200 bg-white">
                                 <div className="flex items-center gap-4 mb-6 border-b border-stone-100 pb-6">
                                     <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
-                                    <h3 className="text-2xl font-bold text-stone-700">請輸入遊戲帳號</h3>
+                                    <div className="flex-1">
+                                        <h3 className="text-2xl font-bold text-stone-700">選擇贊助帳號</h3>
+                                        <p className="text-stone-500 text-sm font-medium mt-1">選擇要接收虛寶獎勵的遊戲帳號</p>
+                                    </div>
                                 </div>
-                                <input 
-                                    id="gameAccountInput"
-                                    type="text" 
-                                    value={gameAccount}
-                                    onChange={(e) => { setGameAccount(e.target.value); setFormErrors(prev => ({ ...prev, gameAccount: '' })); }}
-                                    placeholder="例如：soda123456"
-                                    autoComplete="username"
-                                    className={`w-full text-lg md:text-xl font-bold p-4 md:p-5 rounded-2xl border-2 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400 transition-all duration-200 ${formErrors.gameAccount ? 'border-fire-400 focus:border-fire-400' : 'border-stone-200 focus:border-gold-400'}`}
-                                />
-                                {formErrors.gameAccount && <p className="text-fire-500 font-bold mt-2 ml-2 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.gameAccount}</p>}
-                                <p className="text-stone-400 font-medium mt-3 ml-2 text-sm flex items-center gap-1"><CheckCircle size={14}/> 請務必填寫正確，以便客服核對發放金幣。</p>
+                                
+                                {gameAccounts.length === 0 ? (
+                                    <div className="bg-gold-50 border-2 border-gold-300 rounded-xl p-6 text-center">
+                                        <AlertCircle size={32} className="mx-auto text-gold-600 mb-3" />
+                                        <p className="text-gold-800 font-bold mb-2">尚未設定遊戲帳號</p>
+                                        <p className="text-gold-700 text-sm mb-4">請先到會員中心新增遊戲帳號</p>
+                                        <a 
+                                            href="#/member" 
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-colors"
+                                        >
+                                            前往會員中心
+                                            <ArrowRight size={16} />
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* 帳號選擇下拉選單 */}
+                                        <div className="mb-4">
+                                            <label className="block text-stone-700 font-bold mb-3 text-sm">請選擇遊戲帳號 *</label>
+                                            <select
+                                                value={selectedAccountId}
+                                                onChange={(e) => {
+                                                    setSelectedAccountId(e.target.value);
+                                                    setFormErrors(prev => ({ ...prev, gameAccount: '' }));
+                                                }}
+                                                className={`w-full text-lg font-bold p-4 rounded-2xl border-2 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-white transition-all duration-200 ${
+                                                    formErrors.gameAccount 
+                                                        ? 'border-fire-400 focus:border-fire-400 text-fire-700' 
+                                                        : 'border-stone-200 focus:border-gold-400 text-stone-700'
+                                                }`}
+                                            >
+                                                <option value="">請選擇...</option>
+                                                {gameAccounts.map((account) => (
+                                                    <option key={account.id} value={account.id}>
+                                                        {account.name} {account.is_primary ? '(主帳號)' : ''}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            
+                                            {/* 重要提醒 */}
+                                            <div className="bg-fire-50 border-2 border-fire-400 rounded-xl p-4 mt-3">
+                                                <p className="text-fire-800 font-bold text-sm flex items-start gap-2">
+                                                    <AlertCircle size={18} className="mt-0.5 shrink-0 text-fire-600" />
+                                                    <span>
+                                                        <strong className="text-base">⚠️ 請特別注意！</strong>
+                                                        <br />
+                                                        <span className="text-fire-700 mt-1.5 inline-block">
+                                                            贊助帳號必須與遊戲內帳號<strong className="underline">完全一致</strong>！<br />
+                                                            請再次確認帳號是否正確，虛寶將由管理員人工發放至此帳號。
+                                                        </span>
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* 錯誤訊息 */}
+                                        {formErrors.gameAccount && (
+                                            <div className="bg-fire-50 border-2 border-fire-300 rounded-xl p-4 mb-4">
+                                                <p className="text-fire-700 font-bold text-sm flex items-center gap-2">
+                                                    <AlertCircle size={16}/> 
+                                                    {formErrors.gameAccount}
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        {/* 選中帳號的提示 */}
+                                        {selectedAccountId && (
+                                            <div className="bg-wind-50 border-2 border-wind-300 rounded-xl p-4 mt-4">
+                                                <p className="text-wind-700 font-bold text-sm flex items-start gap-2">
+                                                    <CheckCircle size={16} className="mt-0.5 shrink-0"/> 
+                                                    <span>
+                                                        已選擇贊助帳號：<strong className="text-wind-800">「{gameAccounts.find(acc => acc.id === selectedAccountId)?.name}」</strong>
+                                                        <br />
+                                                        <span className="text-xs text-wind-600 mt-1 inline-block">
+                                                            請確認此帳號與遊戲內完全相同，虛寶將由管理員人工審核後發放
+                                                        </span>
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        {/* 提示：如何新增更多帳號 */}
+                                        {gameAccounts.length < 5 && (
+                                            <div className="mt-4 p-3 bg-stone-50 rounded-xl">
+                                                <p className="text-stone-600 text-xs">
+                                                    💡 您還可以新增 {5 - gameAccounts.length} 個遊戲帳號。
+                                                    <a href="#/member" className="text-gold-600 hover:text-gold-700 font-bold ml-1">前往會員中心管理</a>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
 
                             <div ref={methodRef} className="stone-panel p-8 md:p-10 border-gold-300/50 shadow-sm">
@@ -1199,8 +2801,8 @@
                                     </div>
                                     <div className="flex justify-between items-center pt-3 border-t border-stone-200/50 border-dashed text-sm">
                                         <span className="text-stone-400 font-bold">遊戲帳號</span>
-                                        <span className={`font-bold ${gameAccount ? 'text-stone-700' : 'text-red-400'}`}>
-                                            {gameAccount || '尚未填寫'}
+                                        <span className={`font-bold ${selectedAccountId ? 'text-stone-700' : 'text-red-400'}`}>
+                                            {gameAccounts.find(acc => acc.id === selectedAccountId)?.name || '尚未選擇'}
                                         </span>
                                     </div>
                                 </div>
@@ -1221,6 +2823,52 @@
                                     <li className="flex gap-2 items-start"><CheckCircle className="text-stone-300 shrink-0 mt-0.5" size={14}/> <span>資金用於支付機房與公益捐款。</span></li>
                                     <li className="flex gap-2 items-start"><CheckCircle className="text-stone-300 shrink-0 mt-0.5" size={14}/> <span>虛擬商品售出後無法退還。</span></li>
                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 客服聯繫 - 儲值問題 */}
+                    <div className="max-w-7xl mx-auto mt-12">
+                        <div className="bg-gradient-to-br from-fire-50 via-red-50 to-orange-50 border-2 border-fire-300 rounded-3xl p-8 md:p-12 shadow-lg">
+                            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                                <div className="bg-fire-100 p-4 rounded-2xl shrink-0">
+                                    <AlertCircle size={40} className="text-fire-600" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-black text-fire-800 mb-3 flex items-center gap-2">
+                                        儲值遇到問題？
+                                    </h3>
+                                    <div className="space-y-2 text-stone-700 font-medium">
+                                        <p className="text-base leading-relaxed">
+                                            <strong className="text-fire-700">⚠️ 重要提醒：</strong>如儲值有任何問題，請務必保留以下資料並聯繫客服：
+                                        </p>
+                                        <ul className="space-y-1.5 ml-6 text-sm">
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle size={16} className="text-fire-500 mt-0.5 shrink-0" />
+                                                <span><strong className="text-fire-700">官網頁面截圖</strong>（包含訂單資訊）</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle size={16} className="text-fire-500 mt-0.5 shrink-0" />
+                                                <span><strong className="text-fire-700">轉帳/付款紀錄截圖</strong>（含時間、金額）</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle size={16} className="text-fire-500 mt-0.5 shrink-0" />
+                                                <span><strong className="text-fire-700">遊戲帳號</strong>與<strong className="text-fire-700">註冊信箱</strong></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div className="shrink-0">
+                                    <a 
+                                        href="https://lin.ee/3vSihiH"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#06C755] hover:bg-[#05B34C] text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                                    >
+                                        <MessageSquare size={20} />
+                                        聯繫官方 LINE
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1286,10 +2934,11 @@
             const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
 
             return (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen flex items-center justify-center">
-                    <div className="max-w-2xl w-full">
-                        <PageHeader title="部落客服中心" subtitle="遇到困難了嗎？請聯繫我們的官方 LINE 客服。" icon={MessageSquare} color="text-line-500" />
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <div className="max-w-4xl mx-auto w-full space-y-8">
+                        <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
                         
+                        {/* 官方 LINE 區塊 */}
                         <div className="stone-panel p-10 md:p-16 text-center shadow-xl bg-white">
                             <div className="w-28 h-28 md:w-36 md:h-36 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500">
                                 <SmartImage src={ASSETS.LINE_LOGO} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" />
@@ -1302,7 +2951,7 @@
 
                             <div className="bg-stone-50 rounded-3xl p-8 mb-10 border border-stone-100 inline-block w-full max-w-sm">
                                 <p className="text-stone-400 text-xs font-bold mb-2 uppercase tracking-widest">官方 LINE ID</p>
-                                <p className="text-3xl md:text-4xl font-black text-stone-700 tracking-wider font-mono">@soda_gm</p>
+                                <p className="text-3xl md:text-4xl font-black text-stone-700 tracking-wider font-mono">@939yjtdj</p>
                             </div>
 
                             <div className="flex justify-center">
@@ -1314,6 +2963,131 @@
                             <p className="text-stone-400 text-xs font-medium mt-10 bg-stone-50 inline-block px-4 py-1.5 rounded-full">
                                 服務時間：每日 10:00 - 22:00
                             </p>
+                        </div>
+
+                        {/* 防詐騙警告 */}
+                        <div className="bg-gradient-to-br from-red-50 via-orange-50 to-red-50 border-4 border-red-400 rounded-3xl p-8 md:p-10 shadow-2xl">
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="bg-red-500 p-3 md:p-4 rounded-2xl shrink-0">
+                                    <AlertCircle size={36} className="text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-red-700 mb-2">🚨 防詐騙警告</h2>
+                                    <p className="text-red-600 font-bold text-base md:text-lg">請務必仔細閱讀，保護您的帳號與財產安全！</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white rounded-2xl p-6 md:p-8 space-y-6">
+                                <div className="space-y-4">
+                                    <h3 className="font-black text-red-700 text-lg md:text-xl flex items-center gap-2">
+                                        <CheckCircle size={24} />
+                                        官方唯一儲值管道
+                                    </h3>
+                                    <ul className="space-y-2 text-stone-700 font-bold text-sm md:text-base ml-4">
+                                        <li>✅ 本網站為官方唯一儲值網站</li>
+                                        <li>✅ 只接受 LINE Pay、SHOPLINE 等第三方金流</li>
+                                        <li>✅ 官方 LINE ID：<span className="text-green-600">@939yjtdj</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="border-t border-red-200 pt-6 space-y-4">
+                                    <h3 className="font-black text-red-700 text-lg md:text-xl flex items-center gap-2">
+                                        <X size={24} />
+                                        官方絕不會要求您
+                                    </h3>
+                                    <ul className="space-y-2 text-stone-700 font-bold text-sm md:text-base ml-4">
+                                        <li>🚫 私下透過個人帳號轉帳、匯款</li>
+                                        <li>🚫 提供遊戲帳號密碼</li>
+                                        <li>🚫 透過來路不明的網站儲值</li>
+                                        <li>🚫 進行「代儲」、「低價儲值」</li>
+                                        <li>🚫 點擊可疑連結或掃描不明 QR Code</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 常見詐騙手法 */}
+                        <div className="stone-panel p-8 md:p-10 bg-white">
+                            <h2 className="text-xl md:text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                <Eye size={28} className="text-orange-500" />
+                                常見詐騙手法
+                            </h2>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <User size={18} />
+                                        假客服詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        假冒官方客服索取<strong className="text-orange-700">帳號密碼</strong>
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 官方絕不索取密碼！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <Coins size={18} />
+                                        低價代儲詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        宣稱比官方便宜的代儲服務
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 貪小便宜易上當！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <ExternalLink size={18} />
+                                        釣魚網站詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        建立假官網誘導輸入帳密
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 仔細檢查網址！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <MessageSquare size={18} />
+                                        假官方帳號詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        建立假 LINE 發送詐騙訊息
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 認明官方帳號！</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 遇到詐騙怎麼辦 */}
+                        <div className="bg-gradient-to-br from-fire-50 to-red-50 border-2 border-fire-400 rounded-3xl p-8">
+                            <h2 className="text-xl md:text-2xl font-black text-fire-700 mb-4 flex items-center gap-2">
+                                <AlertCircle size={26} />
+                                遇到詐騙怎麼辦？
+                            </h2>
+                            <div className="space-y-3">
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">1.</span>
+                                    <span><strong className="text-fire-700">立即停止</strong>與對方的一切聯繫</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">2.</span>
+                                    <span><strong className="text-fire-700">保留證據</strong>：截圖對話、交易紀錄</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">3.</span>
+                                    <span><strong className="text-fire-700">聯繫官方</strong>：透過官方 LINE（@939yjtdj）回報</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">4.</span>
+                                    <span><strong className="text-fire-700">報警處理</strong>：金額較大時建議報案</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </motion.div>
@@ -1665,6 +3439,9 @@
                             
                             return (
                                 <div className="space-y-6">
+                                    {/* 圖表初始化 */}
+                                    <StatsCharts data={data} methodStats={methodStats} stats={stats} />
+                                    
                                     {/* 總覽卡片 */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="bg-gradient-to-br from-gold-500 to-gold-600 rounded-2xl p-6 text-white shadow-xl">
@@ -1726,11 +3503,40 @@
                                         </div>
                                     </div>
                                     
-                                    {/* 支付方式統計 */}
+                                    {/* 營收趨勢圖表 */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* 30日營收趨勢 */}
+                                        <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                            <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
+                                                <Calendar size={24} className="text-wind-500" />
+                                                營收趨勢（30 天）
+                                            </h3>
+                                            <div className="h-[300px]">
+                                                <canvas id="revenueChart"></canvas>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* 支付方式圓餅圖 */}
+                                        <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                            <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
+                                                <CreditCard size={24} className="text-gold-500" />
+                                                支付方式佔比
+                                            </h3>
+                                            <div className="h-[300px] flex items-center justify-center">
+                                                {Object.entries(methodStats).length === 0 ? (
+                                                    <p className="text-stone-500">暫無資料</p>
+                                                ) : (
+                                                    <canvas id="paymentMethodChart"></canvas>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* 支付方式統計（進度條） */}
                                     <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
                                         <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
                                             <CreditCard size={24} className="text-gold-500" />
-                                            支付方式分析
+                                            支付方式詳細分析
                                         </h3>
                                         <div className="space-y-3">
                                             {Object.entries(methodStats).length === 0 ? (
@@ -1775,24 +3581,42 @@
                                         </div>
                                     </div>
                                     
-                                    {/* 狀態統計 */}
-                                    <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
-                                        <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                            <Eye size={24} className="text-water-500" />
-                                            訂單狀態
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-gold-500">
-                                                <p className="text-gold-500 font-black text-3xl mb-1">{stats.pending}</p>
-                                                <p className="text-stone-400 text-sm font-medium">待處理</p>
+                                    {/* 訂單狀態 */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* 狀態數字 */}
+                                        <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                            <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
+                                                <Eye size={24} className="text-water-500" />
+                                                訂單狀態統計
+                                            </h3>
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-gold-500">
+                                                    <p className="text-gold-500 font-black text-3xl mb-1">{stats.pending}</p>
+                                                    <p className="text-stone-400 text-sm font-medium">待處理</p>
+                                                </div>
+                                                <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-wind-500">
+                                                    <p className="text-wind-500 font-black text-3xl mb-1">{stats.completed}</p>
+                                                    <p className="text-stone-400 text-sm font-medium">已完成</p>
+                                                </div>
+                                                <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-fire-500">
+                                                    <p className="text-fire-500 font-black text-3xl mb-1">{stats.cancelled}</p>
+                                                    <p className="text-stone-400 text-sm font-medium">已取消</p>
+                                                </div>
                                             </div>
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-wind-500">
-                                                <p className="text-wind-500 font-black text-3xl mb-1">{stats.completed}</p>
-                                                <p className="text-stone-400 text-sm font-medium">已完成</p>
-                                            </div>
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border-l-4 border-fire-500">
-                                                <p className="text-fire-500 font-black text-3xl mb-1">{stats.cancelled}</p>
-                                                <p className="text-stone-400 text-sm font-medium">已取消</p>
+                                        </div>
+                                        
+                                        {/* 狀態圓環圖 */}
+                                        <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                            <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
+                                                <Eye size={24} className="text-water-500" />
+                                                訂單狀態佔比
+                                            </h3>
+                                            <div className="h-[280px] flex items-center justify-center">
+                                                {stats.count === 0 ? (
+                                                    <p className="text-stone-500">暫無資料</p>
+                                                ) : (
+                                                    <canvas id="orderStatusChart"></canvas>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -1816,10 +3640,26 @@
                                         </div>
                                         <div className="space-y-2">
                                             {filteredData.map(item => (
-                                                <div key={item.id} className="bg-stone-900/30 hover:bg-stone-900 p-4 rounded-xl grid grid-cols-7 gap-4 items-center border border-transparent hover:border-stone-700 transition-colors group">
+                                                <div key={item.id} className={`bg-stone-900/30 hover:bg-stone-900 p-4 rounded-xl grid grid-cols-7 gap-4 items-center border transition-colors group ${item.account_changed ? 'border-gold-500/50 hover:border-gold-500' : 'border-transparent hover:border-stone-700'}`}>
                                                     <div className="col-span-2 flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center text-gold-500 font-black shrink-0 text-sm">{(item.game_account || '?')[0]}</div>
-                                                        <div className="truncate"><p className="font-bold text-white text-base">{item.game_account}</p><button onClick={() => navigator.clipboard.writeText(item.game_account)} className="text-stone-500 text-xs hover:text-gold-500 flex items-center gap-1 mt-1"><Copy size={12}/> 複製帳號</button></div>
+                                                        <div className="truncate">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-bold text-white text-base">{item.game_account}</p>
+                                                                {item.account_changed && (
+                                                                    <span className="px-1.5 py-0.5 bg-gold-500/20 text-gold-400 text-[10px] font-bold rounded border border-gold-500/30" title={`原帳號：${item.registered_account}\n原因：${item.change_reason || '未填寫'}`}>
+                                                                        ⚠️
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <button onClick={() => navigator.clipboard.writeText(item.game_account)} className="text-stone-500 text-xs hover:text-gold-500 flex items-center gap-1 mt-1"><Copy size={12}/> 複製帳號</button>
+                                                            {item.account_changed && (
+                                                                <div className="mt-2 text-[10px] text-gold-400">
+                                                                    <p>註冊：{item.registered_account}</p>
+                                                                    {item.change_reason && <p className="text-stone-500">原因：{item.change_reason}</p>}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="col-span-1 text-white font-mono font-bold">NT$ {item.amount?.toLocaleString()}</div>
                                                     <div className="col-span-1 text-gold-500 font-mono font-bold">{item.plan_total?.toLocaleString()} G</div>
@@ -1982,6 +3822,7 @@
         const Layout = () => {
             const [isScrolled, setIsScrolled] = useState(false);
             const [isLoading, setIsLoading] = useState(true);
+            const [user, setUser] = useState(null);
             const location = useLocation();
 
             useEffect(() => {
@@ -1989,6 +3830,22 @@
                 window.addEventListener('scroll', handleScroll);
                 setTimeout(() => setIsLoading(false), 1500);
                 return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+            
+            useEffect(() => {
+                // 檢查當前用戶
+                authHelpers.getCurrentUser().then(setUser);
+                
+                // 監聽認證狀態變化
+                const { data } = authHelpers.onAuthStateChange((event, session) => {
+                    setUser(session?.user ?? null);
+                });
+                
+                return () => {
+                    if (data?.subscription) {
+                        data.subscription.unsubscribe();
+                    }
+                };
             }, []);
 
             return (
@@ -2029,6 +3886,20 @@
 
                             <div className="flex items-center gap-2 md:gap-3">
                                 <MusicPlayer />
+                                
+                                {/* 會員/登入按鈕 */}
+                                {user ? (
+                                    <Link to="/member" className="hidden lg:flex items-center gap-2 px-3 py-2 text-stone-700 hover:text-stone-900 transition-colors bg-white/80 hover:bg-stone-50 border border-stone-200 rounded-xl shadow-sm font-bold text-sm" title="會員中心">
+                                        <User className="w-4 h-4" />
+                                        <span className="hidden xl:inline">會員中心</span>
+                                    </Link>
+                                ) : (
+                                    <Link to="/auth" className="hidden lg:flex items-center gap-2 px-3 py-2 text-white bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 transition-all rounded-xl shadow-md font-bold text-sm" title="登入/註冊">
+                                        <User className="w-4 h-4" />
+                                        <span className="hidden xl:inline">登入</span>
+                                    </Link>
+                                )}
+                                
                                 <Link to="/admin" className="hidden lg:flex p-2.5 text-stone-400 hover:text-stone-600 transition-colors bg-white/80 hover:bg-stone-50 border border-stone-200 rounded-xl shadow-sm min-h-[40px] min-w-[40px] items-center justify-center" title="後台管理">
                                     <Lock className="w-4 h-4" />
                                 </Link>
@@ -2042,8 +3913,11 @@
                         <AnimatePresence mode="wait">
                             <Routes location={location} key={location.pathname}>
                                 <Route path="/" element={<HomePage />} />
+                                <Route path="/auth" element={<AuthPage />} />
+                                <Route path="/member" element={<MemberPage />} />
                                 <Route path="/recharge" element={<RechargePage />} />
                                 <Route path="/support" element={<SupportPage />} />
+                                <Route path="/terms" element={<TermsPage />} />
                                 <Route path="/events" element={<EventsPage />} />
                                 <Route path="/admin" element={<AdminPage />} />
                             </Routes>
@@ -2051,14 +3925,52 @@
                     </div>
 
                     <footer className="bg-stone-900 py-12 md:py-16 px-6 border-t-4 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div className="flex items-center gap-5 opacity-90">
-                                <div className="h-9 md:h-10 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
-                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" />
+                        <div className="max-w-7xl mx-auto space-y-8">
+                            {/* 免責聲明區塊 */}
+                            <div className="bg-stone-800/50 rounded-2xl p-6 md:p-8 border border-stone-700">
+                                <h3 className="text-gold-400 font-black text-lg mb-4 flex items-center gap-2">
+                                    <AlertCircle size={20} />
+                                    免責聲明
+                                </h3>
+                                <div className="space-y-3 text-stone-400 text-sm leading-relaxed">
+                                    <p>
+                                        <strong className="text-stone-300">⚠️ 本伺服器為非營利性質的粉絲私人伺服器</strong>，與原廠公司無任何關聯。
+                                        僅供個人娛樂交流使用，不涉及任何商業行為。
+                                    </p>
+                                    <p>
+                                        虛擬商品一經售出，<strong className="text-red-400">恕不接受退款或換貨</strong>。
+                                        本服務可能因維護、更新等因素而中斷，對於服務中斷所造成的任何損失，本服務不負賠償責任。
+                                    </p>
+                                    <p>
+                                        本服務可能因維護、更新等因素而中斷。對於服務中斷所造成的任何損失，本服務不負賠償責任。
+                                    </p>
                                 </div>
-                                <span className="font-bold text-sm tracking-widest border-l border-stone-600 pl-5 h-8 flex items-center">SODA STONE AGE</span>
+                                <div className="mt-4 pt-4 border-t border-stone-700">
+                                    <Link 
+                                        to="/terms" 
+                                        className="inline-flex items-center gap-2 text-gold-400 hover:text-gold-300 font-bold text-sm transition-colors"
+                                    >
+                                        <ScrollText size={16} />
+                                        查看完整服務條款
+                                        <ArrowRight size={14} />
+                                    </Link>
+                                </div>
                             </div>
-                            <p className="text-xs font-mono tracking-wide opacity-60">© 2026 Fan-made Project. Designed for Community.</p>
+
+                            {/* 頁尾資訊 */}
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-stone-800">
+                                <div className="flex items-center gap-5 opacity-90">
+                                    <div className="h-9 md:h-10 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
+                                        <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" />
+                                    </div>
+                                    <span className="font-bold text-sm tracking-widest border-l border-stone-600 pl-5 h-8 flex items-center">SODA STONE AGE</span>
+                                </div>
+                                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-xs">
+                                    <Link to="/support" className="hover:text-gold-400 transition-colors font-bold">官方客服</Link>
+                                    <Link to="/terms" className="hover:text-gold-400 transition-colors font-bold">服務條款</Link>
+                                    <p className="font-mono tracking-wide opacity-60">© 2026 Fan-made Project</p>
+                                </div>
+                            </div>
                         </div>
                     </footer>
                 </div>
