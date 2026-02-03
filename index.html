@@ -747,16 +747,16 @@
                                     
                                     {/* 主要 CTA - 立即下載 */}
                                     <div className="relative group">
-                                        <div className="absolute -inset-1 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 rounded-3xl blur-lg opacity-70 group-hover:opacity-100 animate-pulse"></div>
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 rounded-3xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
                                         <Button 
                                             variant="gold" 
-                                            className="relative w-full md:w-auto min-w-[280px] text-2xl py-6 shadow-2xl shadow-gold-400/60 hover:shadow-gold-500/80 transform hover:scale-110 transition-all duration-300 font-black tracking-wide animate-bounce-slow" 
+                                            className="relative w-full md:w-auto min-w-[280px] text-2xl py-6 shadow-2xl shadow-gold-400/60 hover:shadow-gold-500/80 transform hover:scale-105 transition-all duration-300 font-black tracking-wide" 
                                             icon={Download} 
                                             onClick={handleDownload}
                                         >
                                             <span className="flex items-center gap-3">
                                                 立即下載
-                                                <span className="text-sm bg-fire-500 text-white px-2 py-0.5 rounded-full animate-pulse">FREE</span>
+                                                <span className="text-sm bg-fire-500 text-white px-2 py-0.5 rounded-full">FREE</span>
                                             </span>
                                         </Button>
                                     </div>
