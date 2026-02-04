@@ -1613,10 +1613,24 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 載入用戶的贊助紀錄
-                    const userSponsorships = await getSupabaseData(DB_TABLES.SPONSORSHIPS);
-                    const filtered = userSponsorships.filter(s => s.user_id === currentUser.id);
-                    setSponsorships(filtered.sort((a, b) => b.timestamp - a.timestamp));
+                    // 載入用戶的贊助紀錄（從 donations 表）
+                    try {
+                        const { data: donations, error } = await supabase
+                            .from('donations')
+                            .select('*')
+                            .eq('user_id', currentUser.id)
+                            .order('created_at', { ascending: false });
+                        
+                        if (error) {
+                            console.error('載入贊助紀錄失敗:', error);
+                            setSponsorships([]);
+                        } else {
+                            setSponsorships(donations || []);
+                        }
+                    } catch (err) {
+                        console.error('載入贊助紀錄異常:', err);
+                        setSponsorships([]);
+                    }
                     setLoading(false);
                 };
                 
@@ -1920,14 +1934,20 @@
                                                     item.status === 'pending' ? 'bg-gold-100 text-gold-700' :
                                                     'bg-stone-200 text-stone-600'
                                                 }`}>
-                                                    {item.status === 'completed' ? '已完成' : item.status === 'pending' ? '處理中' : '已取消'}
+                                                    {item.status === 'completed' ? '✅ 已完成' : item.status === 'pending' ? '⏳ 處理中' : '❌ 已取消'}
                                                 </span>
                                             </div>
                                             <div className="text-stone-600 text-sm space-y-1">
+                                                <p><span className="font-bold">方案名稱：</span>{item.plan_name}</p>
                                                 <p><span className="font-bold">遊戲帳號：</span>{item.game_account}</p>
-                                                <p><span className="font-bold">支付方式：</span>{item.method}</p>
-                                                <p><span className="font-bold">獲得金幣：</span>{item.plan_total?.toLocaleString()} G</p>
-                                                <p><span className="font-bold">時間：</span>{new Date(item.timestamp).toLocaleString()}</p>
+                                                <p><span className="font-bold">支付方式：</span>{item.payment_method}</p>
+                                                <p><span className="font-bold">贊助時間：</span>{new Date(item.created_at).toLocaleString('zh-TW')}</p>
+                                                {item.processed_at && (
+                                                    <p><span className="font-bold">處理時間：</span>{new Date(item.processed_at).toLocaleString('zh-TW')}</p>
+                                                )}
+                                                {item.notes && (
+                                                    <p><span className="font-bold">備註：</span>{item.notes}</p>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -2492,22 +2512,36 @@
             const saveSponsorshipRecord = async () => {
                 const selectedAccount = gameAccounts.find(acc => acc.id === selectedAccountId);
                 
-                const record = {
-                    id: Date.now().toString(),
-                    game_account: selectedAccount?.name || '', // 選擇的遊戲帳號
-                    amount: selectedPlan.amount,
-                    method: selectedMethod,
-                    plan_total: selectedPlan.total,
-                    status: 'pending',
-                    timestamp: Date.now(),
-                    user_id: user.id // 已強制登入，必定有 user_id
-                };
-                
-                await insertSupabaseData(DB_TABLES.SPONSORSHIPS, record);
-                window.dispatchEvent(new Event('storage-update'));
+                try {
+                    // 儲存到新的 donations 表
+                    const { data, error } = await supabase
+                        .from('donations')
+                        .insert([{
+                            user_id: user.id,
+                            email: user.email,
+                            game_account: selectedAccount?.name || '',
+                            amount: selectedPlan.amount,
+                            plan_name: selectedPlan.name,
+                            payment_method: selectedMethod,
+                            status: 'pending'
+                        }]);
+                    
+                    if (error) {
+                        console.error('儲存贊助紀錄失敗:', error);
+                        showToast('儲存紀錄時發生錯誤，請聯繫客服', 'error');
+                        return false;
+                    }
+                    
+                    console.log('贊助紀錄已儲存:', data);
+                    return true;
+                } catch (err) {
+                    console.error('儲存贊助紀錄異常:', err);
+                    showToast('系統錯誤，請稍後再試', 'error');
+                    return false;
+                }
             };
 
-            const handlePayment = () => {
+            const handlePayment = async () => {
                 const errors = { gameAccount: '', method: '', plan: '' };
                 
                 // 驗證遊戲帳號
@@ -2524,8 +2558,12 @@
                     first.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
-                saveSponsorshipRecord();
-                setShowModal(true);
+                
+                // 儲存贊助紀錄
+                const success = await saveSponsorshipRecord();
+                if (success !== false) { // 如果儲存成功或沒有返回 false
+                    setShowModal(true);
+                }
             };
 
             if (loading) {
@@ -3901,6 +3939,15 @@
                                         </Link>
                                     );
                                 })}
+                                {/* 管理員專用：後台管理按鈕 */}
+                                {user?.user_metadata?.role === 'admin' && (
+                                    <Link to="/admin" className="rounded-xl">
+                                        <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${location.pathname === '/admin' ? 'bg-gradient-to-r from-gold-500 to-orange-500 text-white shadow-md' : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50/60'}`}>
+                                            <Settings size={16} />
+                                            後台管理
+                                        </div>
+                                    </Link>
+                                )}
                                 <Link key="events" to="/events" className="rounded-xl">
                                     <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${location.pathname === '/events' ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700 hover:bg-white/60'}`}>
                                         最新活動
@@ -3923,10 +3970,6 @@
                                         <span className="hidden xl:inline">登入</span>
                                     </Link>
                                 )}
-                                
-                                <Link to="/admin" className="hidden lg:flex p-2.5 text-stone-400 hover:text-stone-600 transition-colors bg-white/80 hover:bg-stone-50 border border-stone-200 rounded-xl shadow-sm min-h-[40px] min-w-[40px] items-center justify-center" title="後台管理">
-                                    <Lock className="w-4 h-4" />
-                                </Link>
                             </div>
                         </div>
                     </nav>
