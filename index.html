@@ -1161,6 +1161,7 @@
             const [confirmPassword, setConfirmPassword] = useState('');
             const [gameAccount, setGameAccount] = useState(''); // 遊戲帳號
             const [agreeTerms, setAgreeTerms] = useState(false); // 同意服務條款
+            const [rememberMe, setRememberMe] = useState(false); // 記住帳號密碼
             const [showTermsModal, setShowTermsModal] = useState(false); // 顯示服務條款彈窗
             const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false); // 顯示忘記密碼彈窗
             const [resetEmail, setResetEmail] = useState(''); // 重設密碼用的 Email
@@ -1171,6 +1172,19 @@
             const [newPasswordConfirm, setNewPasswordConfirm] = useState(''); // 確認新密碼
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState('');
+            
+            // 載入記住的帳號密碼
+            useEffect(() => {
+                const savedEmail = localStorage.getItem('rememberedEmail');
+                const savedPassword = localStorage.getItem('rememberedPassword');
+                if (savedEmail) {
+                    setEmail(savedEmail);
+                    setRememberMe(true);
+                }
+                if (savedPassword) {
+                    setPassword(atob(savedPassword)); // 簡單解碼（非安全加密）
+                }
+            }, []);
             
             // 檢測是否為密碼重設模式
             useEffect(() => {
@@ -1263,6 +1277,14 @@
                         if (error) {
                             setError(error.message === 'Invalid login credentials' ? '帳號或密碼錯誤' : error.message);
                         } else {
+                            // 處理記住帳號密碼
+                            if (rememberMe) {
+                                localStorage.setItem('rememberedEmail', email);
+                                localStorage.setItem('rememberedPassword', btoa(password)); // 簡單編碼（非安全加密）
+                            } else {
+                                localStorage.removeItem('rememberedEmail');
+                                localStorage.removeItem('rememberedPassword');
+                            }
                             showToast('登入成功！', 'success');
                             window.location.hash = '#/member';
                         }
@@ -1620,6 +1642,22 @@
                                         disabled={loading}
                                     />
                                 </div>
+                                
+                                {/* 記住我 */}
+                                {isLogin && (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="rememberMe"
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                            className="w-4 h-4 text-gold-600 bg-stone-100 border-stone-300 rounded focus:ring-gold-500 focus:ring-2"
+                                        />
+                                        <label htmlFor="rememberMe" className="text-stone-600 text-sm cursor-pointer select-none">
+                                            記住帳號密碼
+                                        </label>
+                                    </div>
+                                )}
                                 
                                 {!isLogin && (
                                     <div>
@@ -3296,7 +3334,21 @@
             const [supabaseUser, setSupabaseUser] = useState(null);
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
+            const [rememberAdminMe, setRememberAdminMe] = useState(false); // 管理員記住我
             const [error, setError] = useState('');
+            
+            // 載入管理員記住的帳號密碼
+            useEffect(() => {
+                const savedAdminEmail = localStorage.getItem('rememberedAdminEmail');
+                const savedAdminPassword = localStorage.getItem('rememberedAdminPassword');
+                if (savedAdminEmail) {
+                    setUsername(savedAdminEmail);
+                    setRememberAdminMe(true);
+                }
+                if (savedAdminPassword) {
+                    setPassword(atob(savedAdminPassword)); // 簡單解碼
+                }
+            }, []);
             const [searchTerm, setSearchTerm] = useState('');
             const [filterStatus, setFilterStatus] = useState('all');
             const [currentTab, setCurrentTab] = useState('donations');
@@ -3511,6 +3563,15 @@
                     });
                     setSupabaseUser(data.user);
                     setError('');
+                    
+                    // 處理記住管理員帳號密碼
+                    if (rememberAdminMe) {
+                        localStorage.setItem('rememberedAdminEmail', username);
+                        localStorage.setItem('rememberedAdminPassword', btoa(password)); // 簡單編碼
+                    } else {
+                        localStorage.removeItem('rememberedAdminEmail');
+                        localStorage.removeItem('rememberedAdminPassword');
+                    }
                     
                     // 記錄登入日誌
                     await logAction('login', 'admin', data.user.id, `管理員 ${data.user.email} 登入系統`);
@@ -4566,6 +4627,21 @@
                                         required
                                     />
                                 </div>
+                                
+                                {/* 記住管理員帳號密碼 */}
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="rememberAdminMe"
+                                        checked={rememberAdminMe}
+                                        onChange={(e) => setRememberAdminMe(e.target.checked)}
+                                        className="w-4 h-4 text-gold-600 bg-stone-900 border-stone-600 rounded focus:ring-gold-500 focus:ring-2"
+                                    />
+                                    <label htmlFor="rememberAdminMe" className="text-stone-400 text-sm cursor-pointer select-none">
+                                        記住帳號密碼
+                                    </label>
+                                </div>
+                                
                                 {error && <p className="text-red-400 font-bold text-center text-sm">{error}</p>}
                                 <button type="submit" className="w-full bg-gold-600 text-white font-bold py-3 rounded-xl hover:bg-gold-500 transition-colors mt-2 flex items-center justify-center gap-2">
                                     <Lock size={18} />
