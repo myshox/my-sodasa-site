@@ -1,0 +1,217 @@
+# 更新日誌
+
+> 記錄專案的所有重大變更
+
+---
+
+## [2026-02-03] - Supabase Auth 遷移與系統優化
+
+### 🔐 **安全性提升**
+
+#### Added
+- ✅ 完整遷移到 Supabase Authentication 系統
+- ✅ 密碼使用 bcrypt 加密（取代明文）
+- ✅ 審計日誌系統（記錄所有管理員操作）
+- ✅ IP 位置追蹤功能（自動記錄地理位置）
+- ✅ Row Level Security 政策更新
+
+#### Changed
+- 🔄 管理員認證從 `admins` 表遷移到 `auth.users`
+- 🔄 登入邏輯改用 `supabase.auth.signInWithPassword`
+- 🔄 密碼修改改用 `supabase.auth.updateUser`
+
+#### Removed
+- ❌ 移除明文密碼的 `admins` 表（重命名為 `admins_deprecated`）
+- ❌ 移除舊的管理員管理邏輯
+
+---
+
+### ✨ **新功能**
+
+#### 後台管理優化
+- ✅ **Toast 通知系統**：取代 `alert()`
+- ✅ **自定義 Modal**：取代 `confirm()`
+- ✅ **分頁功能**：每頁 20 筆記錄
+- ✅ **CSV 導出**：一鍵導出贊助記錄
+
+#### 圖表視覺化
+- ✅ **趨勢圖**：30 天贊助金額折線圖（Chart.js）
+- ✅ **圓餅圖**：支付方式分布
+- ✅ **柱狀圖**：熱門方案排行
+
+#### 標籤系統
+- ✅ 自動標記 VIP（金額 >= 1000）
+- ✅ 自動標記常客（累計 >= 5 次）
+- ✅ 手動新增/刪除標籤
+- ✅ TAG_OPTIONS 預設標籤選項
+
+#### 進階搜尋
+- ✅ 日期範圍篩選
+- ✅ 金額範圍篩選
+- ✅ 支付方式篩選
+- ✅ 標籤篩選
+- ✅ 組合搜尋
+
+#### 批次操作
+- ✅ 多選功能（Checkbox）
+- ✅ 批次更新狀態
+- ✅ 批次新增標籤
+- ✅ 批次刪除
+
+#### IP 追蹤
+- ✅ 自動記錄 IP 地址
+- ✅ 查詢地理位置（國家、城市）
+- ✅ 儲存詳細資訊（ISP、經緯度）
+- ✅ 後台顯示位置資訊
+
+---
+
+### 🎨 **UI/UX 改進**
+
+#### Changed
+- 🎨 登入頁面改為 Email 輸入（取代 username）
+- 🎨 設定頁面簡化（移除舊的管理員管理）
+- 🎨 加入「超管」分頁（管理員管理）
+- 🎨 Toast 通知美化
+- 🎨 Loading 狀態優化
+- 🎨 表格欄位調整（新增 IP / 位置）
+
+---
+
+### 🗄️ **資料庫變更**
+
+#### Added
+- ✅ `audit_logs` 表（審計日誌）
+- ✅ `ip_locations` 表（IP 位置詳情）
+- ✅ `tags` 欄位（donations 表）
+- ✅ `ip_address` 欄位（donations 表）
+- ✅ `ip_location` 欄位（donations 表，JSONB）
+- ✅ `auth_user_id` 欄位（audit_logs 表）
+
+#### Added - 函數
+- ✅ `is_admin(user_id)` - 檢查管理員權限
+- ✅ `is_super_admin(user_id)` - 檢查超級管理員
+- ✅ `get_admin_info(user_id)` - 獲取管理員資訊
+- ✅ `log_admin_action(...)` - 記錄審計日誌
+- ✅ `upsert_ip_location(...)` - 插入/更新 IP 位置
+
+#### Added - 觸發器
+- ✅ `auto_tag_vip` - 自動標記 VIP
+- ✅ `check_and_tag_regular` - 自動標記常客
+
+#### Changed
+- 🔄 RLS 政策改用 `is_admin()` 函數
+- 🔄 審計日誌改用 `auth_user_id`
+
+#### Deprecated
+- ⚠️ `admins` 表（已重命名為 `admins_deprecated`）
+
+---
+
+### 📚 **文檔**
+
+#### Added
+- ✅ `README.md` - 專案說明
+- ✅ `.gitignore` - Git 忽略規則
+- ✅ `CHANGELOG.md` - 更新日誌
+- ✅ `database/migrations/README.md` - 遷移腳本說明
+- ✅ `database/docs/README.md` - 資料庫文檔說明
+- ✅ `docs/README.md` - 專案文檔說明
+- ✅ `Supabase_Auth遷移指南.md` - Auth 遷移完整指南
+- ✅ `IP位置追蹤實作指南.md` - IP 追蹤實作指南
+- ✅ `系統優化建議.md` - 完整優化建議清單
+- ✅ `後台優化完成清單.md` - 高優先級功能清單
+- ✅ `中優先級功能完成清單.md` - 中優先級功能清單
+- ✅ `步驟1完成_Supabase_Auth遷移.md` - 遷移完成報告
+- ✅ `步驟2完成_IP追蹤已啟用.md` - IP 追蹤完成報告
+- ✅ `修復完成_React_Hooks錯誤.md` - Hooks 錯誤修復
+- ✅ `密碼安全性建議.md` - 安全性分析
+
+---
+
+### 🐛 **修復**
+
+#### Fixed
+- 🐛 React Hooks 順序錯誤（Chart.js useEffect 移到頂層）
+- 🐛 SQL 腳本錯誤（music 表不存在）
+- 🐛 登入邏輯錯誤（改用 Supabase Auth）
+- 🐛 密碼明文問題（遷移到 bcrypt）
+
+---
+
+### 📦 **依賴更新**
+
+#### Added
+- Chart.js 4.4.0（圖表視覺化）
+- Lucide React（新增 Shield, Download 等圖標）
+
+---
+
+### ⚡ **效能優化**
+
+#### Added
+- ✅ 資料庫索引（donations.created_at, tags 等）
+- ✅ 分頁載入（減少單次查詢量）
+- ✅ GIN 索引（tags 陣列查詢）
+
+#### Changed
+- 🔄 Chart.js useEffect 優化（避免重複初始化）
+
+---
+
+### 🔒 **安全性**
+
+#### Added
+- ✅ bcrypt 密碼加密
+- ✅ 審計日誌（所有操作可追蹤）
+- ✅ IP 追蹤（可偵測異常登入）
+- ✅ RLS 政策更新（使用 Auth 系統）
+
+#### Changed
+- 🔄 登入驗證改用 Supabase Auth
+- 🔄 密碼修改需驗證舊密碼
+
+---
+
+## 🎯 **統計數據**
+
+- 📝 程式碼：5,779 行（index.html）
+- 🗄️ SQL 腳本：11 個
+- 📚 文檔：15+ 個 Markdown 文件
+- ✅ 功能模組：30+ 個
+- 🎨 UI 組件：20+ 個
+
+---
+
+## 🚀 **下一版本計劃**
+
+### [未來版本] - 進階功能
+
+#### Planned
+- [ ] 會員等級制度（VIP 1/2/3/4）
+- [ ] 玩家個人贊助歷史頁面
+- [ ] PDF 收據下載功能
+- [ ] 虛擬滾動優化（react-window）
+- [ ] 推薦獎勵系統
+- [ ] 金流整合（ECPay/NewebPay）
+- [ ] Email 通知系統
+- [ ] Supabase Realtime（即時通知）
+- [ ] 程式碼重構（模組化）
+
+---
+
+## 📝 **版本說明**
+
+格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)
+
+### 分類說明
+- **Added**: 新功能
+- **Changed**: 現有功能的變更
+- **Deprecated**: 即將移除的功能
+- **Removed**: 已移除的功能
+- **Fixed**: 錯誤修復
+- **Security**: 安全性更新
+
+---
+
+**最後更新：2026-02-03**
