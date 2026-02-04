@@ -31,9 +31,17 @@
   - Row Level Security（資料安全）
   - Edge Functions（未來擴展）
 
+### **PWA & 優化**
+- **PWA**：Progressive Web App（可安裝）
+- **Service Worker**：離線快取 + 性能優化
+- **SEO**：完整 Meta Tags + Open Graph + 結構化資料
+- **效能**：Gzip 壓縮 + 瀏覽器快取 + CDN Preconnect
+- **安全**：Security Headers（XSS、Clickjacking 防護）
+
 ### **部署**
-- **託管**：GitHub Pages
+- **託管**：Netlify / GitHub Pages / Apache / Nginx
 - **CDN**：ESM.sh
+- **HTTPS**：Let's Encrypt（免費 SSL）
 
 ---
 
@@ -41,9 +49,20 @@
 
 ```
 蘇打石器/
-├── index.html                          # 主程式（單頁應用）
+├── index.html                          # 主程式（單頁應用）⭐ 已優化
 ├── README.md                           # 專案說明
+├── CHANGELOG.md                        # 更新日誌
 ├── .gitignore                          # Git 忽略文件
+│
+├── manifest.json                       # PWA 配置檔 ⭐ 新增
+├── sw.js                               # Service Worker ⭐ 新增
+├── offline.html                        # 離線頁面 ⭐ 新增
+├── sitemap.xml                         # 網站地圖 ⭐ 新增
+├── robots.txt                          # 爬蟲規則 ⭐ 新增
+├── .htaccess                           # Apache 設定 ⭐ 新增
+├── _headers                            # Netlify Headers ⭐ 新增
+│
+├── PWA_圖標準備指南.md                 # PWA 圖標製作教學 ⭐ 新增
 │
 ├── database/                           # 資料庫相關
 │   ├── migrations/                     # 資料庫遷移腳本
@@ -60,12 +79,44 @@
 └── docs/                               # 專案文檔
     ├── 系統優化建議.md
     ├── 後台優化完成清單.md
-    └── 修復完成_React_Hooks錯誤.md
+    ├── 修復完成_React_Hooks錯誤.md
+    ├── 網站優化建議.md                 # ⭐ 新增
+    ├── 網站優化完成報告.md             # ⭐ 新增
+    ├── 優化完成檢查清單.md             # ⭐ 新增
+    └── 部署指南_網站優化版.md          # ⭐ 新增
 ```
 
 ---
 
 ## 🔧 **功能特色**
+
+### **🌐 網站優化（2026-02-04 新增）**
+- 🔍 **SEO 優化**
+  - 完整 Meta Tags（description、keywords、author）
+  - Open Graph 標籤（Facebook/社群分享預覽）
+  - Twitter Card 標籤
+  - 結構化資料（JSON-LD Schema.org）
+  - Sitemap.xml + Robots.txt
+  
+- 📲 **PWA 功能**
+  - 可安裝為 APP（加入主畫面）
+  - Service Worker（智能快取）
+  - 離線支援（部分功能離線可用）
+  - 主畫面圖標 + 啟動畫面
+  - 獨立視窗模式
+  
+- ⚡ **性能優化**
+  - Gzip 壓縮（減少檔案大小）
+  - 瀏覽器快取（加速載入）
+  - CDN Preconnect（優先連接）
+  - Service Worker 快取（離線 + 速度）
+  - 性能監控（自動記錄載入時間）
+  
+- 🔒 **安全性提升**
+  - Security Headers（XSS、Clickjacking 防護）
+  - Content Security Policy
+  - Referrer Policy（嚴格模式）
+  - Permissions Policy
 
 ### **✨ 前台功能**
 - 🏠 首頁（遊戲介紹、特色展示）
@@ -183,6 +234,38 @@ npx http-server
 ```
 http://localhost:8000
 ```
+
+### **6. 測試 PWA 功能（新增）**
+
+#### **測試 Service Worker**
+1. 開啟 Chrome DevTools（F12）
+2. 切換到 **Application** 標籤
+3. 左側選擇 **Service Workers**
+4. 確認 `sw.js` 已成功註冊
+
+#### **測試 Manifest**
+1. 在 Application 標籤
+2. 左側選擇 **Manifest**
+3. 確認圖標和設定正確顯示
+
+#### **測試離線功能**
+1. 在 Network 標籤
+2. 勾選 **Offline**
+3. 重新載入頁面
+4. 應該顯示快取內容或離線頁面
+
+#### **測試 PWA 安裝**
+1. 手機 Chrome 開啟網站
+2. 點擊「安裝」或「加入主畫面」
+3. 確認桌面圖標顯示正確
+
+#### **Lighthouse 測試**
+1. F12 → Lighthouse 標籤
+2. 勾選 **Progressive Web App**
+3. 點擊 "Generate report"
+4. 目標分數：> 90
+
+**注意：** PWA 需要 HTTPS 或 localhost 才能正常運作
 
 ---
 

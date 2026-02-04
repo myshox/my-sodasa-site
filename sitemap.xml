@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- 首頁 -->
+  <url>
+    <loc>https://sodasa.org/</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- 下載頁面 -->
+  <url>
+    <loc>https://sodasa.org/#/download</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- 贊助頁面 -->
+  <url>
+    <loc>https://sodasa.org/#/support</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- 服務條款 -->
+  <url>
+    <loc>https://sodasa.org/#/terms</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- 隱私政策 -->
+  <url>
+    <loc>https://sodasa.org/#/privacy</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- 管理後台 (noindex) -->
+  <url>
+    <loc>https://sodasa.org/#/admin</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.1</priority>
+  </url>
+
+</urlset>

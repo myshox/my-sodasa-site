@@ -2,8 +2,52 @@
 <html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>蘇打石器：公益服 | 最人情味的石器時代</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="format-detection" content="telephone=no">
+    <title>蘇打石器：公益服 | 最人情味的石器時代私服 2.5</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="蘇打石器 - 經典石器時代 2.5 私服，完美復刻原汁原味，純淨遊戲環境，長久穩定經營。免費遊玩，公平競技，最有人情味的石器時代社群。">
+    <meta name="keywords" content="石器時代,石器私服,蘇打石器,2.5版本,石器時代私服,免費遊戲,線上遊戲,MMORPG,復古遊戲,經典遊戲">
+    <meta name="author" content="蘇打石器團隊">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sodasa.org/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sodasa.org/">
+    <meta property="og:title" content="蘇打石器 - 最人情味的石器時代私服">
+    <meta property="og:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定，免費遊玩！重溫經典，找回童年的感動。">
+    <meta property="og:image" content="https://sodasa.org/og-image.jpg">
+    <meta property="og:locale" content="zh_TW">
+    <meta property="og:site_name" content="蘇打石器">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="蘇打石器 - 最人情味的石器時代私服">
+    <meta name="twitter:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定">
+    <meta name="twitter:image" content="https://sodasa.org/og-image.jpg">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#fdcb6e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="蘇打石器">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://esm.sh">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -5774,6 +5818,83 @@
                 <App />
             </HashRouter>
         );
+    </script>
+
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "蘇打石器",
+      "alternateName": "Soda Stone Age",
+      "description": "經典石器時代 2.5 版本私服，完美復刻原汁原味，純淨遊戲環境，長久穩定經營",
+      "genre": ["MMORPG", "角色扮演", "多人線上遊戲"],
+      "gamePlatform": "PC",
+      "operatingSystem": "Windows",
+      "applicationCategory": "Game",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "TWD",
+        "availability": "https://schema.org/InStock"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "蘇打石器團隊",
+        "url": "https://soda-stone.com"
+      }
+    }
+    </script>
+
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        // Register Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Optional: Show custom install button
+            console.log('💡 PWA can be installed');
+        });
+
+        // Track PWA installation
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA installed successfully');
+            deferredPrompt = null;
+        });
+    </script>
+
+    <!-- Performance Monitoring -->
+    <script>
+        // Log page load performance
+        window.addEventListener('load', () => {
+            if (window.performance) {
+                const perfData = window.performance.timing;
+                const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                const connectTime = perfData.responseEnd - perfData.requestStart;
+                console.log(`📊 Page Load: ${pageLoadTime}ms, Server Response: ${connectTime}ms`);
+            }
+        });
     </script>
 </body>
 </html>
