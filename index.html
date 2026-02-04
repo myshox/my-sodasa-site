@@ -49,13 +49,14 @@
     <link rel="preconnect" href="https://esm.sh">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (使用 defer 避免阻塞渲染) -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts (使用 media 屬性延遲載入) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet"></noscript>
     
     <!-- Babel (Fixed Version) -->
     <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
@@ -66,13 +67,13 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <!-- Import Map -->
+    <!-- Import Map (使用生產版本，減少文件大小) -->
     <script type="importmap">
     {
         "imports": {
-            "react": "https://esm.sh/react@18.3.1?dev",
-            "react-dom": "https://esm.sh/react-dom@18.3.1?dev",
-            "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?dev",
+            "react": "https://esm.sh/react@18.3.1",
+            "react-dom": "https://esm.sh/react-dom@18.3.1",
+            "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
             "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
             "framer-motion": "https://esm.sh/framer-motion@10.16.4?external=react,react-dom",
             "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react"
