@@ -259,7 +259,14 @@
         // --- Supabase 配置 ---
         const SUPABASE_URL = 'https://pheoswycciabslxpsjyw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZW9zd3ljY2lhYnNseHBzanl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTA4NDcsImV4cCI6MjA4NTY2Njg0N30.zQm1nL1mbg4ClpCEo_upK4eHVKODF6gy9hB-JevXb38';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,        // 持久化 session 到 localStorage
+                autoRefreshToken: true,      // 自動刷新 token
+                detectSessionInUrl: true,    // 偵測 URL 中的 session（密碼重設用）
+                storageKey: 'sodasa-auth'    // 自訂 storage key
+            }
+        });
         
         // --- IP 位置追蹤輔助函數 ---
         const getIpLocation = async () => {
