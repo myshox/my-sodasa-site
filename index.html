@@ -2547,107 +2547,198 @@
 
             return (
                 <motion.div
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
                     onClick={onClick}
-                    className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300"
+                    className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 cursor-pointer group shadow-lg hover:shadow-2xl hover:border-gold-300 transition-all duration-300"
                 >
+                    {/* 縮圖 */}
                     {guide.thumbnail && (
-                        <div className="aspect-video bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
+                        <div className="aspect-video bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden relative">
                             <img
                                 src={guide.thumbnail}
                                 alt={guide.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                    )}
+
+                    {/* 無縮圖時的漸層背景 */}
+                    {!guide.thumbnail && (
+                        <div className="aspect-video bg-gradient-to-br from-gold-100 via-amber-50 to-orange-100 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-6xl opacity-20">{catInfo.icon}</span>
+                            </div>
                         </div>
                     )}
 
                     <div className="p-6">
-                        {guide.is_pinned && (
-                            <div className="inline-flex items-center gap-1 bg-fire-500 text-white px-3 py-1 rounded-full text-xs font-bold mb-3">
-                                <Star size={12} fill="white" />
-                                置頂
-                            </div>
-                        )}
+                        {/* 標籤區 */}
+                        <div className="flex items-center gap-2 mb-4">
+                            {guide.is_pinned && (
+                                <div className="inline-flex items-center gap-1 bg-gradient-to-r from-fire-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-md">
+                                    <Star size={12} fill="white" />
+                                    置頂推薦
+                                </div>
+                            )}
 
-                        <div className={`inline-flex items-center gap-1 ${catInfo.color} text-white px-3 py-1 rounded-full text-xs font-bold mb-3 ml-2`}>
-                            <span>{catInfo.icon}</span>
-                            {catInfo.label}
+                            <div className={`inline-flex items-center gap-1 ${catInfo.color} text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-md`}>
+                                <span>{catInfo.icon}</span>
+                                {catInfo.label}
+                            </div>
                         </div>
 
-                        <h3 className="text-xl font-black text-stone-800 mb-3 line-clamp-2 group-hover:text-gold-600 transition-colors">
+                        {/* 標題 */}
+                        <h3 className="text-xl font-black text-stone-800 mb-3 line-clamp-2 group-hover:text-gold-600 transition-colors leading-tight min-h-[3.5rem]">
                             {guide.title}
                         </h3>
 
+                        {/* 作者 */}
+                        <div className="flex items-center gap-2 mb-4 text-sm text-stone-600">
+                            <div className="w-6 h-6 bg-gradient-to-br from-gold-400 to-amber-500 rounded-full flex items-center justify-center">
+                                <User size={12} className="text-white" />
+                            </div>
+                            <span className="font-bold">{guide.author_name || '管理員'}</span>
+                        </div>
+
+                        {/* 分隔線 */}
+                        <div className="border-t border-stone-100 my-4"></div>
+
+                        {/* 底部資訊 */}
                         <div className="flex items-center justify-between text-sm text-stone-500">
                             <div className="flex items-center gap-4">
-                                <span className="flex items-center gap-1">
-                                    <Eye size={14} />
+                                <span className="flex items-center gap-1.5 hover:text-gold-600 transition-colors">
+                                    <Eye size={16} />
                                     {guide.views || 0}
                                 </span>
-                                <span className="flex items-center gap-1">
-                                    <Heart size={14} />
+                                <span className="flex items-center gap-1.5 hover:text-fire-500 transition-colors">
+                                    <Heart size={16} />
                                     {guide.likes || 0}
                                 </span>
                             </div>
-                            <span className="text-xs">
-                                {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW')}
+                            <span className="text-xs font-medium">
+                                {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}
                             </span>
                         </div>
                     </div>
+
+                    {/* 懸停時的閃光效果 */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
                 </motion.div>
             );
         };
 
         // 攻略詳細頁面
         const GuideDetailView = ({ guide, onBack }) => {
+            const getCategoryInfo = (category) => {
+                const categories = {
+                    event: { label: '活動', color: 'bg-fire-500', icon: '🎉' },
+                    pve: { label: 'PVE', color: 'bg-water-500', icon: '⚔️' },
+                    pvp: { label: 'PVP', color: 'bg-wind-500', icon: '🛡️' },
+                    beginner: { label: '新手', color: 'bg-gold-500', icon: '🌟' },
+                    general: { label: '綜合', color: 'bg-stone-500', icon: '📖' }
+                };
+                return categories[category] || categories.general;
+            };
+
+            const catInfo = getCategoryInfo(guide.category);
+
             return (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen"
+                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-50 to-white"
                 >
                     <div className="max-w-4xl mx-auto">
                         <button
                             onClick={onBack}
-                            className="flex items-center gap-2 text-stone-600 hover:text-gold-600 font-bold mb-6 transition-colors"
+                            className="flex items-center gap-2 text-stone-600 hover:text-gold-600 font-bold mb-8 transition-all duration-200 hover:gap-3"
                         >
                             <ArrowLeft size={20} />
                             返回攻略列表
                         </button>
 
-                        <div className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl">
-                            <div className="bg-gradient-to-br from-gold-50 to-amber-50 p-8 md:p-12 border-b-2 border-gold-200">
-                                <h1 className="text-3xl md:text-4xl font-black text-stone-800 mb-4">
-                                    {guide.title}
-                                </h1>
-                                <div className="flex items-center justify-between text-sm text-stone-600">
-                                    <div className="flex items-center gap-4">
-                                        <span className="flex items-center gap-1">
-                                            <User size={14} />
-                                            {guide.author_name || '管理員'}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Calendar size={14} />
-                                            {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW')}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Eye size={14} />
-                                            {guide.views || 0} 瀏覽
-                                        </span>
+                        <motion.div 
+                            initial={{ y: 20 }}
+                            animate={{ y: 0 }}
+                            className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-2xl"
+                        >
+                            {/* 標題區域 - 更華麗的設計 */}
+                            <div className="relative bg-gradient-to-br from-gold-50 via-amber-50 to-orange-50 p-8 md:p-12 border-b-2 border-gold-200">
+                                {/* 裝飾性背景 */}
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-gold-200 opacity-20 rounded-full blur-3xl"></div>
+                                
+                                <div className="relative z-10">
+                                    {/* 分類標籤 */}
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className={`inline-flex items-center gap-2 ${catInfo.color} text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg`}>
+                                            <span>{catInfo.icon}</span>
+                                            {catInfo.label}
+                                        </div>
+                                        {guide.is_pinned && (
+                                            <div className="inline-flex items-center gap-1 bg-fire-500 text-white px-3 py-2 rounded-full text-xs font-bold">
+                                                <Star size={14} fill="white" />
+                                                置頂推薦
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* 標題 */}
+                                    <h1 className="text-3xl md:text-5xl font-black text-stone-800 mb-6 leading-tight">
+                                        {guide.title}
+                                    </h1>
+
+                                    {/* 作者資訊卡片 */}
+                                    <div className="flex flex-wrap items-center gap-4 text-sm">
+                                        <div className="flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-gold-200 shadow-sm">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-gold-400 to-amber-500 rounded-full flex items-center justify-center">
+                                                <User size={16} className="text-white" />
+                                            </div>
+                                            <span className="font-bold text-stone-700">{guide.author_name || '管理員'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-stone-600">
+                                            <Calendar size={16} className="text-gold-500" />
+                                            {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </div>
+                                        <div className="flex items-center gap-2 text-stone-600">
+                                            <Eye size={16} className="text-gold-500" />
+                                            {guide.views || 0} 次瀏覽
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div
-                                className="prose prose-stone max-w-none p-8 md:p-12"
-                                style={{
-                                    fontSize: '16px',
-                                    lineHeight: '1.8'
-                                }}
-                                dangerouslySetInnerHTML={{ __html: guide.content }}
-                            />
-                        </div>
+                            {/* 內容區域 - 優化排版 */}
+                            <div className="p-8 md:p-12 bg-white">
+                                <div
+                                    className="prose prose-lg prose-stone max-w-none"
+                                    style={{
+                                        fontSize: '17px',
+                                        lineHeight: '1.8',
+                                        color: '#1a1614'
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: guide.content }}
+                                />
+                            </div>
+
+                            {/* 底部互動區 */}
+                            <div className="bg-stone-50 px-8 md:px-12 py-6 border-t border-stone-200">
+                                <div className="flex items-center justify-between">
+                                    <button
+                                        onClick={onBack}
+                                        className="flex items-center gap-2 text-stone-600 hover:text-gold-600 font-bold transition-colors"
+                                    >
+                                        <ArrowLeft size={18} />
+                                        返回列表
+                                    </button>
+                                    <div className="flex items-center gap-2 text-stone-500 text-sm">
+                                        <Heart size={16} />
+                                        <span>{guide.likes || 0} 人覺得有幫助</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
                 </motion.div>
             );
@@ -2772,6 +2863,7 @@
         // 富文本編輯器組件（Quill.js）
         const GuideEditor = ({ guide, currentUser, onClose }) => {
             const [title, setTitle] = useState(guide?.title || '');
+            const [authorName, setAuthorName] = useState(guide?.author_name || '管理員');
             const [category, setCategory] = useState(guide?.category || 'general');
             const [status, setStatus] = useState(guide?.status || 'draft');
             const [isPinned, setIsPinned] = useState(guide?.is_pinned || false);
@@ -2876,7 +2968,7 @@
                         status,
                         is_pinned: isPinned,
                         author_id: currentUser.id,
-                        author_name: currentUser.email
+                        author_name: authorName.trim() || '管理員'
                     };
 
                     if (guide) {
@@ -2929,6 +3021,20 @@
                                 placeholder="請輸入攻略標題"
                                 className="w-full p-4 rounded-2xl bg-stone-800 border-2 border-stone-700 text-white placeholder-stone-500 focus:border-gold-400 focus:outline-none"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-stone-300 font-bold mb-2">作者暱稱 *</label>
+                            <input
+                                type="text"
+                                value={authorName}
+                                onChange={(e) => setAuthorName(e.target.value)}
+                                placeholder="例如：管理員、自取、官方等"
+                                className="w-full p-4 rounded-2xl bg-stone-800 border-2 border-stone-700 text-white placeholder-stone-500 focus:border-gold-400 focus:outline-none"
+                            />
+                            <p className="text-xs text-stone-500 mt-2">
+                                💡 這個名稱會顯示在攻略頁面上
+                            </p>
                         </div>
 
                         <div>
