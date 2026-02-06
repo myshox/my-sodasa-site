@@ -2967,8 +2967,20 @@
                                 </label>
                             </div>
                             <div className="bg-white border-2 border-stone-700 rounded-2xl overflow-hidden">
-                                <div ref={quillRef} style={{ minHeight: '400px', backgroundColor: 'white' }} />
+                                <div ref={quillRef} style={{ minHeight: '400px', backgroundColor: 'white', color: '#000000' }} />
                             </div>
+                            <style>{`
+                                .ql-editor {
+                                    color: #1a1614 !important;
+                                    font-size: 16px;
+                                    line-height: 1.6;
+                                }
+                                .ql-editor p,
+                                .ql-editor ol,
+                                .ql-editor ul {
+                                    color: #1a1614 !important;
+                                }
+                            `}</style>
                             <p className="text-xs text-stone-500 mt-2">
                                 💡 方式 1：點擊「上傳 Word」按鈕選擇 .docx 文件 | 方式 2：從 Word 直接複製貼上（Ctrl+V）
                             </p>
