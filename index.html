@@ -632,7 +632,7 @@
             );
         };
 
-        const PaymentModal = ({ method, plan, gameAccount, onClose }) => {
+        const PaymentModal = ({ method, plan, gameAccount, lineName, onClose }) => {
             if (!method || !plan) return null;
             
             const ReminderSection = () => (
@@ -662,6 +662,15 @@
                         <span className="text-stone-500 font-bold text-sm tracking-wide">遊戲帳號</span>
                         <span className="text-lg font-black text-stone-700 font-mono tracking-wide">{gameAccount}</span>
                     </div>
+                    {lineName && (
+                        <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
+                            <span className="text-stone-500 font-bold text-sm tracking-wide">LINE 名稱</span>
+                            <span className="text-base font-bold text-green-600 flex items-center gap-1">
+                                <span>📱</span>
+                                {lineName}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
                         <span className="text-stone-500 font-bold text-sm tracking-wide">支付金額</span>
                         <span className="text-xl font-black text-stone-800">NT$ {plan.amount.toLocaleString()}</span>
@@ -2582,6 +2591,7 @@
             const [selectedMethod, setSelectedMethod] = useState(null);
             const [selectedPlan, setSelectedPlan] = useState(null);
             const [showModal, setShowModal] = useState(false);
+            const [lineName, setLineName] = useState(''); // 新增：LINE 名稱
             const [formErrors, setFormErrors] = useState({ gameAccount: '', method: '', plan: '' });
             const accountRef = useRef(null);
             const methodRef = useRef(null);
@@ -2673,6 +2683,7 @@
                             user_id: user.id,
                             email: user.email,
                             game_account: selectedAccount?.name || '',
+                            line_name: lineName || null, // 新增：LINE 名稱（選填）
                             amount: selectedPlan.amount,
                             plan_name: `金幣 ${selectedPlan.amount} 方案`,
                             payment_method: selectedMethod,
@@ -2782,6 +2793,7 @@
                             method={selectedMethod}
                             plan={selectedPlan} 
                             gameAccount={gameAccounts.find(acc => acc.id === selectedAccountId)?.name || ''}
+                            lineName={lineName}
                             onClose={() => setShowModal(false)} 
                         />
                     )}
@@ -2908,6 +2920,26 @@
                                                 </p>
                                             </div>
                                         )}
+                                        
+                                        {/* LINE 名稱輸入欄位 */}
+                                        <div className="mt-6 pt-6 border-t border-stone-200">
+                                            <label className="block text-stone-700 font-bold mb-3 text-sm flex items-center gap-2">
+                                                <span className="text-green-600">📱</span>
+                                                LINE 名稱（選填）
+                                                <span className="text-xs text-stone-500 font-normal">方便管理員查核</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={lineName}
+                                                onChange={(e) => setLineName(e.target.value)}
+                                                placeholder="請輸入您的 LINE 顯示名稱"
+                                                className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-green-400 focus:ring-4 focus:ring-green-100/50 focus:outline-none bg-white text-stone-700 placeholder-stone-400 transition-all duration-200"
+                                            />
+                                            <p className="text-stone-500 text-xs mt-2 flex items-start gap-1">
+                                                <span>💡</span>
+                                                <span>提供 LINE 名稱可加快審核速度，但非必填項目</span>
+                                            </p>
+                                        </div>
                                     </>
                                 )}
                             </div>
