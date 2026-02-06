@@ -67,6 +67,10 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+    <!-- Quill.js 富文本編輯器（支援從 Word 貼上） -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
     <!-- Import Map (使用生產版本，減少文件大小) -->
     <script type="importmap">
     {
@@ -245,7 +249,8 @@
             HeartHandshake, Eye, ExternalLink, User, Mail, Send, LayoutDashboard, Flame, Wind, Bell, ChevronDown,
             Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
-            ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3
+            ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
+            BookOpen, ArrowLeft
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -2518,6 +2523,592 @@
             );
         };
 
+        // ============================================
+        // 活動攻略系統組件
+        // ============================================
+
+        // 攻略卡片組件
+        const GuideCard = ({ guide, onClick }) => {
+            const getCategoryInfo = (category) => {
+                const categories = {
+                    event: { label: '活動', color: 'bg-fire-500', icon: '🎉' },
+                    pve: { label: 'PVE', color: 'bg-water-500', icon: '⚔️' },
+                    pvp: { label: 'PVP', color: 'bg-wind-500', icon: '🛡️' },
+                    beginner: { label: '新手', color: 'bg-gold-500', icon: '🌟' },
+                    general: { label: '綜合', color: 'bg-stone-500', icon: '📖' }
+                };
+                return categories[category] || categories.general;
+            };
+
+            const catInfo = getCategoryInfo(guide.category);
+
+            return (
+                <motion.div
+                    whileHover={{ y: -4 }}
+                    onClick={onClick}
+                    className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                    {guide.thumbnail && (
+                        <div className="aspect-video bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
+                            <img
+                                src={guide.thumbnail}
+                                alt={guide.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                        </div>
+                    )}
+
+                    <div className="p-6">
+                        {guide.is_pinned && (
+                            <div className="inline-flex items-center gap-1 bg-fire-500 text-white px-3 py-1 rounded-full text-xs font-bold mb-3">
+                                <Star size={12} fill="white" />
+                                置頂
+                            </div>
+                        )}
+
+                        <div className={`inline-flex items-center gap-1 ${catInfo.color} text-white px-3 py-1 rounded-full text-xs font-bold mb-3 ml-2`}>
+                            <span>{catInfo.icon}</span>
+                            {catInfo.label}
+                        </div>
+
+                        <h3 className="text-xl font-black text-stone-800 mb-3 line-clamp-2 group-hover:text-gold-600 transition-colors">
+                            {guide.title}
+                        </h3>
+
+                        <div className="flex items-center justify-between text-sm text-stone-500">
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center gap-1">
+                                    <Eye size={14} />
+                                    {guide.views || 0}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Heart size={14} />
+                                    {guide.likes || 0}
+                                </span>
+                            </div>
+                            <span className="text-xs">
+                                {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW')}
+                            </span>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        // 攻略詳細頁面
+        const GuideDetailView = ({ guide, onBack }) => {
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen"
+                >
+                    <div className="max-w-4xl mx-auto">
+                        <button
+                            onClick={onBack}
+                            className="flex items-center gap-2 text-stone-600 hover:text-gold-600 font-bold mb-6 transition-colors"
+                        >
+                            <ArrowLeft size={20} />
+                            返回攻略列表
+                        </button>
+
+                        <div className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl">
+                            <div className="bg-gradient-to-br from-gold-50 to-amber-50 p-8 md:p-12 border-b-2 border-gold-200">
+                                <h1 className="text-3xl md:text-4xl font-black text-stone-800 mb-4">
+                                    {guide.title}
+                                </h1>
+                                <div className="flex items-center justify-between text-sm text-stone-600">
+                                    <div className="flex items-center gap-4">
+                                        <span className="flex items-center gap-1">
+                                            <User size={14} />
+                                            {guide.author_name || '管理員'}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Calendar size={14} />
+                                            {new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW')}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Eye size={14} />
+                                            {guide.views || 0} 瀏覽
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                className="prose prose-stone max-w-none p-8 md:p-12"
+                                style={{
+                                    fontSize: '16px',
+                                    lineHeight: '1.8'
+                                }}
+                                dangerouslySetInnerHTML={{ __html: guide.content }}
+                            />
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        // 攻略前台頁面
+        const GuidesPage = () => {
+            const [guides, setGuides] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [selectedGuide, setSelectedGuide] = useState(null);
+            const [category, setCategory] = useState('all');
+
+            useEffect(() => {
+                loadGuides();
+            }, [category]);
+
+            const loadGuides = async () => {
+                try {
+                    let query = supabase
+                        .from('guides')
+                        .select('*')
+                        .eq('status', 'published')
+                        .order('is_pinned', { ascending: false })
+                        .order('publish_date', { ascending: false });
+
+                    if (category !== 'all') {
+                        query = query.eq('category', category);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) throw error;
+                    setGuides(data || []);
+                } catch (error) {
+                    console.error('載入攻略失敗:', error);
+                    showToast('載入攻略失敗', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const incrementViews = async (guideId) => {
+                try {
+                    await supabase.rpc('increment_guide_views', { guide_id: guideId });
+                } catch (error) {
+                    console.error('更新瀏覽次數失敗:', error);
+                }
+            };
+
+            const handleGuideClick = (guide) => {
+                setSelectedGuide(guide);
+                incrementViews(guide.id);
+            };
+
+            if (selectedGuide) {
+                return <GuideDetailView guide={selectedGuide} onBack={() => setSelectedGuide(null)} />;
+            }
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen"
+                >
+                    <PageHeader
+                        title="活動攻略"
+                        subtitle="最新活動資訊、遊戲技巧、精彩攻略一次掌握！"
+                        icon={BookOpen}
+                        color="text-gold-500"
+                    />
+
+                    <div className="max-w-7xl mx-auto mb-8">
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            {[
+                                { id: 'all', label: '全部', icon: '📚' },
+                                { id: 'event', label: '活動', icon: '🎉' },
+                                { id: 'pve', label: 'PVE', icon: '⚔️' },
+                                { id: 'pvp', label: 'PVP', icon: '🛡️' },
+                                { id: 'beginner', label: '新手', icon: '🌟' },
+                                { id: 'general', label: '綜合', icon: '📖' }
+                            ].map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setCategory(cat.id)}
+                                    className={`px-6 py-3 rounded-2xl font-bold transition-all duration-200 ${
+                                        category === cat.id
+                                            ? 'bg-gold-500 text-white shadow-lg shadow-gold-200'
+                                            : 'bg-white text-stone-600 hover:bg-stone-50 border-2 border-stone-200'
+                                    }`}
+                                >
+                                    <span className="mr-2">{cat.icon}</span>
+                                    {cat.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <LoadingSpinner message="載入攻略中..." />
+                    ) : guides.length === 0 ? (
+                        <div className="max-w-2xl mx-auto text-center py-20">
+                            <div className="bg-white rounded-3xl p-12 border-2 border-stone-200">
+                                <BookOpen size={48} className="mx-auto text-stone-300 mb-4" />
+                                <p className="text-stone-500 font-bold text-lg">目前沒有攻略</p>
+                                <p className="text-stone-400 text-sm mt-2">敬請期待精彩內容！</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="max-w-7xl mx-auto">
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {guides.map(guide => (
+                                    <GuideCard key={guide.id} guide={guide} onClick={() => handleGuideClick(guide)} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+            );
+        };
+
+        // 富文本編輯器組件（Quill.js）
+        const GuideEditor = ({ guide, currentUser, onClose }) => {
+            const [title, setTitle] = useState(guide?.title || '');
+            const [category, setCategory] = useState(guide?.category || 'general');
+            const [status, setStatus] = useState(guide?.status || 'draft');
+            const [isPinned, setIsPinned] = useState(guide?.is_pinned || false);
+            const [saving, setSaving] = useState(false);
+            const quillRef = useRef(null);
+            const editorRef = useRef(null);
+
+            useEffect(() => {
+                if (!editorRef.current && quillRef.current && window.Quill) {
+                    const quill = new window.Quill(quillRef.current, {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'color': [] }, { 'background': [] }],
+                                [{ 'align': [] }],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['blockquote', 'code-block'],
+                                ['link', 'image'],
+                                ['clean']
+                            ]
+                        },
+                        placeholder: '在此貼上您的內容...\n支援從 Word 直接複製貼上（Ctrl+V）'
+                    });
+
+                    if (guide?.content) {
+                        quill.root.innerHTML = guide.content;
+                    }
+
+                    quill.getModule('toolbar').addHandler('image', () => {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+                        input.click();
+
+                        input.onchange = async () => {
+                            const file = input.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    const range = quill.getSelection();
+                                    quill.insertEmbed(range.index, 'image', e.target.result);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        };
+                    });
+
+                    editorRef.current = quill;
+                }
+            }, [guide]);
+
+            const handleSave = async () => {
+                if (!title.trim()) {
+                    showToast('請輸入標題', 'warning');
+                    return;
+                }
+
+                const content = editorRef.current.root.innerHTML;
+                if (!content.trim() || content === '<p><br></p>') {
+                    showToast('請輸入內容', 'warning');
+                    return;
+                }
+
+                setSaving(true);
+
+                try {
+                    const guideData = {
+                        title: title.trim(),
+                        content,
+                        category,
+                        status,
+                        is_pinned: isPinned,
+                        author_id: currentUser.id,
+                        author_name: currentUser.email
+                    };
+
+                    if (guide) {
+                        const { error } = await supabase
+                            .from('guides')
+                            .update(guideData)
+                            .eq('id', guide.id);
+
+                        if (error) throw error;
+                        showToast('更新成功', 'success');
+                    } else {
+                        const { error } = await supabase
+                            .from('guides')
+                            .insert([guideData]);
+
+                        if (error) throw error;
+                        showToast('新增成功', 'success');
+                    }
+
+                    onClose();
+                } catch (error) {
+                    console.error('儲存失敗:', error);
+                    showToast('儲存失敗：' + error.message, 'error');
+                } finally {
+                    setSaving(false);
+                }
+            };
+
+            return (
+                <div className="bg-stone-900 rounded-2xl p-6 border border-stone-700">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-black text-white">
+                            {guide ? '編輯攻略' : '新增攻略'}
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="text-stone-500 hover:text-stone-300"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-stone-300 font-bold mb-2">標題 *</label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="請輸入攻略標題"
+                                className="w-full p-4 rounded-2xl bg-stone-800 border-2 border-stone-700 text-white placeholder-stone-500 focus:border-gold-400 focus:outline-none"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-stone-300 font-bold mb-2">分類 *</label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="w-full p-4 rounded-2xl bg-stone-800 border-2 border-stone-700 text-white focus:border-gold-400 focus:outline-none"
+                            >
+                                <option value="general">📖 綜合</option>
+                                <option value="event">🎉 活動</option>
+                                <option value="pve">⚔️ PVE</option>
+                                <option value="pvp">🛡️ PVP</option>
+                                <option value="beginner">🌟 新手</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-stone-300 font-bold mb-2">內容 *</label>
+                            <div className="bg-white border-2 border-stone-700 rounded-2xl overflow-hidden">
+                                <div ref={quillRef} style={{ minHeight: '400px', backgroundColor: 'white' }} />
+                            </div>
+                            <p className="text-xs text-stone-500 mt-2">
+                                💡 支援從 Word 直接複製貼上（Ctrl+V），圖片會自動嵌入
+                            </p>
+                        </div>
+
+                        <div className="flex gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={isPinned}
+                                    onChange={(e) => setIsPinned(e.target.checked)}
+                                    className="w-5 h-5 text-gold-600 rounded focus:ring-2 focus:ring-gold-500"
+                                />
+                                <span className="text-stone-300 font-bold">置頂</span>
+                            </label>
+
+                            <label className="flex items-center gap-2">
+                                <span className="text-stone-300 font-bold">狀態：</span>
+                                <select
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    className="p-2 rounded-xl bg-stone-800 border-2 border-stone-700 text-white focus:border-gold-400"
+                                >
+                                    <option value="draft">草稿</option>
+                                    <option value="published">發布</option>
+                                    <option value="archived">封存</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <Button
+                                onClick={handleSave}
+                                disabled={saving}
+                                variant="gold"
+                                className="flex-1"
+                            >
+                                {saving ? '儲存中...' : '儲存'}
+                            </Button>
+                            <Button
+                                onClick={onClose}
+                                variant="secondary"
+                                className="flex-1"
+                            >
+                                取消
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 管理員後台 - 攻略管理組件
+        const GuideManagementTab = () => {
+            const [guides, setGuides] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showEditor, setShowEditor] = useState(false);
+            const [editingGuide, setEditingGuide] = useState(null);
+            const [currentUser, setCurrentUser] = useState(null);
+
+            useEffect(() => {
+                loadCurrentUser();
+                loadGuides();
+            }, []);
+
+            const loadCurrentUser = async () => {
+                const user = await authHelpers.getCurrentUser();
+                setCurrentUser(user);
+            };
+
+            const loadGuides = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('guides')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    setGuides(data || []);
+                } catch (error) {
+                    console.error('載入攻略失敗:', error);
+                    showToast('載入攻略失敗', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleCreate = () => {
+                setEditingGuide(null);
+                setShowEditor(true);
+            };
+
+            const handleEdit = (guide) => {
+                setEditingGuide(guide);
+                setShowEditor(true);
+            };
+
+            const handleDelete = async (guideId) => {
+                if (!confirm('確定要刪除這篇攻略嗎？')) return;
+
+                try {
+                    const { error } = await supabase
+                        .from('guides')
+                        .delete()
+                        .eq('id', guideId);
+
+                    if (error) throw error;
+
+                    showToast('刪除成功', 'success');
+                    loadGuides();
+                } catch (error) {
+                    console.error('刪除失敗:', error);
+                    showToast('刪除失敗', 'error');
+                }
+            };
+
+            const handleEditorClose = () => {
+                setShowEditor(false);
+                setEditingGuide(null);
+                loadGuides();
+            };
+
+            if (showEditor) {
+                return <GuideEditor guide={editingGuide} currentUser={currentUser} onClose={handleEditorClose} />;
+            }
+
+            return (
+                <div>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-black text-white">活動攻略管理</h2>
+                        <Button onClick={handleCreate} variant="gold" icon={Plus}>
+                            新增攻略
+                        </Button>
+                    </div>
+
+                    {loading ? (
+                        <LoadingSpinner message="載入中..." />
+                    ) : guides.length === 0 ? (
+                        <div className="text-center py-20 bg-stone-800 rounded-2xl border border-stone-700">
+                            <BookOpen size={48} className="mx-auto text-stone-600 mb-4" />
+                            <p className="text-stone-400 font-bold">目前沒有攻略</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {guides.map(guide => (
+                                <div key={guide.id} className="bg-stone-800 rounded-2xl p-6 border-2 border-stone-700">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <h3 className="text-lg font-bold text-white">{guide.title}</h3>
+                                                {guide.is_pinned && (
+                                                    <span className="bg-fire-500 text-white px-2 py-1 rounded text-xs">置頂</span>
+                                                )}
+                                                <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                                    guide.status === 'published' ? 'bg-wind-500 text-white' :
+                                                    guide.status === 'draft' ? 'bg-stone-600 text-stone-300' :
+                                                    'bg-stone-700 text-stone-400'
+                                                }`}>
+                                                    {guide.status === 'published' ? '已發布' : guide.status === 'draft' ? '草稿' : '已封存'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-sm text-stone-400">
+                                                <span>瀏覽: {guide.views || 0}</span>
+                                                <span>按讚: {guide.likes || 0}</span>
+                                                <span>{new Date(guide.created_at).toLocaleString('zh-TW')}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleEdit(guide)}
+                                                className="px-4 py-2 bg-water-500 text-white rounded-xl hover:bg-water-600 transition-colors"
+                                            >
+                                                編輯
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(guide.id)}
+                                                className="px-4 py-2 bg-fire-500 text-white rounded-xl hover:bg-fire-600 transition-colors"
+                                            >
+                                                刪除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
         const EventsPage = () => {
             const [events, setEvents] = useState([]);
             const [loading, setLoading] = useState(true);
@@ -4718,6 +5309,7 @@
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
                             <div className="flex flex-wrap gap-2">
                                 <button onClick={() => setCurrentTab('donations')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${currentTab === 'donations' ? 'bg-gold-500 text-white shadow-lg shadow-gold-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>贊助管理</button>
+                                <button onClick={() => setCurrentTab('guides')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${currentTab === 'guides' ? 'bg-purple-500 text-white shadow-lg shadow-purple-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}><BookOpen size={16}/> 活動攻略</button>
                                 <button onClick={() => setCurrentTab('stats')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${currentTab === 'stats' ? 'bg-wind-500 text-white shadow-lg shadow-wind-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}><Coins size={16}/> 報表統計</button>
                                 <button onClick={() => setCurrentTab('events')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${currentTab === 'events' ? 'bg-water-500 text-white shadow-lg shadow-water-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>活動管理</button>
                                 <button onClick={() => setCurrentTab('music')} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${currentTab === 'music' ? 'bg-fire-500 text-white shadow-lg shadow-fire-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}><Music size={16}/> 音樂</button>
@@ -5398,6 +5990,11 @@
                         })()}
                         
                         {/* Events 分頁 */}
+                        {/* 活動攻略管理標籤 */}
+                        {currentTab === 'guides' && (
+                            <GuideManagementTab />
+                        )}
+
                         {currentTab === 'events' && (
                             <div className="space-y-8">
                                 <div className="bg-stone-800 rounded-3xl p-6 border border-stone-700 shadow-xl">
@@ -5799,8 +6396,8 @@
                             </Link>
 
                             <div className={`hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-2xl transition-all duration-300 ${isScrolled ? 'bg-stone-100/60' : 'bg-white/80 backdrop-blur-lg border border-white/60 shadow-lg shadow-stone-200/20'}`}>
-                                {['部落首頁', '金幣贊助', '官方客服'].map((label, i) => {
-                                    const path = i === 0 ? '/' : i === 1 ? '/recharge' : '/support';
+                                {['部落首頁', '活動攻略', '金幣贊助', '官方客服'].map((label, i) => {
+                                    const path = i === 0 ? '/' : i === 1 ? '/guides' : i === 2 ? '/recharge' : '/support';
                                     const isActive = location.pathname === path;
                                     return (
                                         <Link key={path} to={path} className="rounded-xl">
@@ -5857,6 +6454,7 @@
                                 <Route path="/recharge" element={<RechargePage />} />
                                 <Route path="/support" element={<SupportPage />} />
                                 <Route path="/terms" element={<TermsPage />} />
+                                <Route path="/guides" element={<GuidesPage />} />
                                 <Route path="/events" element={<EventsPage />} />
                                 <Route path="/admin" element={<AdminPage />} />
                             </Routes>
