@@ -3520,8 +3520,9 @@
             };
 
             const handleAndroidDownload = () => {
-                // Android 下載邏輯（可替換為實際下載連結）
-                showToast("Android 版本籌備中，敬請期待！", "info");
+                // Android APK 下載連結（Google Drive）
+                window.open('https://drive.google.com/file/d/1bp75L9i4YlcQvWVO82tFCnmXL9WutG2B/view?usp=sharing', '_blank');
+                showToast("正在開啟 Android 下載頁面...", "success");
             };
 
             const handleIosDownload = () => {
@@ -3591,49 +3592,44 @@
                                 </div>
                             </motion.div>
 
-                            {/* Android 端 - 即將開放 */}
+                            {/* Android 端 */}
                             <motion.div
-                                whileHover={{ y: -4 }}
-                                className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl transition-all duration-300 relative opacity-75"
+                                whileHover={{ y: -8, scale: 1.02 }}
+                                className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl hover:shadow-2xl hover:border-wind-300 transition-all duration-300"
                             >
-                                {/* 即將開放標籤 */}
-                                <div className="absolute top-4 right-4 z-10 bg-gold-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                                    即將開放
-                                </div>
-                                
-                                <div className="bg-gradient-to-br from-stone-300 to-stone-400 p-8 text-center">
+                                <div className="bg-gradient-to-br from-wind-400 to-wind-600 p-8 text-center">
                                     <div className="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                                        <svg className="w-12 h-12 text-stone-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-12 h-12 text-wind-600" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/>
                                         </svg>
                                     </div>
                                     <h2 className="text-3xl font-black text-white mb-2">Android</h2>
-                                    <p className="text-stone-200 font-medium">安卓手機版</p>
+                                    <p className="text-wind-100 font-medium">安卓手機版</p>
                                 </div>
                                 <div className="p-8">
-                                    <ul className="space-y-3 mb-8 text-stone-500">
+                                    <ul className="space-y-3 mb-8 text-stone-700">
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
+                                            <CheckCircle size={18} className="text-wind-500" />
                                             <span className="font-medium">隨時隨地遊玩</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
+                                            <CheckCircle size={18} className="text-wind-500" />
                                             <span className="font-medium">觸控操作優化</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
+                                            <CheckCircle size={18} className="text-wind-500" />
                                             <span className="font-medium">低耗電模式</span>
                                         </li>
                                     </ul>
                                     <Button
-                                        disabled
-                                        variant="secondary"
-                                        className="w-full py-4 bg-stone-200 text-stone-500 cursor-not-allowed opacity-60"
+                                        onClick={handleAndroidDownload}
+                                        variant="primary"
+                                        className="w-full py-4 bg-wind-500 hover:bg-wind-600 shadow-lg shadow-wind-200"
                                     >
-                                        <Clock size={20} />
-                                        <span>即將開放</span>
+                                        <Download size={20} />
+                                        <span>下載 Android 版</span>
                                     </Button>
-                                    <p className="text-xs text-stone-400 text-center mt-4">敬請期待</p>
+                                    <p className="text-xs text-stone-500 text-center mt-4">支援 Android 5.0 以上</p>
                                 </div>
                             </motion.div>
 
