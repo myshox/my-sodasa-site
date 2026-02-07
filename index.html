@@ -1146,7 +1146,7 @@
             const navItems = useMemo(() => [
                 { path: '/', label: '首頁', icon: Home },
                 { path: '/guides', label: '攻略', icon: BookOpen },
-                { path: '/download', label: '下載', icon: Download },
+                { path: '/events', label: '活動', icon: Calendar },
                 { path: '/recharge', label: '金幣', icon: Coins },
                 { path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User },
             ], [user]);
@@ -2269,8 +2269,30 @@
                         </div>
                     </section>
 
+                    {/* 新功能公告 - 活動攻略 */}
+                    <section className="bg-gradient-to-r from-gold-50 via-amber-50 to-orange-50 border-y-2 border-gold-200 py-4 relative z-20">
+                        <div className="max-w-7xl mx-auto px-4 md:px-6">
+                            <Link to="/guides" className="flex items-center justify-center gap-3 group">
+                                <div className="bg-gold-500 text-white p-2 rounded-xl shrink-0 group-hover:bg-gold-600 transition-colors shadow-md">
+                                    <BookOpen size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-fire-500 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
+                                        <span className="font-black text-stone-800 text-base md:text-lg group-hover:text-gold-600 transition-colors">
+                                            🎉 全新「活動攻略」功能上線！
+                                        </span>
+                                    </div>
+                                    <p className="text-xs md:text-sm text-stone-600 mt-1">
+                                        最新活動資訊、遊戲技巧、精彩攻略一次掌握 →
+                                    </p>
+                                </div>
+                            </Link>
+                        </div>
+                    </section>
+
                     {/* News Section (Powered by Events) */}
-                    <section className="bg-white/95 border-y border-stone-100 py-4 relative z-20 shadow-sm backdrop-blur-sm">
+                    <section className="bg-white/95 border-b border-stone-100 py-4 relative z-20 shadow-sm backdrop-blur-sm">
                         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center gap-4 md:gap-6 overflow-hidden">
                             <Link to="/events" className="bg-stone-800 text-white text-sm font-bold px-4 py-2 rounded-xl whitespace-nowrap flex items-center gap-2 shrink-0 hover:bg-stone-700 transition-colors shadow-sm">
                                 <Megaphone size={18} /> 最新情報
