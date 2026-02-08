@@ -6904,7 +6904,7 @@
                                 </div>
                                 
                                 {/* 統計卡片 */}
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                     <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border border-blue-700/30 rounded-2xl p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
@@ -6949,6 +6949,17 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 border border-orange-700/30 rounded-2xl p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                                                <Coins className="text-orange-400" size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-stone-400 text-sm">累計儲值</p>
+                                                <p className="text-white text-xl font-black">{allUsers.reduce((sum, u) => sum + (u.total_amount || 0), 0).toLocaleString()} 元</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 {/* 用戶列表 */}
@@ -6965,6 +6976,7 @@
                                                     <tr className="border-b border-stone-700">
                                                         <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">Email</th>
                                                         <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">角色</th>
+                                                        <th className="text-right px-6 py-4 text-stone-400 font-bold text-sm">累計儲值</th>
                                                         <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">註冊時間</th>
                                                         <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">用戶 ID</th>
                                                         <th className="text-center px-6 py-4 text-stone-400 font-bold text-sm">操作</th>
@@ -6995,6 +7007,22 @@
                                                                         一般玩家
                                                                     </span>
                                                                 )}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <div className="flex flex-col items-end gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-gold-400 font-black text-lg">
+                                                                            {user.total_amount?.toLocaleString() || '0'}
+                                                                        </span>
+                                                                        <span className="text-stone-400 text-xs">元</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Coins size={14} className="text-gold-500" />
+                                                                        <span className="text-gold-500 font-bold text-sm">
+                                                                            {user.total_coins?.toLocaleString() || '0'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
                                                             </td>
                                                             <td className="px-6 py-4 text-stone-300 text-sm">
                                                                 {new Date(user.created_at).toLocaleString('zh-TW', {
