@@ -647,7 +647,7 @@
             );
         };
 
-        const PaymentModal = ({ method, plan, gameAccount, lineName, onClose }) => {
+        const PaymentModal = ({ method, plan, gameAccount, lineName, orderNumber, onClose, onSaveRecord }) => {
             if (!method || !plan) return null;
             
             const ReminderSection = () => (
@@ -673,6 +673,26 @@
 
             const AmountInfo = () => (
                 <div className="bg-stone-50/80 rounded-3xl p-6 border border-stone-100 mb-6 space-y-4">
+                    {orderNumber && (
+                        <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
+                            <span className="text-stone-500 font-bold text-sm tracking-wide">訂單編號</span>
+                            <div className="flex items-center gap-2">
+                                <code className="text-base font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-lg border border-purple-200">
+                                    {orderNumber}
+                                </code>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(orderNumber);
+                                        showToast('訂單編號已複製', 'success');
+                                    }}
+                                    className="p-1.5 hover:bg-stone-200 rounded-lg transition-colors"
+                                    title="複製訂單編號"
+                                >
+                                    <Copy size={16} className="text-stone-500" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center border-b border-stone-200/50 pb-3 border-dashed">
                         <span className="text-stone-500 font-bold text-sm tracking-wide">遊戲帳號</span>
                         <span className="text-lg font-black text-stone-700 font-mono tracking-wide">{gameAccount}</span>
@@ -724,7 +744,74 @@
                             
                             <AmountInfo />
                             <ReminderSection />
-                            <Button variant="line" className="w-full py-4 text-lg rounded-2xl" onClick={onClose}>我已完成支付</Button>
+                            <Button variant="line" className="w-full py-4 text-lg rounded-2xl" onClick={async () => {
+                                // 關閉當前彈窗
+                                onClose();
+                                
+                                // 顯示載入中
+                                showToast('正在生成訂單編號...', 'info');
+                                
+                                // 儲存贊助紀錄並生成訂單編號
+                                const result = await onSaveRecord();
+                                
+                                // result 可能是訂單編號(string)或 true(boolean)
+                                const newOrderNumber = typeof result === 'string' ? result : null;
+                                
+                                if (result) {
+                                    // 顯示包含訂單編號的二次確認提醒
+                                    setTimeout(() => {
+                                        showConfirm(
+                                            '✅ 訂單已建立',
+                                            <div className="text-left space-y-4">
+                                                {newOrderNumber && (
+                                                    <div className="bg-purple-50 border-2 border-purple-500 p-4 rounded-lg">
+                                                        <p className="text-sm text-stone-600 font-bold mb-2">您的訂單編號</p>
+                                                        <div className="flex items-center gap-3 justify-center">
+                                                            <code className="text-xl font-black text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-purple-300">
+                                                                {newOrderNumber}
+                                                            </code>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(newOrderNumber);
+                                                                    showToast('訂單編號已複製', 'success');
+                                                                }}
+                                                                className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                                                                title="複製訂單編號"
+                                                            >
+                                                                <Copy size={20} className="text-purple-600" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="bg-yellow-50 border-2 border-yellow-500 p-4 rounded-lg">
+                                                    <p className="text-xl text-red-600 font-black mb-2">⚠️ 必須截圖！</p>
+                                                    <p className="text-base text-stone-800 font-bold">📸 請立即截圖本頁面保存訂單編號</p>
+                                                    <p className="text-sm text-stone-600 mt-2">作為支付憑證，避免糾紛</p>
+                                                </div>
+                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded space-y-3">
+                                                    <p className="text-base text-stone-800 font-black">💬 請立即將截圖傳送給 LINE 官方客服</p>
+                                                    <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
+                                                       className="inline-flex items-center gap-2 px-4 py-3 bg-line-500 text-white rounded-lg text-base font-bold hover:bg-line-600 transition-colors shadow-lg w-full justify-center">
+                                                        <MessageSquare size={20} />
+                                                        立即聯繫 LINE 客服
+                                                        <ExternalLink size={16} />
+                                                    </a>
+                                                    <p className="text-sm text-stone-600 font-bold text-center">⏰ 人工客服時間：10:00 - 22:00</p>
+                                                </div>
+                                                <div className="bg-red-50 border border-red-300 rounded-lg p-3">
+                                                    <p className="text-sm text-red-700 font-bold">💡 客服會核對您的訂單編號和支付憑證後發放金幣</p>
+                                                </div>
+                                            </div>,
+                                            () => {
+                                                // 跳轉到會員後台查看訂單
+                                                window.location.hash = '#/member';
+                                                showToast('已建立訂單，請將截圖傳送給客服', 'success');
+                                            },
+                                            '前往會員後台查看'
+                                        );
+                                    }, 500);
+                                }
+                            }}>是否完成支付？</Button>
                         </div>
                     </ModalWrapper>
                 );
@@ -742,9 +829,77 @@
                             <AmountInfo />
                             <ReminderSection />
 
-                            <Button variant="gold" className="w-full py-4 text-lg rounded-2xl" onClick={() => {
-                                window.open(plan.url, '_blank');
-                                onClose();
+                            <Button variant="gold" className="w-full py-4 text-lg rounded-2xl" onClick={async () => {
+                                // 先生成訂單編號
+                                showToast('正在生成訂單編號...', 'info');
+                                const result = await onSaveRecord();
+                                const newOrderNumber = typeof result === 'string' ? result : null;
+                                
+                                if (result) {
+                                    // 關閉當前彈窗
+                                    onClose();
+                                    
+                                    // 顯示提醒
+                                    setTimeout(() => {
+                                        showConfirm(
+                                            '⚠️ 前往付款前請先閱讀',
+                                            <div className="text-left space-y-4">
+                                                {newOrderNumber && (
+                                                    <div className="bg-purple-50 border-2 border-purple-500 p-4 rounded-lg">
+                                                        <p className="text-sm text-stone-600 font-bold mb-2">您的訂單編號</p>
+                                                        <div className="flex items-center gap-3 justify-center">
+                                                            <code className="text-xl font-black text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-purple-300">
+                                                                {newOrderNumber}
+                                                            </code>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(newOrderNumber);
+                                                                    showToast('訂單編號已複製', 'success');
+                                                                }}
+                                                                className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                                                                title="複製訂單編號"
+                                                            >
+                                                                <Copy size={20} className="text-purple-600" />
+                                                            </button>
+                                                        </div>
+                                                        <p className="text-xs text-stone-500 text-center mt-2">請先截圖保存訂單編號</p>
+                                                    </div>
+                                                )}
+                                                <p className="text-base text-stone-800 font-bold">點擊確認後將開啟外部支付頁面</p>
+                                                <div className="bg-yellow-50 border-2 border-yellow-500 p-4 rounded-lg">
+                                                    <p className="text-xl text-red-600 font-black mb-3">⚠️ 必須截圖兩個畫面！</p>
+                                                    <ol className="text-base text-stone-800 font-bold space-y-2 ml-4 list-decimal">
+                                                        <li>📸 本對話框（含訂單編號）</li>
+                                                        <li>📸 支付成功畫面</li>
+                                                    </ol>
+                                                    <p className="text-sm text-stone-600 mt-3">作為支付憑證，避免糾紛</p>
+                                                </div>
+                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded space-y-3">
+                                                    <p className="text-base text-stone-800 font-black">💬 完成支付後，請立即將截圖傳送給 LINE 客服</p>
+                                                    <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
+                                                       className="inline-flex items-center gap-2 px-4 py-3 bg-line-500 text-white rounded-lg text-base font-bold hover:bg-line-600 transition-colors shadow-lg w-full justify-center">
+                                                        <MessageSquare size={20} />
+                                                        立即聯繫 LINE 客服
+                                                        <ExternalLink size={16} />
+                                                    </a>
+                                                    <p className="text-sm text-stone-600 font-bold text-center">⏰ 人工客服時間：10:00 - 22:00</p>
+                                                </div>
+                                                <div className="bg-red-50 border border-red-300 rounded-lg p-3">
+                                                    <p className="text-sm text-red-700 font-bold">💡 傳送截圖後，客服會為您核對訂單編號並發放金幣</p>
+                                                </div>
+                                            </div>,
+                                            () => {
+                                                window.open(plan.url, '_blank');
+                                                // 跳轉到會員後台
+                                                setTimeout(() => {
+                                                    window.location.hash = '#/member';
+                                                    showToast('訂單已建立，請完成支付後聯繫客服', 'success');
+                                                }, 500);
+                                            },
+                                            '我已截圖，前往支付'
+                                        );
+                                    }, 500);
+                                }
                             }}>
                                 前往外部支付頁面 <ExternalLink size={20} className="ml-2"/>
                             </Button>
@@ -2134,9 +2289,28 @@
                                 <div className="space-y-4">
                                     {sponsorships.map((item) => (
                                         <div key={item.id} className="bg-stone-50 rounded-2xl p-5 border-2 border-stone-100 hover:border-gold-200 transition-colors">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <span className="text-gold-600 font-black text-lg">NT$ {item.amount}</span>
-                                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-gold-600 font-black text-lg">NT$ {item.amount}</span>
+                                                    {item.order_number && (
+                                                        <div className="flex items-center gap-2">
+                                                            <code className="text-base font-black text-purple-600 bg-purple-100 px-3 py-1.5 rounded-lg border-2 border-purple-300">
+                                                                {item.order_number}
+                                                            </code>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(item.order_number);
+                                                                    showToast('訂單編號已複製', 'success');
+                                                                }}
+                                                                className="p-1.5 hover:bg-purple-100 rounded-lg transition-colors"
+                                                                title="複製訂單編號"
+                                                            >
+                                                                <Copy size={18} className="text-purple-600" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap ${
                                                     item.status === 'completed' ? 'bg-wind-100 text-wind-700' :
                                                     item.status === 'pending' ? 'bg-gold-100 text-gold-700' :
                                                     'bg-stone-200 text-stone-600'
@@ -2146,9 +2320,14 @@
                                             </div>
                                             <div className="text-stone-600 text-sm space-y-1">
                                                 <p><span className="font-bold">方案名稱：</span>{item.plan_name}</p>
+                                                <p><span className="font-bold">獲得金幣：</span><span className="text-gold-600 font-bold">{item.coins ? item.coins.toLocaleString() : 0} Gold</span></p>
                                                 <p><span className="font-bold">遊戲帳號：</span>{item.game_account}</p>
-                                                <p><span className="font-bold">支付方式：</span>{item.payment_method}</p>
-                                                <p><span className="font-bold">贊助時間：</span>{new Date(item.created_at).toLocaleString('zh-TW')}</p>
+                                                <p><span className="font-bold">支付方式：</span>{
+                                                    item.payment_method === 'linepay' ? 'LINE Pay' : 
+                                                    item.payment_method === 'shopline' ? 'SHOPLINE' : 
+                                                    item.payment_method
+                                                }</p>
+                                                <p><span className="font-bold">儲值時間：</span>{new Date(item.created_at).toLocaleString('zh-TW')}</p>
                                                 {item.processed_at && (
                                                     <p><span className="font-bold">處理時間：</span>{new Date(item.processed_at).toLocaleString('zh-TW')}</p>
                                                 )}
@@ -2156,6 +2335,60 @@
                                                     <p><span className="font-bold">備註：</span>{item.notes}</p>
                                                 )}
                                             </div>
+                                            {item.status === 'pending' && (
+                                                <div className="mt-3 pt-3 border-t border-stone-200">
+                                                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded space-y-2">
+                                                        <p className="text-sm text-stone-700 font-bold">
+                                                            ⏳ 待處理：請依照以下步驟完成
+                                                        </p>
+                                                        
+                                                        {/* 根據支付方式顯示不同說明 */}
+                                                        {item.payment_method === 'linepay' && (
+                                                            <div className="text-sm text-stone-700 space-y-1">
+                                                                <p className="font-bold text-stone-800">📱 LINE Pay 付款流程：</p>
+                                                                <ol className="list-decimal ml-5 space-y-0.5">
+                                                                    <li>掃描 QR Code 完成 LINE Pay 支付</li>
+                                                                    <li>截圖支付成功畫面</li>
+                                                                    <li>將截圖與訂單編號傳送給客服核對</li>
+                                                                </ol>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {item.payment_method === 'shopline' && (
+                                                            <div className="text-sm text-stone-700 space-y-1">
+                                                                <p className="font-bold text-stone-800">💳 SHOPLINE 付款流程：</p>
+                                                                <ol className="list-decimal ml-5 space-y-0.5">
+                                                                    <li>前往外部支付頁面完成付款</li>
+                                                                    <li>截圖支付成功畫面</li>
+                                                                    <li>將截圖與訂單編號傳送給客服核對</li>
+                                                                </ol>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {!item.payment_method || (item.payment_method !== 'linepay' && item.payment_method !== 'shopline') && (
+                                                            <div className="text-sm text-stone-700 space-y-1">
+                                                                <p className="font-bold text-stone-800">💬 此方式需聯繫客服索取付款資訊：</p>
+                                                                <ol className="list-decimal ml-5 space-y-0.5">
+                                                                    <li>加入官方 LINE 帳號（ID: @939yjtdj）</li>
+                                                                    <li>告知客服您欲使用 {item.payment_method || '其他'} 支付</li>
+                                                                    <li>提供您的贊助金額 NT$ {item.amount?.toLocaleString()}</li>
+                                                                    <li>完成轉帳後回傳截圖與訂單編號</li>
+                                                                </ol>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        <div className="flex items-center gap-2 pt-2 border-t border-yellow-200">
+                                                            <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
+                                                               className="inline-flex items-center gap-2 px-3 py-2 bg-line-500 text-white rounded-lg text-sm font-bold hover:bg-line-600 transition-colors">
+                                                                <MessageSquare size={16} />
+                                                                立即聯繫 LINE 客服
+                                                                <ExternalLink size={12} />
+                                                            </a>
+                                                            <span className="text-xs text-stone-500">⏰ 人工客服時間：10:00 - 22:00</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -3821,6 +4054,7 @@
         };
 
         const RechargePage = () => {
+            const navigate = useNavigate();
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
             const [gameAccounts, setGameAccounts] = useState([]);
@@ -3828,6 +4062,7 @@
             const [selectedMethod, setSelectedMethod] = useState(null);
             const [selectedPlan, setSelectedPlan] = useState(null);
             const [showModal, setShowModal] = useState(false);
+            const [orderNumber, setOrderNumber] = useState(''); // 新增：訂單編號
             const [lineName, setLineName] = useState(''); // 新增：LINE 名稱
             const [formErrors, setFormErrors] = useState({ gameAccount: '', method: '', plan: '' });
             const accountRef = useRef(null);
@@ -3913,26 +4148,33 @@
                     // 取得 IP 位置資訊
                     const ipData = await getIpLocation();
                     
+                    // 準備插入資料
+                    const insertData = {
+                        user_id: user.id,
+                        email: user.email,
+                        game_account: selectedAccount?.name || '',
+                        line_name: lineName || null,
+                        amount: selectedPlan.amount,
+                        coins: selectedPlan.total,
+                        plan_name: `金幣 ${selectedPlan.total.toLocaleString()} 方案`,
+                        payment_method: selectedMethod,
+                        status: 'pending',
+                        ip_address: ipData?.ip || null
+                    };
+                    
+                    // 只有當 ipData 存在且有效時才加入 ip_location
+                    if (ipData && ipData.country) {
+                        insertData.ip_location = JSON.stringify({
+                            country: ipData.country,
+                            city: ipData.city || '',
+                            region: ipData.region || ''
+                        });
+                    }
+                    
                     // 儲存到新的 donations 表
                     const { data, error } = await supabase
                         .from('donations')
-                        .insert([{
-                            user_id: user.id,
-                            email: user.email,
-                            game_account: selectedAccount?.name || '',
-                            line_name: lineName || null, // 新增：LINE 名稱（選填）
-                            amount: selectedPlan.amount,
-                            coins: selectedPlan.total, // 金幣數量
-                            plan_name: `金幣 ${selectedPlan.total.toLocaleString()} 方案`,
-                            payment_method: selectedMethod,
-                            status: 'pending',
-                            ip_address: ipData?.ip || null,
-                            ip_location: ipData ? {
-                                country: ipData.country,
-                                city: ipData.city,
-                                region: ipData.region
-                            } : null
-                        }])
+                        .insert([insertData])
                         .select();
                     
                     if (error) {
@@ -3947,6 +4189,13 @@
                     }
                     
                     console.log('贊助紀錄已儲存:', data);
+                    
+                    // 儲存訂單編號到狀態並返回
+                    if (data && data[0] && data[0].order_number) {
+                        setOrderNumber(data[0].order_number);
+                        return data[0].order_number; // 返回訂單編號
+                    }
+                    
                     return true;
                 } catch (err) {
                     console.error('儲存贊助紀錄異常:', err);
@@ -3973,9 +4222,74 @@
                     return;
                 }
                 
-                // 儲存贊助紀錄
-                const success = await saveSponsorshipRecord();
-                if (success !== false) { // 如果儲存成功或沒有返回 false
+                // SHOPLINE：先生成訂單編號（因為是外部連結，無法串接）
+                if (selectedMethod === 'shopline') {
+                    showToast('正在生成訂單編號...', 'info');
+                    const result = await saveSponsorshipRecord();
+                    const newOrderNumber = typeof result === 'string' ? result : null;
+                    
+                    if (result && newOrderNumber) {
+                        // 顯示訂單編號和提醒
+                        setTimeout(() => {
+                            showConfirm(
+                                '✅ 訂單已建立',
+                                <div className="text-left space-y-4">
+                                    <div className="bg-purple-50 border-2 border-purple-500 p-4 rounded-lg">
+                                        <p className="text-sm text-stone-600 font-bold mb-2">您的訂單編號</p>
+                                        <div className="flex items-center gap-3 justify-center">
+                                            <code className="text-xl font-black text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-purple-300">
+                                                {newOrderNumber}
+                                            </code>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(newOrderNumber);
+                                                    showToast('訂單編號已複製', 'success');
+                                                }}
+                                                className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                                                title="複製訂單編號"
+                                            >
+                                                <Copy size={20} className="text-purple-600" />
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-stone-500 text-center mt-2">請務必截圖保存此訂單編號</p>
+                                    </div>
+                                    <div className="bg-yellow-50 border-2 border-yellow-500 p-4 rounded-lg">
+                                        <p className="text-xl text-red-600 font-black mb-3">⚠️ 必須截圖兩個畫面！</p>
+                                        <ol className="text-base text-stone-800 font-bold space-y-2 ml-4 list-decimal">
+                                            <li>📸 本對話框（含訂單編號）</li>
+                                            <li>📸 支付成功畫面</li>
+                                        </ol>
+                                        <p className="text-sm text-stone-600 mt-3">作為支付憑證，方便查帳核對</p>
+                                    </div>
+                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded space-y-3">
+                                        <p className="text-base text-stone-800 font-black">💬 完成支付後，請立即將截圖傳送給 LINE 客服</p>
+                                        <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
+                                           className="inline-flex items-center gap-2 px-4 py-3 bg-line-500 text-white rounded-lg text-base font-bold hover:bg-line-600 transition-colors shadow-lg w-full justify-center">
+                                            <MessageSquare size={20} />
+                                            立即聯繫 LINE 客服
+                                            <ExternalLink size={16} />
+                                        </a>
+                                        <p className="text-sm text-stone-600 font-bold text-center">⏰ 人工客服時間：10:00 - 22:00</p>
+                                    </div>
+                                    <div className="bg-red-50 border border-red-300 rounded-lg p-3">
+                                        <p className="text-sm text-red-700 font-bold">💡 客服會根據訂單編號和支付憑證為您查帳核對</p>
+                                    </div>
+                                </div>,
+                                () => {
+                                    // 開啟外部支付頁面
+                                    window.open(selectedPlan.url, '_blank');
+                                    // 跳轉到會員後台
+                                    setTimeout(() => {
+                                        window.location.hash = '#/member';
+                                        showToast('訂單已建立，請完成支付後聯繫客服', 'success');
+                                    }, 500);
+                                },
+                                '我已截圖，前往支付'
+                            );
+                        }, 500);
+                    }
+                } else {
+                    // LINE Pay：直接顯示支付彈窗，稍後生成訂單
                     setShowModal(true);
                 }
             };
@@ -4032,7 +4346,9 @@
                             plan={selectedPlan} 
                             gameAccount={gameAccounts.find(acc => acc.id === selectedAccountId)?.name || ''}
                             lineName={lineName}
-                            onClose={() => setShowModal(false)} 
+                            orderNumber={orderNumber}
+                            onClose={() => setShowModal(false)}
+                            onSaveRecord={saveSponsorshipRecord}
                         />
                     )}
 
@@ -4773,13 +5089,15 @@
             const exportToCSV = () => {
                 try {
                     // 準備 CSV 標頭
-                    const headers = ['時間', '遊戲帳號', 'Email', '方案名稱', '金額', '金幣', '支付方式', '狀態', '備註'];
+                    const headers = ['訂單編號', '時間', '遊戲帳號', 'Email', 'LINE名稱', '方案名稱', '金額', '金幣', '支付方式', '狀態', '備註'];
                     
                     // 準備 CSV 資料
                     const csvData = filteredData.map(item => [
+                        item.order_number || '',
                         new Date(item.created_at).toLocaleString('zh-TW'),
                         item.game_account || '',
                         item.email || '',
+                        item.line_name || '',
                         item.plan_name || '',
                         item.amount || 0,
                         item.coins || 0,
@@ -6329,6 +6647,7 @@
                                                         className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 focus:ring-offset-stone-900 cursor-pointer"
                                                     />
                                                 </th>
+                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">訂單編號</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">時間</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">玩家資訊</th>
                                                 <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">方案</th>
@@ -6352,6 +6671,27 @@
                                                                 onChange={() => toggleSelect(donation.id)}
                                                                 className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 focus:ring-offset-stone-900 cursor-pointer"
                                                             />
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {donation.order_number ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <code className="text-sm font-black text-purple-400 bg-purple-900/20 px-3 py-1.5 rounded-lg border-2 border-purple-500/50">
+                                                                        {donation.order_number}
+                                                                    </code>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(donation.order_number);
+                                                                            showToast('訂單編號已複製', 'success');
+                                                                        }}
+                                                                        className="p-1.5 hover:bg-stone-700 rounded-lg transition-colors"
+                                                                        title="複製訂單編號"
+                                                                    >
+                                                                        <Copy size={16} className="text-purple-400" />
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-stone-600 text-xs">無</span>
+                                                            )}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="text-sm text-stone-400 font-mono">
@@ -6556,26 +6896,45 @@
                                 <div className="lg:hidden p-4 space-y-4">
                                     {paginatedData.map((item) => (
                                         <div key={item.id} className="bg-stone-900 rounded-2xl border border-stone-700 overflow-hidden">
-                                            {/* 卡片頭部：狀態和選擇框 */}
-                                            <div className="bg-stone-800/50 px-4 py-3 flex items-center justify-between border-b border-stone-700">
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedIds.includes(item.id)}
-                                                        onChange={() => toggleSelect(item.id)}
-                                                        className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 cursor-pointer"
-                                                    />
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                                        item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/50' :
-                                                        item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' :
-                                                        'bg-red-500/20 text-red-400 border border-red-500/50'
-                                                    }`}>
-                                                        {item.status === 'completed' ? '✅ 已完成' : item.status === 'pending' ? '⏳ 待處理' : '❌ 已取消'}
+                                            {/* 卡片頭部：訂單編號和狀態 */}
+                                            <div className="bg-stone-800/50 px-4 py-3 border-b border-stone-700">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedIds.includes(item.id)}
+                                                            onChange={() => toggleSelect(item.id)}
+                                                            className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 cursor-pointer"
+                                                        />
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                                            item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/50' :
+                                                            item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' :
+                                                            'bg-red-500/20 text-red-400 border border-red-500/50'
+                                                        }`}>
+                                                            {item.status === 'completed' ? '✅ 已完成' : item.status === 'pending' ? '⏳ 待處理' : '❌ 已取消'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-stone-400 text-xs">
+                                                        {new Date(item.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}
                                                     </span>
                                                 </div>
-                                                <span className="text-stone-400 text-xs">
-                                                    {new Date(item.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}
-                                                </span>
+                                                {item.order_number && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-stone-400 text-xs font-bold">訂單：</span>
+                                                        <code className="text-sm font-black text-purple-400 bg-purple-900/20 px-3 py-1 rounded-lg border border-purple-500/50">
+                                                            {item.order_number}
+                                                        </code>
+                                                        <button
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(item.order_number);
+                                                                showToast('訂單編號已複製', 'success');
+                                                            }}
+                                                            className="p-1 hover:bg-stone-700 rounded transition-colors"
+                                                        >
+                                                            <Copy size={14} className="text-purple-400" />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                             
                                             {/* 卡片主體 */}
