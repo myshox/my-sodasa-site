@@ -1916,7 +1916,7 @@
         const MemberPage = () => {
             const [user, setUser] = useState(null);
             const [sponsorships, setSponsorships] = useState([]);
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(false); // 改為 false，使用樂觀 UI
             const [gameAccounts, setGameAccounts] = useState([]);
             const [showAddAccount, setShowAddAccount] = useState(false);
             const [newAccountName, setNewAccountName] = useState('');
@@ -1942,7 +1942,7 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 載入用戶的贊助紀錄（從 donations 表）
+                    // 載入用戶的贊助紀錄（從 donations 表）- 背景載入
                     try {
                         const { data: donations, error } = await supabase
                             .from('donations')
@@ -1960,7 +1960,6 @@
                         console.error('載入贊助紀錄異常:', err);
                         setSponsorships([]);
                     }
-                    setLoading(false);
                 };
                 
                 loadUserData();
@@ -3171,7 +3170,7 @@
         // 攻略前台頁面
         const GuidesPage = () => {
             const [guides, setGuides] = useState([]);
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(false); // 改為 false，快速顯示
             const [selectedGuide, setSelectedGuide] = useState(null);
             const [category, setCategory] = useState('all');
             const [viewMode, setViewMode] = useState(localStorage.getItem('guidesViewMode') || 'grid');
@@ -3205,8 +3204,6 @@
                 } catch (error) {
                     console.error('載入攻略失敗:', error);
                     showToast('載入攻略失敗', 'error');
-                } finally {
-                    setLoading(false);
                 }
             };
 
@@ -3994,10 +3991,8 @@
 
             useEffect(() => {
                 const loadEvents = async () => {
-                    setLoading(true);
                     const loadedEvents = await getSupabaseData(DB_TABLES.EVENTS);
                     setEvents(loadedEvents.sort((a, b) => b.timestamp - a.timestamp));
-                    setLoading(false);
                 };
 
                 loadEvents();
@@ -4012,11 +4007,7 @@
                     <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
-                        {loading ? (
-                            <div className="stone-panel">
-                                <LoadingSpinner message="載入活動中..." />
-                            </div>
-                        ) : events.length === 0 ? (
+                        {events.length === 0 ? (
                             <div className="stone-panel p-16 text-center text-stone-400">
                                 <div className="bg-stone-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Megaphone size={32} className="opacity-30"/>
@@ -4056,7 +4047,7 @@
         const RechargePage = () => {
             const navigate = useNavigate();
             const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(false); // 改為 false，快速顯示頁面
             const [gameAccounts, setGameAccounts] = useState([]);
             const [selectedAccountId, setSelectedAccountId] = useState('');
             const [selectedMethod, setSelectedMethod] = useState(null);
@@ -4083,7 +4074,6 @@
                         
                         if (!currentUser) {
                             console.log('未登入，跳轉到登入頁');
-                            setLoading(false);
                             showToast('請先登入才能贊助', 'warning');
                             setTimeout(() => {
                                 window.location.hash = '#/auth';
@@ -4111,25 +4101,19 @@
                             setSelectedAccountId(accounts[0].id);
                         }
                         
-                        setLoading(false);
                         console.log('載入完成');
                     } catch (error) {
                         console.error('載入失敗:', error);
                         if (isMounted) {
-                            setLoading(false);
                             showToast('載入失敗：' + error.message, 'error');
                         }
                     }
                 };
                 
-                // 加入超時保護，5秒後強制取消 loading
+                // 移除超時保護，讓頁面立即顯示
                 const timeout = setTimeout(() => {
-                    console.warn('載入超時，強制取消 loading');
-                    if (isMounted) {
-                        setLoading(false);
-                        showToast('載入超時，請重新整理頁面', 'error');
-                    }
-                }, 5000);
+                    console.warn('背景載入逾時');
+                }, 3000); // 減少為 3 秒
                 
                 checkAuth().finally(() => {
                     clearTimeout(timeout);
