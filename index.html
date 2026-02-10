@@ -3778,8 +3778,9 @@
             };
 
             const handleIosDownload = () => {
-                // iOS 下載邏輯（可替換為實際下載連結）
-                showToast("iOS 版本籌備中，敬請期待！", "info");
+                // iOS 下載連結（CloudFront）
+                window.open('https://d188wxqk1o4zyg.cloudfront.net/kjr41dc7', '_blank');
+                showToast("正在開啟 iOS 下載頁面...", "success");
             };
 
             return (
@@ -3787,195 +3788,215 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-50 via-white to-amber-50"
+                    className="pt-28 md:pt-40 pb-24 md:pb-32 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-100 via-amber-50/30 to-stone-100 relative overflow-hidden"
                 >
+                    {/* 背景裝飾 */}
+                    <div className="absolute inset-0 pointer-events-none opacity-[0.03]" aria-hidden="true">
+                        <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-gold-400 blur-3xl" />
+                        <div className="absolute bottom-40 right-10 w-96 h-96 rounded-full bg-amber-400 blur-3xl" />
+                    </div>
+
                     {/* 標題區 */}
-                    <div className="max-w-5xl mx-auto text-center mb-16">
-                        <div className="inline-flex items-center justify-center p-5 bg-gradient-to-br from-gold-400 to-amber-500 rounded-3xl shadow-2xl shadow-gold-300 mb-8">
-                            <Download size={56} className="text-white" strokeWidth={2} />
+                    <div className="max-w-4xl mx-auto text-center mb-12 md:mb-16 relative">
+                        <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-gold-400 to-amber-500 rounded-2xl md:rounded-3xl shadow-xl shadow-gold-300/50 mb-6">
+                            <Download size={40} className="text-white md:w-14 md:h-14" strokeWidth={2} />
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-black text-stone-800 mb-6">遊戲下載</h1>
-                        <p className="text-xl text-stone-600 font-medium max-w-2xl mx-auto leading-relaxed">
-                            選擇適合您的平台，立即開始冒險！
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-stone-800 mb-4 tracking-tight">遊戲下載</h1>
+                        <p className="text-lg md:text-xl text-stone-600 font-medium max-w-2xl mx-auto leading-relaxed">
+                            選擇您的裝置平台，一鍵取得遊戲客戶端
                         </p>
+                        <p className="text-sm text-stone-500 mt-2">點擊按鈕後將於新分頁開啟下載頁面</p>
                     </div>
 
                     {/* 下載選項 */}
-                    <div className="max-w-6xl mx-auto">
-                        <div className="grid md:grid-cols-3 gap-8">
+                    <div className="max-w-6xl mx-auto relative">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                             {/* PC 端 */}
                             <motion.div
-                                whileHover={{ y: -8, scale: 1.02 }}
-                                className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl hover:shadow-2xl hover:border-water-300 transition-all duration-300"
+                                whileHover={{ y: -6, scale: 1.02 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="bg-white rounded-2xl md:rounded-3xl overflow-hidden border-2 border-stone-200 shadow-lg hover:shadow-xl hover:border-water-300 transition-all duration-300 h-full flex flex-col"
                             >
-                                <div className="bg-gradient-to-br from-water-400 to-water-600 p-8 text-center">
-                                    <div className="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                                        <svg className="w-12 h-12 text-water-600" fill="currentColor" viewBox="0 0 24 24">
+                                <div className="bg-gradient-to-br from-water-500 to-water-600 p-6 md:p-8 text-center">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-white/95 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 shadow-lg">
+                                        <svg className="w-10 h-10 md:w-12 md:h-12 text-water-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
                                         </svg>
                                     </div>
-                                    <h2 className="text-3xl font-black text-white mb-2">Windows PC</h2>
-                                    <p className="text-water-100 font-medium">桌上型電腦版</p>
+                                    <h2 className="text-2xl md:text-3xl font-black text-white mb-1">Windows PC</h2>
+                                    <p className="text-water-100 text-sm md:text-base font-medium">桌上型電腦版</p>
                                 </div>
-                                <div className="p-8">
-                                    <ul className="space-y-3 mb-8 text-stone-700">
+                                <div className="p-6 md:p-8 flex-1 flex flex-col">
+                                    <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 text-stone-700 text-sm md:text-base">
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-water-500" />
+                                            <CheckCircle size={18} className="text-water-500 shrink-0" />
                                             <span className="font-medium">完整遊戲體驗</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-water-500" />
+                                            <CheckCircle size={18} className="text-water-500 shrink-0" />
                                             <span className="font-medium">高畫質顯示</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-water-500" />
+                                            <CheckCircle size={18} className="text-water-500 shrink-0" />
                                             <span className="font-medium">鍵盤滑鼠操作</span>
                                         </li>
                                     </ul>
                                     <Button
                                         onClick={handlePcDownload}
                                         variant="primary"
-                                        className="w-full py-4 bg-water-500 hover:bg-water-600 shadow-lg shadow-water-200"
+                                        className="w-full py-3.5 md:py-4 mt-auto bg-water-500 hover:bg-water-600 shadow-lg shadow-water-200 font-bold"
+                                        aria-label="下載 Windows PC 版"
                                     >
-                                        <Download size={20} />
+                                        <Download size={20} className="shrink-0" />
                                         <span>下載 PC 版</span>
                                     </Button>
-                                    <p className="text-xs text-stone-500 text-center mt-4">支援 Windows 7 以上</p>
+                                    <p className="text-xs text-stone-500 text-center mt-3">Windows 7 以上</p>
                                 </div>
                             </motion.div>
 
                             {/* Android 端 */}
                             <motion.div
-                                whileHover={{ y: -8, scale: 1.02 }}
-                                className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl hover:shadow-2xl hover:border-wind-300 transition-all duration-300"
+                                whileHover={{ y: -6, scale: 1.02 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="bg-white rounded-2xl md:rounded-3xl overflow-hidden border-2 border-stone-200 shadow-lg hover:shadow-xl hover:border-wind-300 transition-all duration-300 h-full flex flex-col"
                             >
-                                <div className="bg-gradient-to-br from-wind-400 to-wind-600 p-8 text-center">
-                                    <div className="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                                        <svg className="w-12 h-12 text-wind-600" fill="currentColor" viewBox="0 0 24 24">
+                                <div className="bg-gradient-to-br from-wind-500 to-wind-600 p-6 md:p-8 text-center">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-white/95 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 shadow-lg">
+                                        <svg className="w-10 h-10 md:w-12 md:h-12 text-wind-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/>
                                         </svg>
                                     </div>
-                                    <h2 className="text-3xl font-black text-white mb-2">Android</h2>
-                                    <p className="text-wind-100 font-medium">安卓手機版</p>
+                                    <h2 className="text-2xl md:text-3xl font-black text-white mb-1">Android</h2>
+                                    <p className="text-wind-100 text-sm md:text-base font-medium">安卓手機版</p>
                                 </div>
-                                <div className="p-8">
-                                    <ul className="space-y-3 mb-8 text-stone-700">
+                                <div className="p-6 md:p-8 flex-1 flex flex-col">
+                                    <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 text-stone-700 text-sm md:text-base">
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-wind-500" />
+                                            <CheckCircle size={18} className="text-wind-500 shrink-0" />
                                             <span className="font-medium">隨時隨地遊玩</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-wind-500" />
+                                            <CheckCircle size={18} className="text-wind-500 shrink-0" />
                                             <span className="font-medium">觸控操作優化</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-wind-500" />
+                                            <CheckCircle size={18} className="text-wind-500 shrink-0" />
                                             <span className="font-medium">低耗電模式</span>
                                         </li>
                                     </ul>
                                     <Button
                                         onClick={handleAndroidDownload}
                                         variant="primary"
-                                        className="w-full py-4 bg-wind-500 hover:bg-wind-600 shadow-lg shadow-wind-200"
+                                        className="w-full py-3.5 md:py-4 mt-auto bg-wind-500 hover:bg-wind-600 shadow-lg shadow-wind-200 font-bold"
+                                        aria-label="下載 Android 版"
                                     >
-                                        <Download size={20} />
+                                        <Download size={20} className="shrink-0" />
                                         <span>下載 Android 版</span>
                                     </Button>
-                                    <p className="text-xs text-stone-500 text-center mt-4">支援 Android 5.0 以上</p>
+                                    <p className="text-xs text-stone-500 text-center mt-3">Android 5.0 以上</p>
                                 </div>
                             </motion.div>
 
-                            {/* iOS 端 - 即將開放 */}
+                            {/* iOS 端 */}
                             <motion.div
-                                whileHover={{ y: -4 }}
-                                className="bg-white rounded-3xl overflow-hidden border-2 border-stone-200 shadow-xl transition-all duration-300 relative opacity-75"
+                                whileHover={{ y: -6, scale: 1.02 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="bg-white rounded-2xl md:rounded-3xl overflow-hidden border-2 border-stone-200 shadow-lg hover:shadow-xl hover:border-stone-300 transition-all duration-300 h-full flex flex-col sm:col-span-2 lg:col-span-1"
                             >
-                                {/* 即將開放標籤 */}
-                                <div className="absolute top-4 right-4 z-10 bg-gold-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                                    即將開放
-                                </div>
-                                
-                                <div className="bg-gradient-to-br from-stone-300 to-stone-400 p-8 text-center">
-                                    <div className="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                                        <svg className="w-12 h-12 text-stone-500" fill="currentColor" viewBox="0 0 24 24">
+                                <div className="bg-gradient-to-br from-stone-500 to-stone-600 p-6 md:p-8 text-center">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-white/95 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 shadow-lg">
+                                        <svg className="w-10 h-10 md:w-12 md:h-12 text-stone-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                                         </svg>
                                     </div>
-                                    <h2 className="text-3xl font-black text-white mb-2">iOS</h2>
-                                    <p className="text-stone-200 font-medium">蘋果手機版</p>
+                                    <h2 className="text-2xl md:text-3xl font-black text-white mb-1">iOS</h2>
+                                    <p className="text-stone-100 text-sm md:text-base font-medium">蘋果手機版</p>
                                 </div>
-                                <div className="p-8">
-                                    <ul className="space-y-3 mb-8 text-stone-500">
+                                <div className="p-6 md:p-8 flex-1 flex flex-col">
+                                    <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 text-stone-700 text-sm md:text-base">
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
+                                            <CheckCircle size={18} className="text-stone-500 shrink-0" />
                                             <span className="font-medium">流暢遊戲體驗</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
-                                            <span className="font-medium">完美適配 iPhone</span>
+                                            <CheckCircle size={18} className="text-stone-500 shrink-0" />
+                                            <span className="font-medium">完美適配 iPhone / iPad</span>
                                         </li>
                                         <li className="flex items-center gap-2">
-                                            <CheckCircle size={18} className="text-stone-400" />
+                                            <CheckCircle size={18} className="text-stone-500 shrink-0" />
                                             <span className="font-medium">省電優化</span>
                                         </li>
                                     </ul>
                                     <Button
-                                        disabled
+                                        onClick={handleIosDownload}
                                         variant="secondary"
-                                        className="w-full py-4 bg-stone-200 text-stone-500 cursor-not-allowed opacity-60"
+                                        className="w-full py-3.5 md:py-4 mt-auto bg-gradient-to-r from-stone-500 to-stone-600 hover:from-stone-600 hover:to-stone-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                                        aria-label="下載 iOS 版"
                                     >
-                                        <Clock size={20} />
-                                        <span>即將開放</span>
+                                        <Download size={20} className="shrink-0" />
+                                        <span>下載 iOS 版</span>
                                     </Button>
-                                    <p className="text-xs text-stone-400 text-center mt-4">敬請期待</p>
+                                    <p className="text-xs text-stone-500 text-center mt-3">iPhone、iPad</p>
                                 </div>
                             </motion.div>
                         </div>
 
-                        {/* 下載說明 */}
-                        <div className="mt-16 max-w-4xl mx-auto">
-                            <div className="bg-white rounded-3xl p-8 md:p-12 border-2 border-gold-200 shadow-xl">
-                                <h3 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gold-100 rounded-xl flex items-center justify-center">
-                                        <AlertCircle size={24} className="text-gold-600" />
+                        {/* 下載須知 - 分平台說明 */}
+                        <div className="mt-12 md:mt-16 max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-10 border-2 border-gold-200 shadow-lg overflow-hidden">
+                                <h3 className="text-xl md:text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gold-100 rounded-xl flex items-center justify-center shrink-0">
+                                        <AlertCircle size={22} className="text-gold-600" />
                                     </div>
-                                    下載須知
+                                    下載與安裝須知
                                 </h3>
-                                <div className="space-y-4 text-stone-700 text-base leading-relaxed">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-gold-100 rounded-full flex items-center justify-center shrink-0 mt-1">
-                                            <span className="text-gold-600 font-bold text-sm">1</span>
-                                        </div>
-                                        <p className="font-medium">
-                                            <strong className="text-stone-800">安裝前請確認：</strong>請先關閉防毒軟體，避免安裝過程被誤判。
-                                        </p>
+                                <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                                    <div className="bg-water-50 rounded-xl p-4 border border-water-200">
+                                        <h4 className="font-bold text-water-700 mb-2 flex items-center gap-2">
+                                            <span className="w-6 h-6 bg-water-200 rounded-full flex items-center justify-center text-xs">PC</span>
+                                            Windows
+                                        </h4>
+                                        <ul className="text-sm text-stone-700 space-y-1.5">
+                                            <li>• 安裝前可暫時關閉防毒，避免誤判</li>
+                                            <li>• 下載後建議將遊戲資料夾加入信任清單</li>
+                                            <li>• 支援 Windows 7 以上</li>
+                                        </ul>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-gold-100 rounded-full flex items-center justify-center shrink-0 mt-1">
-                                            <span className="text-gold-600 font-bold text-sm">2</span>
-                                        </div>
-                                        <p className="font-medium">
-                                            <strong className="text-stone-800">下載後：</strong>建議將遊戲資料夾加入防毒軟體的信任清單。
-                                        </p>
+                                    <div className="bg-wind-50 rounded-xl p-4 border border-wind-200">
+                                        <h4 className="font-bold text-wind-700 mb-2 flex items-center gap-2">
+                                            <span className="w-6 h-6 bg-wind-200 rounded-full flex items-center justify-center text-xs">A</span>
+                                            Android
+                                        </h4>
+                                        <ul className="text-sm text-stone-700 space-y-1.5">
+                                            <li>• 若無法安裝，請至「設定」允許未知來源</li>
+                                            <li>• 建議使用 Chrome 開啟下載連結</li>
+                                            <li>• 支援 Android 5.0 以上</li>
+                                        </ul>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-gold-100 rounded-full flex items-center justify-center shrink-0 mt-1">
-                                            <span className="text-gold-600 font-bold text-sm">3</span>
-                                        </div>
-                                        <p className="font-medium">
-                                            <strong className="text-stone-800">遇到問題？</strong>請聯繫官方客服，我們將協助您解決。
-                                        </p>
+                                    <div className="bg-stone-100 rounded-xl p-4 border border-stone-200">
+                                        <h4 className="font-bold text-stone-700 mb-2 flex items-center gap-2">
+                                            <span className="w-6 h-6 bg-stone-300 rounded-full flex items-center justify-center text-xs">i</span>
+                                            iOS
+                                        </h4>
+                                        <ul className="text-sm text-stone-700 space-y-1.5">
+                                            <li>• 點擊下載後依網頁指示安裝</li>
+                                            <li>• 若需信任開發者：設定 → 一般 → 裝置管理</li>
+                                            <li>• 支援 iPhone、iPad</li>
+                                        </ul>
                                     </div>
                                 </div>
+                                <p className="text-stone-600 text-sm md:text-base mt-6 pt-6 border-t border-stone-200 font-medium">
+                                    遇到無法下載或安裝問題？請透過官方 LINE 聯繫客服，我們會協助您排除。
+                                </p>
                             </div>
                         </div>
 
                         {/* CTA 區域 */}
-                        <div className="mt-12 text-center">
-                            <p className="text-stone-600 font-medium mb-6">下載遇到問題？</p>
+                        <div className="mt-10 md:mt-14 text-center">
+                            <p className="text-stone-600 font-medium mb-4">下載或安裝遇到問題？</p>
                             <Link to="/support">
-                                <Button variant="secondary" className="px-8 py-4">
-                                    <MessageCircle size={20} />
+                                <Button variant="secondary" className="px-6 py-3.5 md:px-8 md:py-4 font-bold shadow-md hover:shadow-lg transition-shadow">
+                                    <MessageCircle size={20} className="shrink-0" />
                                     <span>聯繫客服</span>
                                 </Button>
                             </Link>
