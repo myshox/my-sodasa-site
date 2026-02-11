@@ -253,7 +253,7 @@
             Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
-            BookOpen, ArrowLeft, Clock, Users
+            BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -385,7 +385,7 @@
             }
         };
         
-        // --- 靜態資料與素材 ---
+        // --- 靜態資料與素材（檔名須與 index.html 同目錄）---
         const ASSETS = {
             LOGO: 'logo.jpg', 
             HERO: '首頁.jpg', 
@@ -405,6 +405,14 @@
                 5000: 'LINE5000QR.jpg',
                 10000: 'LINE10000QR.jpg'
             }
+        };
+        // 依目前頁面網址解析資源路徑，確保本地／部署後都能載入
+        const getAssetUrl = (filename) => {
+            if (!filename) return '';
+            if (filename.startsWith('http')) return filename;
+            const base = window.location.pathname.replace(/\/[^/]*$/, '') || '/';
+            const sep = base.endsWith('/') ? '' : '/';
+            return window.location.origin + base + sep + filename;
         };
 
         const PLANS = [
@@ -536,7 +544,8 @@
                 hero: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=2000', 
                 logo: 'https://cdn-icons-png.flaticon.com/512/3034/3034870.png',
             };
-            return <img src={imgSrc} alt={alt} className={className} onError={() => setImgSrc(FALLBACKS[fallbackType])} loading="lazy" />;
+            useEffect(() => { setImgSrc(src); }, [src]);
+            return <img src={imgSrc} alt={alt || 'Logo'} className={className} onError={() => setImgSrc(FALLBACKS[fallbackType] || FALLBACKS.logo)} loading="lazy" />;
         });
 
         // --- 組件 ---
@@ -730,11 +739,11 @@
             );
 
             if (method === 'linepay') {
-                const qrImage = ASSETS.LINE_QRS[plan.amount];
+                const qrImage = getAssetUrl(ASSETS.LINE_QRS[plan.amount]);
                 return (
                     <ModalWrapper borderColor="border-line-500">
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto bg-line-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-200"><img src={ASSETS.LINE_PAY_LOGO} alt="LINE Pay" className="w-10 h-auto object-contain brightness-0 invert" /></div>
+                            <div className="w-16 h-16 mx-auto bg-line-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-200"><img src={getAssetUrl(ASSETS.LINE_PAY_LOGO)} alt="LINE Pay" className="w-10 h-auto object-contain brightness-0 invert" /></div>
                             <h3 className="text-2xl font-black text-stone-800 mb-2">LINE Pay 掃碼</h3>
                             <p className="text-stone-500 font-medium mb-6 text-sm">請使用手機掃描下方條碼</p>
                             
@@ -799,7 +808,7 @@
                     <ModalWrapper borderColor="border-gold-400">
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg border-2 border-stone-200">
-                                <img src={ASSETS.SHOPLINE_LOGO} alt="SHOPLINE" className="w-12 h-auto object-contain" />
+                                <img src={getAssetUrl(ASSETS.SHOPLINE_LOGO)} alt="SHOPLINE" className="w-12 h-auto object-contain" />
                             </div>
                             <h3 className="text-2xl font-black text-stone-800 mb-6">即將前往付款頁面</h3>
                             
@@ -889,7 +898,7 @@
                 <ModalWrapper borderColor="border-red-500">
                     <div className="text-center">
                         <div className="w-16 h-16 mx-auto bg-red-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-200">
-                            <img src={ASSETS.JKOPAY_LOGO} alt="JKOPAY" className="w-10 h-auto object-contain rounded-lg" />
+                            <img src={getAssetUrl(ASSETS.JKOPAY_LOGO)} alt="JKOPAY" className="w-10 h-auto object-contain rounded-lg" />
                         </div>
                         <h3 className="text-2xl font-black text-stone-800 mb-6">街口支付</h3>
                         
@@ -2121,7 +2130,8 @@
                                         <div className="flex items-center gap-2">
                                             <User size={20} className="text-gold-600" />
                                             <span className="text-stone-700 font-bold">我的遊戲帳號</span>
-                                            <span className="text-xs text-stone-500">（最多 5 個）</span>
+                                            <span className="text-fire-500 text-xs font-bold">(必填)</span>
+                                            <span className="text-xs text-stone-500">（最多 5 個，儲值會優先儲到第一隻角色）</span>
                                         </div>
                                         {gameAccounts.length < 5 && (
                                             <button
@@ -2414,7 +2424,7 @@
                     <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-tribal">
                         <div className="absolute inset-0 z-0 opacity-100">
                             <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
-                                <SmartImage src={ASSETS.HERO} alt="Hero" className="w-full h-full object-cover" />
+                                <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="Hero" className="w-full h-full object-cover" />
                             </motion.div>
                             <div className="absolute inset-0 bg-gradient-to-b from-[#fbf6e9]/60 via-transparent to-[#fbf6e9] z-10"></div>
                         </div>
@@ -2422,7 +2432,7 @@
                         <div className="relative z-20 text-center max-w-7xl px-6 pt-12 md:pt-20">
                             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-16 md:-mt-24">
                                 <div className="mb-8 md:mb-10 animate-float drop-shadow-lg">
-                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" />
+                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" />
                                 </div>
 
                                 <div className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-7 py-2.5 rounded-full bg-white/90 border border-stone-200/80 text-stone-600 font-bold mb-6 md:mb-10 shadow-md shadow-stone-200/30 backdrop-blur-md text-base md:text-lg tracking-wide">
@@ -4375,7 +4385,7 @@
                                     <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
                                     <div className="flex-1">
                                         <h3 className="text-2xl font-bold text-stone-700">選擇贊助帳號</h3>
-                                        <p className="text-stone-500 text-sm font-medium mt-1">選擇要接收虛寶獎勵的遊戲帳號</p>
+                                        <p className="text-stone-500 text-sm font-medium mt-1">選擇要接收虛寶獎勵的遊戲帳號 <span className="text-fire-500 font-bold">(必填)</span>，儲值會優先儲到第一隻角色</p>
                                     </div>
                                 </div>
                                 
@@ -4429,7 +4439,7 @@
                                                             請再次確認帳號是否正確，虛寶將由管理員人工發放至此帳號。
                                                         </span>
                                                         <span className="mt-2 block text-amber-800 bg-amber-100 border border-amber-400 rounded-lg px-3 py-2 text-sm font-bold">
-                                                            💡 儲值會以帳號中創建的第一個角色為主。
+                                                            💡 儲值會優先儲到第一隻角色。
                                                         </span>
                                                     </span>
                                                 </p>
@@ -4536,14 +4546,14 @@
                                                         <div className="flex items-center justify-center gap-2 mb-3 bg-stone-50 px-2 py-1.5 rounded-lg w-full">
                                                             <ShoplineIcon1 size={16} className="text-stone-500"/>
                                                             <ShoplineIcon2 size={16} className="text-stone-500"/>
-                                                            <img src={method.img} alt="Apple Pay" className="h-3.5 w-auto object-contain" />
+                                                            <img src={getAssetUrl(method.img)} alt="Apple Pay" className="h-3.5 w-auto object-contain" />
                                                         </div>
                                                         <span className="text-stone-700 font-bold text-base mb-1 text-center leading-tight">{method.name}</span>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <div className="h-12 flex items-center justify-center mb-3">
-                                                            <img src={method.img} alt={method.name} className="h-full w-auto object-contain drop-shadow-sm" />
+                                                            <img src={getAssetUrl(method.img)} alt={method.name} className="h-full w-auto object-contain drop-shadow-sm" />
                                                         </div>
                                                         <span className="text-stone-700 font-bold text-lg">{method.name}</span>
                                                     </>
@@ -4698,7 +4708,7 @@
                         <div 
                             className="stone-panel p-10 md:p-20 relative overflow-hidden shadow-2xl border-0"
                             style={{ 
-                                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url(${ASSETS.LOVE_BG})`,
+                                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url(${getAssetUrl(ASSETS.LOVE_BG)})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center'
                             }}
@@ -4761,7 +4771,7 @@
                         {/* 官方 LINE 區塊 */}
                         <div className="stone-panel p-10 md:p-16 text-center shadow-xl bg-white">
                             <div className="w-28 h-28 md:w-36 md:h-36 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500">
-                                <SmartImage src={ASSETS.LINE_LOGO} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" />
+                                <SmartImage src={getAssetUrl(ASSETS.LINE_LOGO)} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" alt="LINE" />
                             </div>
                             
                             <h3 className="text-3xl md:text-4xl font-display font-black text-stone-800 mb-4">加入官方 LINE</h3>
@@ -5015,6 +5025,8 @@
             // 批次操作
             const [selectedIds, setSelectedIds] = useState([]);
             const [showBatchActions, setShowBatchActions] = useState(false);
+            // 贊助列表檢視：卡片 / 條列
+            const [donationListView, setDonationListView] = useState('cards');
             
             // 圖表 refs
             const trendChartRef = useRef(null);
@@ -5024,9 +5036,17 @@
             const paymentChartInstance = useRef(null);
             const planChartInstance = useRef(null);
             
-            // Donations 相關
+            // Donations 相關（管理員可編輯訂單任何資訊）
             const [editingId, setEditingId] = useState(null);
             const [editNotes, setEditNotes] = useState('');
+            const [editGameAccount, setEditGameAccount] = useState('');
+            const [editLineName, setEditLineName] = useState('');
+            const [editEmail, setEditEmail] = useState('');
+            const [editAmount, setEditAmount] = useState('');
+            const [editCoins, setEditCoins] = useState('');
+            const [editPlanName, setEditPlanName] = useState('');
+            const [editPaymentMethod, setEditPaymentMethod] = useState('');
+            const [editStatus, setEditStatus] = useState('');
             const [editingTags, setEditingTags] = useState(null);
             const [newTag, setNewTag] = useState('');
             
@@ -5708,46 +5728,68 @@
                 }
             };
             
-            // Donations 開始編輯備註
+            // Donations 開始編輯（管理員可改訂單任何資訊）
             const startEditNotes = (donation) => {
                 setEditingId(donation.id);
                 setEditNotes(donation.notes || '');
+                setEditGameAccount(donation.game_account || '');
+                setEditLineName(donation.line_name || '');
+                setEditEmail(donation.email || '');
+                setEditAmount(String(donation.amount ?? ''));
+                setEditCoins(String(donation.coins ?? ''));
+                setEditPlanName(donation.plan_name || '');
+                setEditPaymentMethod(donation.payment_method || '');
+                setEditStatus(donation.status || 'pending');
             };
             
-            // Donations 儲存備註
+            // Donations 儲存完整訂單資訊（與後台、註冊用戶累計同步）
             const saveNotes = async (id) => {
                 try {
                     const donation = data.find(d => d.id === id);
-                    const oldNotes = donation?.notes || '';
+                    const amountNum = parseInt(editAmount, 10);
+                    const coinsNum = parseInt(editCoins, 10);
+                    const payload = {
+                        game_account: (editGameAccount || '').trim() || donation?.game_account || '',
+                        line_name: (editLineName || '').trim() || null,
+                        email: (editEmail || '').trim() || donation?.email || '',
+                        amount: isNaN(amountNum) ? donation?.amount : amountNum,
+                        coins: isNaN(coinsNum) ? donation?.coins : coinsNum,
+                        plan_name: (editPlanName || '').trim() || donation?.plan_name || '',
+                        payment_method: editPaymentMethod || donation?.payment_method || null,
+                        status: editStatus || donation?.status || 'pending',
+                        notes: editNotes,
+                        updated_at: new Date().toISOString()
+                    };
+                    if (payload.status === 'completed' && donation?.status !== 'completed') {
+                        payload.processed_at = new Date().toISOString();
+                    }
                     
                     const { error } = await supabase
                         .from('donations')
-                        .update({ 
-                            notes: editNotes,
-                            updated_at: new Date().toISOString()
-                        })
+                        .update(payload)
                         .eq('id', id);
                     
                     if (error) {
-                        console.error('儲存備註失敗:', error);
+                        console.error('儲存失敗:', error);
                         showToast('儲存失敗', 'error');
                         return;
                     }
                     
                     setData(data.map(item => 
-                        item.id === id ? { ...item, notes: editNotes, updated_at: new Date().toISOString() } : item
+                        item.id === id ? { ...item, ...payload } : item
                     ));
                     
-                    await logAction('update', 'donation', id, `更新贊助備註`, {
-                        old: { notes: oldNotes },
-                        new: { notes: editNotes }
+                    await logAction('update', 'donation', id, `更新訂單完整資訊`, {
+                        old: { game_account: donation?.game_account, line_name: donation?.line_name, email: donation?.email, amount: donation?.amount, coins: donation?.coins, plan_name: donation?.plan_name, payment_method: donation?.payment_method, status: donation?.status, notes: donation?.notes },
+                        new: payload
                     });
                     
                     setEditingId(null);
-                    setEditNotes('');
-                    showToast('備註已儲存', 'success');
+                    setEditNotes(''); setEditGameAccount(''); setEditLineName('');
+                    setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus('');
+                    showToast('已儲存，註冊用戶累計將自動同步', 'success');
                 } catch (err) {
-                    console.error('儲存備註異常:', err);
+                    console.error('儲存異常:', err);
                     showToast('發生錯誤', 'error');
                 }
             };
@@ -6494,21 +6536,21 @@
                             </div>
                             
                             {currentTab === 'donations' && (
-                                <div className="flex gap-3 w-full lg:w-auto">
+                                <div className="flex gap-2 w-full lg:w-auto flex-wrap">
                                     {selectedIds.length > 0 && (
                                         <button 
                                             onClick={() => setShowBatchActions(!showBatchActions)} 
-                                            className="px-4 py-2 bg-fire-500/20 hover:bg-fire-500 text-fire-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-fire-500/30"
+                                            className="px-4 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-stone-600/50 text-stone-200 border-stone-600/50"
                                         >
-                                            <Check size={18}/>
+                                            <Check size={16}/>
                                             批次操作 ({selectedIds.length})
                                         </button>
                                     )}
-                                    <button onClick={exportToCSV} className="px-4 py-2 bg-wind-500/20 hover:bg-wind-500 text-wind-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-wind-500/30" title="匯出 CSV">
-                                        <Download size={18}/>
+                                    <button onClick={exportToCSV} className="px-4 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-stone-600/50 text-stone-200 border-stone-600/50" title="匯出 CSV">
+                                        <Download size={16}/>
                                         <span className="hidden md:inline">匯出 CSV</span>
                                     </button>
-                                    <button onClick={handleLogout} className="px-3 py-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-red-500/30"><LogOut size={18}/></button>
+                                    <button onClick={handleLogout} className="px-3 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-red-500/20 text-stone-300 hover:text-red-400 border-stone-600/50"><LogOut size={16}/></button>
                                 </div>
                             )}
                              {currentTab !== 'donations' && (
@@ -6520,14 +6562,14 @@
                         {/* 贊助管理分頁 */}
                         {currentTab === 'donations' && (
                             <>
-                                {/* 搜尋與篩選 */}
+                                {/* 搜尋與篩選（舒適間距與對比） */}
                                 <div className="space-y-4 mb-6">
                                     <div className="flex flex-col md:flex-row gap-3">
                                         <div className="relative flex-1">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" size={16}/>
-                                            <input type="text" placeholder="搜尋遊戲帳號..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800 border border-stone-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-stone-500 focus:border-gold-500 outline-none transition-colors"/>
+                                            <input type="text" placeholder="搜尋遊戲帳號或 Email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800/60 border border-stone-600/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none transition-colors"/>
                                         </div>
-                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none cursor-pointer hover:border-stone-600 transition-colors">
+                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800/60 border border-stone-600/50 rounded-xl px-4 py-2.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-stone-500 transition-colors">
                                             <option value="all">全部狀態</option>
                                             <option value="pending">待處理</option>
                                             <option value="completed">已完成</option>
@@ -6535,7 +6577,7 @@
                                         </select>
                                         <button
                                             onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                                            className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 ${showAdvancedSearch ? 'bg-wind-600 text-white' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 border border-stone-700'}`}
+                                            className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border ${showAdvancedSearch ? 'bg-stone-600 text-stone-100 border-stone-500/50' : 'bg-stone-800/60 text-stone-400 hover:text-stone-200 border-stone-600/50 hover:border-stone-500/50'}`}
                                         >
                                             <Settings size={16} />
                                             進階搜尋
@@ -6544,67 +6586,37 @@
                                     
                                     {/* 進階搜尋選項 */}
                                     {showAdvancedSearch && (
-                                        <div className="bg-stone-800 border border-stone-700 rounded-xl p-4 space-y-3">
+                                        <div className="bg-stone-800/40 border border-stone-600/40 rounded-2xl p-4 space-y-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">開始日期</label>
-                                                    <input 
-                                                        type="date" 
-                                                        value={dateFrom} 
-                                                        onChange={(e) => setDateFrom(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none"
-                                                    />
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">開始日期</label>
+                                                    <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">結束日期</label>
-                                                    <input 
-                                                        type="date" 
-                                                        value={dateTo} 
-                                                        onChange={(e) => setDateTo(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none"
-                                                    />
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">結束日期</label>
+                                                    <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">最低金額</label>
-                                                    <input 
-                                                        type="number" 
-                                                        placeholder="NT$ 0" 
-                                                        value={amountMin} 
-                                                        onChange={(e) => setAmountMin(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none"
-                                                    />
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">最低金額</label>
+                                                    <input type="number" placeholder="NT$ 0" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">最高金額</label>
-                                                    <input 
-                                                        type="number" 
-                                                        placeholder="無上限" 
-                                                        value={amountMax} 
-                                                        onChange={(e) => setAmountMax(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none"
-                                                    />
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">最高金額</label>
+                                                    <input type="number" placeholder="無上限" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">支付方式</label>
-                                                    <select 
-                                                        value={filterPaymentMethod} 
-                                                        onChange={(e) => setFilterPaymentMethod(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none cursor-pointer"
-                                                    >
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">支付方式</label>
+                                                    <select value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         <option value="shopline">SHOPLINE</option>
                                                         <option value="linepay">LINE Pay</option>
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-400 text-xs font-bold mb-1.5">標籤</label>
-                                                    <select 
-                                                        value={filterTag} 
-                                                        onChange={(e) => setFilterTag(e.target.value)}
-                                                        className="w-full bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 text-sm text-white focus:border-wind-500 outline-none cursor-pointer"
-                                                    >
+                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">標籤</label>
+                                                    <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         {TAG_OPTIONS.map(tag => (
                                                             <option key={tag.value} value={tag.value}>{tag.label}</option>
@@ -6613,10 +6625,7 @@
                                                 </div>
                                             </div>
                                             <div className="flex justify-end gap-2 pt-2">
-                                                <button
-                                                    onClick={clearAdvancedSearch}
-                                                    className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold rounded-lg text-sm transition-colors"
-                                                >
+                                                <button onClick={clearAdvancedSearch} className="px-4 py-2 bg-stone-600/50 hover:bg-stone-600 text-stone-200 font-medium rounded-lg text-sm transition-colors border border-stone-600/50">
                                                     清除篩選
                                                 </button>
                                             </div>
@@ -6625,43 +6634,27 @@
                                     
                                     {/* 批次操作面板 */}
                                     {showBatchActions && selectedIds.length > 0 && (
-                                        <div className="bg-stone-800 border border-stone-700 rounded-xl p-4">
-                                            <div className="flex flex-col md:flex-row gap-3">
+                                        <div className="bg-stone-800/40 border border-stone-600/40 rounded-2xl p-4">
+                                            <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1">
-                                                    <p className="text-stone-400 text-sm font-bold mb-2">批次更新狀態：</p>
+                                                    <p className="text-stone-500 text-sm font-medium mb-2">批次更新狀態</p>
                                                     <div className="flex flex-wrap gap-2">
-                                                        <button onClick={() => batchUpdateStatus('completed')} className="px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/50 rounded-lg font-bold text-sm hover:bg-green-500/30 transition-colors">
-                                                            ✅ 已完成
-                                                        </button>
-                                                        <button onClick={() => batchUpdateStatus('pending')} className="px-4 py-2 bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 rounded-lg font-bold text-sm hover:bg-yellow-500/30 transition-colors">
-                                                            ⏳ 待處理
-                                                        </button>
-                                                        <button onClick={() => batchUpdateStatus('cancelled')} className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/50 rounded-lg font-bold text-sm hover:bg-red-500/30 transition-colors">
-                                                            ❌ 已取消
-                                                        </button>
+                                                        <button onClick={() => batchUpdateStatus('completed')} className="px-3 py-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 rounded-lg font-medium text-sm hover:bg-emerald-500/25 transition-colors">已完成</button>
+                                                        <button onClick={() => batchUpdateStatus('pending')} className="px-3 py-2 bg-amber-500/15 text-amber-400 border border-amber-500/40 rounded-lg font-medium text-sm hover:bg-amber-500/25 transition-colors">待處理</button>
+                                                        <button onClick={() => batchUpdateStatus('cancelled')} className="px-3 py-2 bg-red-500/15 text-red-400 border border-red-500/40 rounded-lg font-medium text-sm hover:bg-red-500/25 transition-colors">已取消</button>
                                                     </div>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-stone-400 text-sm font-bold mb-2">批次加入標籤：</p>
+                                                    <p className="text-stone-500 text-sm font-medium mb-2">批次加入標籤</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {TAG_OPTIONS.map(tag => (
-                                                            <button 
-                                                                key={tag.value}
-                                                                onClick={() => batchAddTag(tag.value)} 
-                                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${tag.color} hover:opacity-80 transition-opacity`}
-                                                            >
-                                                                + {tag.label}
-                                                            </button>
+                                                            <button key={tag.value} onClick={() => batchAddTag(tag.value)} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${tag.color} hover:opacity-90 transition-opacity`}>+ {tag.label}</button>
                                                         ))}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-end gap-2">
-                                                    <button onClick={batchDelete} className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-sm transition-colors">
-                                                        刪除
-                                                    </button>
-                                                    <button onClick={() => { setShowBatchActions(false); setSelectedIds([]); }} className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold rounded-lg text-sm transition-colors">
-                                                        取消
-                                                    </button>
+                                                    <button onClick={batchDelete} className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium rounded-lg text-sm border border-red-500/40 transition-colors">刪除</button>
+                                                    <button onClick={() => { setShowBatchActions(false); setSelectedIds([]); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -6670,58 +6663,78 @@
                         
                         {/* 贊助紀錄列表 */}
                         {filteredData.length === 0 ? (
-                            <div className="bg-stone-800 rounded-3xl border border-stone-700 shadow-xl p-20">
-                                <div className="text-stone-500 text-center flex flex-col items-center">
-                                    <Clipboard size={48} className="mb-4 opacity-20"/>
-                                    <p className="text-lg font-bold">暫無贊助紀錄</p>
-                                    <p className="text-sm mt-2">等待玩家進行贊助</p>
+                            <div className="rounded-2xl border border-stone-600/40 bg-stone-800/30 p-16 md:p-20">
+                                <div className="text-stone-400 text-center flex flex-col items-center">
+                                    <Clipboard size={40} className="mb-3 opacity-40"/>
+                                    <p className="text-base font-medium text-stone-300">暫無贊助紀錄</p>
+                                    <p className="text-sm mt-1 text-stone-500">等待玩家進行贊助</p>
                                 </div>
                             </div>
                         ) : (
                             <>
-                                {/* 桌面版：表格 */}
-                                <div className="hidden lg:block bg-stone-800 rounded-3xl border border-stone-700 shadow-xl overflow-hidden">
+                                {/* 工具列：全選 + 檢視切換（舒適間距與視覺） */}
+                                <div className="px-4 py-3 mb-1 flex flex-wrap items-center gap-5 rounded-2xl bg-stone-800/30 border border-stone-700/50">
+                                    <label className="flex items-center gap-2.5 cursor-pointer text-stone-300 hover:text-stone-100 text-sm font-medium transition-colors">
+                                        <input type="checkbox" checked={selectedIds.length === paginatedData.length && paginatedData.length > 0} onChange={toggleSelectAll} className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 focus:ring-2 cursor-pointer" />
+                                        全選本頁
+                                    </label>
+                                    {selectedIds.length > 0 && <span className="text-water-400/90 text-sm font-medium">已選 {selectedIds.length} 筆</span>}
+                                    <div className="flex rounded-xl overflow-hidden border border-stone-600/50 bg-stone-900/50 p-0.5">
+                                        <button type="button" onClick={() => setDonationListView('cards')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${donationListView === 'cards' ? 'bg-stone-700 text-stone-100 shadow-sm' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'}`}>
+                                            <LayoutGrid size={16} strokeWidth={2} />
+                                            卡片
+                                        </button>
+                                        <button type="button" onClick={() => setDonationListView('list')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${donationListView === 'list' ? 'bg-stone-700 text-stone-100 shadow-sm' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'}`}>
+                                            <List size={16} strokeWidth={2} />
+                                            條列式
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* 條列式：表格（舒適間距與對比） */}
+                                {donationListView === 'list' && (
+                                <div className="rounded-2xl border border-stone-600/40 bg-stone-800/40 overflow-hidden shadow-inner">
                                     <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead className="bg-stone-900/50 border-b border-stone-700">
+                                        <thead className="bg-stone-800/60 border-b border-stone-600/40">
                                             <tr>
-                                                <th className="px-4 py-4 text-center">
+                                                <th className="px-4 py-3.5 text-center">
                                                     <input 
                                                         type="checkbox" 
                                                         checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
                                                         onChange={toggleSelectAll}
-                                                        className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 focus:ring-offset-stone-900 cursor-pointer"
+                                                        className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer"
                                                     />
                                                 </th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">訂單編號</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">時間</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">玩家資訊</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">方案</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">金額</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">金幣</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">支付方式</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">IP / 位置</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">標籤</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">狀態</th>
-                                                <th className="px-6 py-4 text-left text-xs font-bold text-stone-400 uppercase tracking-wider">操作</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">訂單編號</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">時間</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">玩家資訊</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">方案</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">金額</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">金幣</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">支付方式</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">IP / 位置</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">標籤</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">狀態</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide max-w-[120px]">備註</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide bg-stone-800/80 sticky right-0 backdrop-blur-sm">操作</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-stone-700/50">
+                                        <tbody className="divide-y divide-stone-700/30">
                                             {paginatedData.map(donation => (
                                                 <React.Fragment key={donation.id}>
-                                                    <tr className="hover:bg-stone-900/30 transition-colors">
-                                                        <td className="px-4 py-4 text-center">
+                                                    <tr className="hover:bg-stone-700/20 transition-colors">
+                                                        <td className="px-4 py-3.5 text-center">
                                                             <input 
                                                                 type="checkbox" 
                                                                 checked={selectedIds.includes(donation.id)}
                                                                 onChange={() => toggleSelect(donation.id)}
-                                                                className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 focus:ring-offset-stone-900 cursor-pointer"
+                                                                className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer"
                                                             />
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                        <td className="px-5 py-3.5 whitespace-nowrap">
                                                             {donation.order_number ? (
                                                                 <div className="flex items-center gap-2">
-                                                                    <code className="text-sm font-black text-purple-400 bg-purple-900/20 px-3 py-1.5 rounded-lg border-2 border-purple-500/50">
+                                                                    <code className="text-sm font-medium text-stone-200 bg-stone-700/60 px-2.5 py-1 rounded-md border border-stone-600/40">
                                                                         {donation.order_number}
                                                                     </code>
                                                                     <button
@@ -6729,55 +6742,55 @@
                                                                             navigator.clipboard.writeText(donation.order_number);
                                                                             showToast('訂單編號已複製', 'success');
                                                                         }}
-                                                                        className="p-1.5 hover:bg-stone-700 rounded-lg transition-colors"
+                                                                        className="p-1.5 hover:bg-stone-700/50 rounded-lg transition-colors text-stone-400 hover:text-stone-200"
                                                                         title="複製訂單編號"
                                                                     >
-                                                                        <Copy size={16} className="text-purple-400" />
+                                                                        <Copy size={15} />
                                                                     </button>
                                                                 </div>
                                                             ) : (
-                                                                <span className="text-stone-600 text-xs">無</span>
+                                                                <span className="text-stone-500 text-xs">—</span>
                                                             )}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                        <td className="px-5 py-3.5 whitespace-nowrap">
                                                             <div className="text-sm text-stone-400 font-mono">
                                                                 {new Date(donation.created_at).toLocaleString('zh-TW')}
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-5 py-3.5">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-10 h-10 rounded-full bg-stone-700 flex items-center justify-center text-gold-500 font-black text-sm">
+                                                                <div className="w-9 h-9 rounded-full bg-stone-700/80 flex items-center justify-center text-stone-300 font-semibold text-sm">
                                                                     {(donation.game_account || '?')[0].toUpperCase()}
                                                                 </div>
-                                                                <div>
-                                                                    <div className="text-white font-bold">{donation.game_account}</div>
-                                                                    <div className="text-stone-500 text-xs">{donation.email}</div>
+                                                                <div className="min-w-0">
+                                                                    <div className="text-stone-100 font-medium truncate">{donation.game_account}</div>
+                                                                    <div className="text-stone-500 text-xs truncate">{donation.email}</div>
                                                                     {donation.line_name && (
-                                                                        <div className="text-green-400/90 text-xs mt-0.5">LINE/Discord: {donation.line_name}</div>
+                                                                        <div className="text-stone-400 text-xs mt-0.5 truncate">LINE/Discord: {donation.line_name}</div>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="text-sm text-white font-medium">{donation.plan_name}</div>
+                                                        <td className="px-5 py-3.5">
+                                                            <div className="text-sm text-stone-200 font-medium">{donation.plan_name}</div>
                                                         </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="text-gold-500 font-bold font-mono">NT$ {donation.amount.toLocaleString()}</div>
+                                                        <td className="px-5 py-3.5">
+                                                            <div className="text-stone-100 font-semibold font-mono">NT$ {donation.amount.toLocaleString()}</div>
                                                         </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="text-orange-400 font-bold font-mono flex items-center gap-1">
-                                                                <Coins size={16} className="text-orange-500" />
+                                                        <td className="px-5 py-3.5">
+                                                            <div className="text-amber-400/90 font-medium font-mono flex items-center gap-1">
+                                                                <Coins size={14} className="text-amber-500/80" />
                                                                 {donation.coins ? donation.coins.toLocaleString() : (() => {
                                                                     const plan = PLANS.find(p => p.amount === donation.amount);
                                                                     return plan ? plan.total.toLocaleString() : '0';
                                                                 })()}
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-5 py-3.5">
                                                             <select
                                                                 value={donation.payment_method || ''}
                                                                 onChange={(e) => updatePaymentMethod(donation.id, e.target.value)}
-                                                                className="text-xs font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer border bg-stone-800 text-stone-200 border-stone-600 hover:border-wind-500/50 min-w-[7rem]"
+                                                                className="text-xs font-medium px-2.5 py-1.5 rounded-lg outline-none cursor-pointer border bg-stone-700/50 text-stone-200 border-stone-600/50 hover:border-stone-500 min-w-[7rem] transition-colors"
                                                                 title="可切換支付方式"
                                                             >
                                                                 <option value="linepay">LINE Pay</option>
@@ -6787,155 +6800,118 @@
                                                                 )}
                                                             </select>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-5 py-3.5">
                                                             <div className="text-sm">
                                                                 {donation.ip_address ? (
-                                                                    <div className="space-y-1">
-                                                                        <div className="font-mono text-stone-400 text-xs" title="IP 地址">
-                                                                            {donation.ip_address}
-                                                                        </div>
+                                                                    <div className="space-y-0.5">
+                                                                        <div className="font-mono text-stone-400 text-xs" title="IP 地址">{donation.ip_address}</div>
                                                                         {donation.ip_location && (
                                                                             <div className="text-stone-500 text-xs flex items-center gap-1">
                                                                                 <span>🌍</span>
-                                                                                <span>
-                                                                                    {donation.ip_location.city && `${donation.ip_location.city}, `}
-                                                                                    {donation.ip_location.country || '未知'}
-                                                                                </span>
+                                                                                <span>{donation.ip_location.city && `${donation.ip_location.city}, `}{donation.ip_location.country || '未知'}</span>
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 ) : (
-                                                                    <span className="text-stone-600 text-xs">未記錄</span>
+                                                                    <span className="text-stone-500 text-xs">—</span>
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex flex-wrap gap-1 items-center">
+                                                        <td className="px-5 py-3.5">
+                                                            <div className="flex flex-wrap gap-1.5 items-center">
                                                                 {(donation.tags || []).map(tag => (
-                                                                    <span key={tag} className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold border ${getTagColor(tag)}`}>
+                                                                    <span key={tag} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${getTagColor(tag)}`}>
                                                                         {TAG_OPTIONS.find(opt => opt.value === tag)?.label || tag}
-                                                                        <button
-                                                                            onClick={() => removeTag(donation.id, tag)}
-                                                                            className="hover:bg-white/20 rounded p-0.5 transition-colors"
-                                                                            title="移除標籤"
-                                                                        >
-                                                                            <X size={12} />
-                                                                        </button>
+                                                                        <button onClick={() => removeTag(donation.id, tag)} className="hover:bg-white/15 rounded p-0.5 transition-colors" title="移除標籤"><X size={10} /></button>
                                                                     </span>
                                                                 ))}
-                                                                <button
-                                                                    onClick={() => setEditingTags(donation.id)}
-                                                                    className="text-stone-500 hover:text-wind-500 transition-colors p-1"
-                                                                    title="加入標籤"
-                                                                >
-                                                                    <Plus size={14} />
-                                                                </button>
+                                                                <button onClick={() => setEditingTags(donation.id)} className="text-stone-500 hover:text-stone-300 transition-colors p-1 rounded" title="加入標籤"><Plus size={14} /></button>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-5 py-3.5">
                                                             <select 
                                                                 value={donation.status} 
                                                                 onChange={(e) => updateStatus(donation.id, e.target.value)}
-                                                                className={`text-xs font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer border ${
-                                                                    donation.status === 'completed' ? 'bg-green-500/20 text-green-400 border-green-500/50' : 
-                                                                    donation.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' : 
-                                                                    'bg-red-500/20 text-red-400 border-red-500/50'
+                                                                className={`text-xs font-medium px-2.5 py-1.5 rounded-lg outline-none cursor-pointer border transition-colors ${
+                                                                    donation.status === 'completed' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' : 
+                                                                    donation.status === 'pending' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40' : 
+                                                                    'bg-red-500/15 text-red-400 border-red-500/40'
                                                                 }`}
                                                             >
-                                                                <option value="pending">⏳ 待處理</option>
-                                                                <option value="completed">✅ 已完成</option>
-                                                                <option value="cancelled">❌ 已取消</option>
+                                                                <option value="pending">待處理</option>
+                                                                <option value="completed">已完成</option>
+                                                                <option value="cancelled">已取消</option>
                                                             </select>
                                                         </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex items-center gap-2">
-                                                                <button 
-                                                                    onClick={() => startEditNotes(donation)}
-                                                                    className="p-2 text-stone-400 hover:text-water-500 hover:bg-stone-700 rounded-lg transition-colors"
-                                                                    title="編輯備註"
-                                                                >
-                                                                    <Edit2 size={16} />
-                                                                </button>
-                                                                <button 
-                                                                    onClick={() => handleDelete(donation.id)}
-                                                                    className="p-2 text-stone-400 hover:text-red-500 hover:bg-stone-700 rounded-lg transition-colors"
-                                                                    title="刪除紀錄"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
+                                                        <td className="px-5 py-3.5 max-w-[200px]">
+                                                            <span className="text-stone-400 text-xs line-clamp-3 break-words" title={donation.notes || ''}>{donation.notes || '—'}</span>
+                                                        </td>
+                                                        <td className="px-5 py-3.5 bg-stone-800/80 sticky right-0 backdrop-blur-sm">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <button onClick={() => startEditNotes(donation)} className="p-2 text-stone-400 hover:text-water-400 hover:bg-stone-700/50 rounded-lg transition-colors" title="編輯"><Edit2 size={15} /></button>
+                                                                <button onClick={() => handleDelete(donation.id)} className="p-2 text-stone-400 hover:text-red-400 hover:bg-stone-700/50 rounded-lg transition-colors" title="刪除"><Trash2 size={15} /></button>
                                                             </div>
                                                         </td>
                                                     </tr>
                                                     {/* 標籤編輯行 */}
                                                     {editingTags === donation.id && (
-                                                        <tr className="bg-stone-900/50">
-                                                            <td colSpan="11" className="px-6 py-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    <label className="text-stone-400 text-sm font-bold">快速加入標籤：</label>
+                                                        <tr className="bg-stone-800/30">
+                                                            <td colSpan="13" className="px-5 py-3">
+                                                                <div className="flex items-center gap-3 flex-wrap">
+                                                                    <span className="text-stone-500 text-sm font-medium">快速加入標籤</span>
                                                                     <div className="flex flex-wrap gap-2">
                                                                         {TAG_OPTIONS.map(tag => {
                                                                             const hasTag = (donation.tags || []).includes(tag.value);
                                                                             return !hasTag && (
-                                                                                <button
-                                                                                    key={tag.value}
-                                                                                    onClick={() => addTag(donation.id, tag.value)}
-                                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${tag.color} hover:opacity-80 transition-opacity`}
-                                                                                >
-                                                                                    + {tag.label}
-                                                                                </button>
+                                                                                <button key={tag.value} onClick={() => addTag(donation.id, tag.value)} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${tag.color} hover:opacity-90 transition-opacity`}>+ {tag.label}</button>
                                                                             );
                                                                         })}
                                                                     </div>
-                                                                    <button
-                                                                        onClick={() => { setEditingTags(null); setNewTag(''); }}
-                                                                        className="ml-auto px-4 py-1.5 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold rounded-lg transition-colors text-sm"
-                                                                    >
-                                                                        關閉
-                                                                    </button>
+                                                                    <button onClick={() => { setEditingTags(null); setNewTag(''); }} className="ml-auto px-3 py-1.5 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">關閉</button>
                                                                 </div>
                                                             </td>
                                                         </tr>
                                                     )}
                                                     
-                                                    {/* 備註編輯行 */}
+                                                    {/* 訂單完整編輯行（管理員可改任何資訊，同步至註冊用戶累計） */}
                                                     {editingId === donation.id && (
-                                                        <tr className="bg-stone-900/50">
-                                                            <td colSpan="11" className="px-6 py-4">
-                                                                <div className="flex items-start gap-3">
-                                                                    <div className="flex-1">
-                                                                        <label className="block text-stone-400 text-sm font-bold mb-2">管理員備註</label>
-                                                                        <textarea
-                                                                            value={editNotes}
-                                                                            onChange={(e) => setEditNotes(e.target.value)}
-                                                                            placeholder="輸入管理員備註..."
-                                                                            rows="3"
-                                                                            className="w-full bg-stone-800 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-water-500 outline-none resize-none"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-2 pt-7">
-                                                                        <button
-                                                                            onClick={() => saveNotes(donation.id)}
-                                                                            className="px-4 py-2 bg-water-600 hover:bg-water-500 text-white font-bold rounded-lg transition-colors"
-                                                                        >
-                                                                            儲存
+                                                        <tr className="bg-stone-800/40">
+                                                            <td colSpan="13" className="px-5 py-4">
+                                                                <div className="flex flex-wrap items-center justify-between gap-3 mb-3 p-3 bg-stone-700/30 border border-stone-600/40 rounded-xl">
+                                                                    <p className="text-stone-300 text-sm font-medium">編輯訂單 · 儲存後同步至註冊用戶累計</p>
+                                                                    <div className="flex gap-2">
+                                                                        <button onClick={() => saveNotes(donation.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-semibold rounded-xl text-sm transition-colors">
+                                                                            ✓ 確認儲存
                                                                         </button>
-                                                                        <button
-                                                                            onClick={() => { setEditingId(null); setEditNotes(''); }}
-                                                                            className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold rounded-lg transition-colors"
-                                                                        >
+                                                                        <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">
                                                                             取消
                                                                         </button>
                                                                     </div>
+                                                                </div>
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE / Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE / Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
+                                                                </div>
+                                                                <div className="mb-2"><label className="block text-stone-500 text-xs font-medium mb-1">管理員備註</label><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="輸入管理員備註..." rows="2" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 resize-none focus:border-stone-500 outline-none" /></div>
+                                                                <div className="flex gap-2 pt-2 border-t border-stone-600/40">
+                                                                    <button onClick={() => saveNotes(donation.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-medium rounded-lg text-sm transition-colors">確認儲存</button>
+                                                                    <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-5 py-2.5 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button>
                                                                 </div>
                                                             </td>
                                                         </tr>
                                                     )}
                                                     {/* 顯示現有備註（如果有且不在編輯中） */}
                                                     {donation.notes && editingId !== donation.id && (
-                                                        <tr className="bg-stone-900/30">
-                                                            <td colSpan="11" className="px-6 py-3">
+                                                        <tr className="bg-stone-800/20">
+                                                            <td colSpan="13" className="px-5 py-2.5">
                                                                 <div className="flex items-start gap-2 text-sm">
-                                                                    <span className="text-stone-500 font-bold">備註：</span>
+                                                                    <span className="text-stone-500 font-medium">備註</span>
                                                                     <span className="text-stone-400">{donation.notes}</span>
                                                                 </div>
                                                             </td>
@@ -6945,256 +6921,177 @@
                                             ))}
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
-                            </div>
-                                
-                                {/* 手機版：卡片列表 */}
-                                <div className="lg:hidden p-4 space-y-4">
+                                )}
+                                {/* 卡片式：一格一卡（舒適圓角與對比） */}
+                                {donationListView === 'cards' && (
+                                <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                     {paginatedData.map((item) => (
-                                        <div key={item.id} className="bg-stone-900 rounded-2xl border border-stone-700 overflow-hidden">
-                                            {/* 卡片頭部：訂單編號和狀態 */}
-                                            <div className="bg-stone-800/50 px-4 py-3 border-b border-stone-700">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedIds.includes(item.id)}
-                                                            onChange={() => toggleSelect(item.id)}
-                                                            className="w-4 h-4 rounded border-stone-600 text-gold-500 focus:ring-gold-500 cursor-pointer"
-                                                        />
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                                            item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/50' :
-                                                            item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' :
-                                                            'bg-red-500/20 text-red-400 border border-red-500/50'
+                                        <React.Fragment key={item.id}>
+                                        <div className="bg-stone-800/50 rounded-2xl border border-stone-600/40 overflow-hidden flex flex-col shadow-sm hover:border-stone-500/50 transition-colors">
+                                            {/* 卡片頭部 */}
+                                            <div className="px-4 py-3 border-b border-stone-600/30 bg-stone-800/30">
+                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer" />
+                                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
+                                                            item.status === 'completed' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                                                            item.status === 'pending' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
+                                                            'bg-red-500/15 text-red-400 border border-red-500/30'
                                                         }`}>
-                                                            {item.status === 'completed' ? '✅ 已完成' : item.status === 'pending' ? '⏳ 待處理' : '❌ 已取消'}
+                                                            {item.status === 'completed' ? '已完成' : item.status === 'pending' ? '待處理' : '已取消'}
                                                         </span>
                                                     </div>
-                                                    <span className="text-stone-400 text-xs">
-                                                        {new Date(item.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}
+                                                    <span className="text-stone-500 text-xs tabular-nums">
+                                                        {new Date(item.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
                                                 {item.order_number && (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-stone-400 text-xs font-bold">訂單：</span>
-                                                        <code className="text-sm font-black text-purple-400 bg-purple-900/20 px-3 py-1 rounded-lg border border-purple-500/50">
-                                                            {item.order_number}
-                                                        </code>
-                                                        <button
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(item.order_number);
-                                                                showToast('訂單編號已複製', 'success');
-                                                            }}
-                                                            className="p-1 hover:bg-stone-700 rounded transition-colors"
-                                                        >
-                                                            <Copy size={14} className="text-purple-400" />
-                                                        </button>
+                                                        <span className="text-stone-500 text-xs">訂單</span>
+                                                        <code className="text-sm font-medium text-stone-200 bg-stone-700/50 px-2 py-1 rounded-md border border-stone-600/40">{item.order_number}</code>
+                                                        <button onClick={() => { navigator.clipboard.writeText(item.order_number); showToast('訂單編號已複製', 'success'); }} className="p-1.5 text-stone-400 hover:text-stone-200 hover:bg-stone-700/50 rounded-md transition-colors"><Copy size={14} /></button>
                                                     </div>
                                                 )}
                                             </div>
                                             
                                             {/* 卡片主體 */}
-                                            <div className="p-4 space-y-3">
-                                                {/* 玩家資訊 */}
+                                            <div className="p-4 space-y-4 flex-1">
                                                 <div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <User size={14} className="text-gold-400" />
-                                                        <span className="text-xs text-stone-400 font-bold">玩家資訊</span>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <User size={13} className="text-stone-500" />
+                                                        <span className="text-xs text-stone-500 font-medium">玩家</span>
                                                     </div>
-                                                    <div className="pl-5 space-y-1">
-                                                        {item.game_account && (
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-white font-bold text-sm">{item.game_account}</span>
-                                                            </div>
-                                                        )}
+                                                    <div className="pl-5 space-y-0.5">
+                                                        {item.game_account && <div className="text-stone-100 font-medium text-sm">{item.game_account}</div>}
                                                         <div className="text-stone-400 text-xs break-all">{item.email}</div>
-                                                        {item.line_name && (
-                                                            <div className="flex items-center gap-1 text-xs">
-                                                                <span className="text-green-400">LINE或Discord:</span>
-                                                                <span className="text-white">{item.line_name}</span>
-                                                            </div>
-                                                        )}
+                                                        {item.line_name && <div className="text-stone-400 text-xs">LINE/Discord: {item.line_name}</div>}
                                                     </div>
                                                 </div>
                                                 
-                                                {/* 方案和金額 */}
-                                                <div className="bg-stone-800/50 rounded-xl p-3">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-stone-400 text-xs">方案</span>
-                                                        <span className="text-white font-bold text-sm">{item.plan_name}</span>
+                                                <div className="rounded-xl p-3 bg-stone-700/30 border border-stone-600/30">
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <span className="text-stone-500 text-xs">方案</span>
+                                                        <span className="text-stone-200 font-medium text-sm">{item.plan_name}</span>
                                                     </div>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-gold-400 font-black text-xl">NT$ {item.amount?.toLocaleString() || 0}</span>
-                                                        <div className="flex items-center gap-1 bg-gold-500/10 px-2 py-1 rounded-lg">
-                                                            <Coins size={14} className="text-gold-500" />
-                                                            <span className="text-gold-500 font-bold text-sm">
-                                                                {item.coins?.toLocaleString() || (PLANS.find(p => p.total === item.amount)?.total || 0).toLocaleString()}
-                                                            </span>
+                                                        <span className="text-stone-100 font-semibold text-lg">NT$ {item.amount?.toLocaleString() || 0}</span>
+                                                        <div className="flex items-center gap-1.5 text-amber-400/90 font-medium text-sm">
+                                                            <Coins size={14} />
+                                                            {item.coins?.toLocaleString() || (PLANS.find(p => p.total === item.amount)?.total || 0).toLocaleString()}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
-                                                {/* 支付方式（可切換）和 IP */}
                                                 <div className="flex flex-wrap items-center gap-3 text-xs">
                                                     <div className="flex items-center gap-2">
-                                                        <CreditCard size={12} className="text-wind-400 shrink-0" />
-                                                        <select
-                                                            value={item.payment_method || ''}
-                                                            onChange={(e) => updatePaymentMethod(item.id, e.target.value)}
-                                                            className="text-xs font-bold px-2.5 py-1.5 rounded-lg border bg-stone-800 text-stone-200 border-stone-600 focus:border-wind-500 outline-none cursor-pointer"
-                                                            title="可切換支付方式"
-                                                        >
+                                                        <CreditCard size={12} className="text-stone-500 shrink-0" />
+                                                        <select value={item.payment_method || ''} onChange={(e) => updatePaymentMethod(item.id, e.target.value)} className="text-xs font-medium px-2 py-1.5 rounded-lg border bg-stone-700/50 text-stone-200 border-stone-600/50 focus:border-stone-500 outline-none cursor-pointer" title="支付方式">
                                                             <option value="linepay">LINE Pay</option>
                                                             <option value="shopline">SHOPLINE</option>
-                                                            {item.payment_method && item.payment_method !== 'linepay' && item.payment_method !== 'shopline' && (
-                                                                <option value={item.payment_method}>{item.payment_method}</option>
-                                                            )}
+                                                            {item.payment_method && item.payment_method !== 'linepay' && item.payment_method !== 'shopline' && <option value={item.payment_method}>{item.payment_method}</option>}
                                                         </select>
                                                     </div>
-                                                    {item.ip_address && (
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-stone-500">IP:</span>
-                                                            <code className="text-stone-400 bg-stone-800 px-1 rounded">{item.ip_address}</code>
-                                                        </div>
-                                                    )}
+                                                    {item.ip_address && <span className="text-stone-500 font-mono">{item.ip_address}</span>}
                                                 </div>
                                                 
-                                                {/* 標籤 */}
+                                                <div className="text-xs">
+                                                    <span className="text-stone-500">備註 </span>
+                                                    <span className="text-stone-400" title={item.notes || ''}>{item.notes ? (item.notes.length > 36 ? item.notes.slice(0, 36) + '…' : item.notes) : '—'}</span>
+                                                </div>
+                                                
                                                 {item.tags && item.tags.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1">
+                                                    <div className="flex flex-wrap gap-1.5">
                                                         {item.tags.map((tagValue, idx) => {
                                                             const tagOption = TAG_OPTIONS.find(t => t.value === tagValue);
-                                                            return tagOption ? (
-                                                                <span key={idx} className={`px-2 py-0.5 rounded text-xs font-bold ${tagOption.color}`}>
-                                                                    {tagOption.label}
-                                                                </span>
-                                                            ) : null;
+                                                            return tagOption ? <span key={idx} className={`px-2 py-0.5 rounded-md text-xs font-medium ${tagOption.color}`}>{tagOption.label}</span> : null;
                                                         })}
-                                                    </div>
-                                                )}
-                                                
-                                                {/* 備註 */}
-                                                {item.notes && (
-                                                    <div className="bg-stone-800/30 rounded-lg p-2 border-l-2 border-wind-500">
-                                                        <p className="text-stone-300 text-xs">{item.notes}</p>
                                                     </div>
                                                 )}
                                             </div>
                                             
-                                            {/* 卡片底部：操作按鈕 */}
-                                            <div className="px-4 py-3 bg-stone-800/30 border-t border-stone-700 flex gap-2">
-                                                <button
-                                                    onClick={() => startEdit(item)}
-                                                    className="flex-1 px-3 py-2 bg-wind-600/20 hover:bg-wind-600/30 text-wind-400 border border-wind-600/30 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1"
-                                                >
+                                            {/* 卡片底部操作 */}
+                                            <div className="px-4 py-3 border-t border-stone-600/30 bg-stone-800/20 flex gap-2">
+                                                <button onClick={() => startEditNotes(item)} className="flex-1 px-3 py-2 bg-stone-700/60 hover:bg-stone-600/60 text-stone-200 font-medium rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
                                                     <Edit size={14} />
                                                     編輯
                                                 </button>
-                                                <button
-                                                    onClick={() => deleteItem(item.id)}
-                                                    className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1"
-                                                >
+                                                <button onClick={() => handleDelete(item.id)} className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-xl text-xs border border-red-500/30 transition-colors flex items-center justify-center gap-1.5">
                                                     <Trash2 size={14} />
                                                     刪除
                                                 </button>
                                             </div>
                                         </div>
+                                        {/* 編輯表單卡 */}
+                                        {editingId === item.id && (
+                                            <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-stone-600/40 bg-stone-800/60 p-4 md:p-5">
+                                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 rounded-xl bg-stone-700/30 border border-stone-600/30">
+                                                    <p className="text-stone-300 text-sm font-medium">編輯此筆訂單 · 儲存後同步至註冊用戶累計</p>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => saveNotes(item.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-semibold rounded-xl text-sm transition-colors">✓ 確認儲存</button>
+                                                        <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
+                                                </div>
+                                                <div className="mb-3"><label className="block text-stone-500 text-xs font-medium mb-1">備註</label><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="管理員備註" rows="2" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 resize-none focus:border-stone-500 outline-none" /></div>
+                                                <div className="flex gap-2"><button onClick={() => saveNotes(item.id)} className="px-5 py-2 bg-water-600 hover:bg-water-500 text-white font-medium rounded-lg text-sm transition-colors">確認儲存</button><button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button></div>
+                                            </div>
+                                        )}
+                                        </React.Fragment>
                                     ))}
                                 </div>
+                                )}
                             </>
                         )}
                         
                         {/* 分頁控制 */}
                         {filteredData.length > 0 && (
-                            <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                                {/* 統計資訊 */}
-                                <div className="text-stone-500 text-sm">
-                                    顯示 {startIndex + 1}-{Math.min(endIndex, filteredData.length)} / 共 {filteredData.length} 筆
-                                    {filteredData.length !== data.length && ` (篩選自 ${data.length} 筆)`}
+                            <div className="mt-5 flex flex-col md:flex-row items-center justify-between gap-4 py-3 px-4 rounded-2xl bg-stone-800/30 border border-stone-600/30">
+                                <div className="text-stone-500 text-sm font-medium">
+                                    顯示 {startIndex + 1}–{Math.min(endIndex, filteredData.length)} / 共 {filteredData.length} 筆
+                                    {filteredData.length !== data.length && <span className="text-stone-500"> (篩選自 {data.length} 筆)</span>}
                                 </div>
-                                
-                                {/* 每頁筆數選擇 */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-stone-500 text-sm">每頁顯示：</span>
-                                    <select 
-                                        value={itemsPerPage} 
-                                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                                        className="bg-stone-800 border border-stone-700 rounded-lg px-3 py-1.5 text-sm text-white outline-none cursor-pointer hover:border-stone-600 transition-colors"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                    </select>
-                                </div>
-                                
-                                {/* 分頁按鈕 */}
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setCurrentPage(1)}
-                                        disabled={currentPage === 1}
-                                        className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-lg font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        title="第一頁"
-                                    >
-                                        <ChevronsLeft size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-lg font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        title="上一頁"
-                                    >
-                                        <ChevronLeft size={16} />
-                                    </button>
-                                    
-                                    <div className="flex items-center gap-1">
-                                        {[...Array(totalPages)].map((_, i) => {
-                                            const pageNum = i + 1;
-                                            // 只顯示當前頁附近的頁碼
-                                            if (
-                                                pageNum === 1 || 
-                                                pageNum === totalPages || 
-                                                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                                            ) {
-                                                return (
-                                                    <button
-                                                        key={pageNum}
-                                                        onClick={() => setCurrentPage(pageNum)}
-                                                        className={`px-3 py-1.5 rounded-lg font-bold transition-colors ${
-                                                            currentPage === pageNum 
-                                                                ? 'bg-gold-500 text-white' 
-                                                                : 'bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white'
-                                                        }`}
-                                                    >
-                                                        {pageNum}
-                                                    </button>
-                                                );
-                                            } else if (
-                                                pageNum === currentPage - 2 || 
-                                                pageNum === currentPage + 2
-                                            ) {
-                                                return <span key={pageNum} className="text-stone-600">...</span>;
-                                            }
-                                            return null;
-                                        })}
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-stone-500 text-sm">每頁</span>
+                                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="bg-stone-700/50 border border-stone-600/50 rounded-lg px-2.5 py-1.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-stone-500 transition-colors">
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                        </select>
                                     </div>
-                                    
-                                    <button
-                                        onClick={() => setCurrentPage(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-lg font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        title="下一頁"
-                                    >
-                                        <ChevronRight size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentPage(totalPages)}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-lg font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        title="最後一頁"
-                                    >
-                                        <ChevronsRight size={16} />
-                                    </button>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="第一頁"><ChevronsLeft size={16} /></button>
+                                        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="上一頁"><ChevronLeft size={16} /></button>
+                                        <div className="flex items-center gap-1">
+                                            {[...Array(totalPages)].map((_, i) => {
+                                                const pageNum = i + 1;
+                                                if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                                    return (
+                                                        <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`min-w-[2rem] px-2.5 py-1.5 rounded-lg font-medium text-sm transition-colors ${currentPage === pageNum ? 'bg-stone-600 text-stone-100' : 'bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50'}`}>
+                                                            {pageNum}
+                                                        </button>
+                                                    );
+                                                } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                                    return <span key={pageNum} className="text-stone-500 px-0.5">…</span>;
+                                                }
+                                                return null;
+                                            })}
+                                        </div>
+                                        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="下一頁"><ChevronRight size={16} /></button>
+                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="最後一頁"><ChevronsRight size={16} /></button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -7542,8 +7439,11 @@
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="text-2xl font-black text-white mb-2">註冊用戶列表</h2>
-                                        <p className="text-stone-400">共 {allUsers.length} 位註冊用戶</p>
+                                        <p className="text-stone-400">共 {allUsers.length} 位註冊用戶 · 客人資源完整呈顯，累計儲值/金幣由贊助紀錄自動同步</p>
                                     </div>
+                                </div>
+                                <div className="bg-water-900/30 border border-water-700/50 rounded-xl px-4 py-3 mb-4">
+                                    <p className="text-water-200 text-sm font-bold">💡 註冊用戶的累計儲值、累計金幣由「贊助管理」的訂單自動計算並同步。管理員在贊助管理編輯任一訂單後，此處數據會自動更新。</p>
                                 </div>
                                 
                                 {/* 統計卡片 */}
@@ -7684,7 +7584,14 @@
                                                                 </code>
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <div className="flex items-center justify-center gap-2">
+                                                                <div className="flex items-center justify-center gap-2 flex-wrap">
+                                                                    <button
+                                                                        onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); }}
+                                                                        className="px-3 py-1.5 bg-water-600/20 hover:bg-water-600/30 text-water-400 text-xs font-bold rounded-lg transition-colors border border-water-500/30"
+                                                                        title="查看該用戶的贊助紀錄"
+                                                                    >
+                                                                        查看贊助
+                                                                    </button>
                                                                     {user.id === supabaseUser?.id ? (
                                                                         <span className="text-stone-500 text-xs">（本人）</span>
                                                                     ) : user.role === 'super_admin' ? (
@@ -7907,6 +7814,13 @@
                                                 
                                                 {/* 操作按鈕 */}
                                                 <div className="space-y-2">
+                                                    <button
+                                                        onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); }}
+                                                        className="w-full px-4 py-3 bg-water-600/20 hover:bg-water-600/30 text-water-400 text-sm font-bold rounded-xl transition-colors border border-water-500/30 flex items-center justify-center gap-2"
+                                                    >
+                                                        <Coins size={16} />
+                                                        查看該用戶贊助
+                                                    </button>
                                                     {user.id === supabaseUser?.id ? (
                                                         <div className="text-center py-2 text-stone-500 text-sm">（本人帳號）</div>
                                                     ) : user.role === 'super_admin' ? (
@@ -8294,7 +8208,7 @@
                         <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
                             <Link to="/" className="flex items-center gap-4 group min-h-[44px] min-w-[44px] md:min-w-0">
                                 <div className="h-10 md:h-12 w-auto overflow-visible group-hover:scale-105 transition-transform duration-200 drop-shadow-sm">
-                                    <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain" />
+                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
                                 </div>
                             </Link>
 
@@ -8404,7 +8318,7 @@
                             <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-stone-800">
                                 <div className="flex items-center gap-5 opacity-90">
                                     <div className="h-9 md:h-10 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
-                                        <SmartImage src={ASSETS.LOGO} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" />
+                                        <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" alt="蘇打石器" />
                                     </div>
                                     <span className="font-bold text-sm tracking-widest border-l border-stone-600 pl-5 h-8 flex items-center">SODA STONE AGE</span>
                                 </div>
