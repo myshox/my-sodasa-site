@@ -1,4 +1,4 @@
-ㄓ<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -6377,7 +6377,7 @@
                                     <Shield size={40} className="text-white" />
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-black text-white mb-2">後台管理系統</h2>
-                                <p className="text-stone-400 text-sm">請使用管理員帳號登入</p>
+                                <p className="text-stone-200 text-sm font-medium">請使用管理員帳號登入</p>
                             </div>
                             
                             <form onSubmit={handleLogin} className="space-y-4">
@@ -6419,7 +6419,7 @@
                                         onChange={(e) => setRememberAdminMe(e.target.checked)}
                                         className="w-4 h-4 text-gold-600 bg-stone-900 border-stone-600 rounded focus:ring-gold-500 focus:ring-2"
                                     />
-                                    <label htmlFor="rememberAdminMe" className="text-stone-400 text-sm cursor-pointer select-none">
+                                    <label htmlFor="rememberAdminMe" className="text-stone-200 text-sm font-medium cursor-pointer select-none">
                                         記住帳號密碼
                                     </label>
                                 </div>
@@ -6438,7 +6438,7 @@
                             </form>
                             
                             <div className="mt-6 pt-6 border-t border-stone-700/50">
-                                <div className="flex items-center justify-center gap-2 text-stone-400 text-xs">
+                                <div className="flex items-center justify-center gap-2 text-stone-300 text-xs font-medium">
                                     <Shield size={14} />
                                     <p>已升級至 Supabase Auth 安全認證系統</p>
                                 </div>
@@ -6449,12 +6449,12 @@
             }
             
             return (
-                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-stone-900 text-white">
+                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-gradient-to-br from-amber-950/30 via-stone-900 to-slate-900 text-white">
                     <div className="max-w-7xl mx-auto">
                         {/* 頁面標題 - 手機版優化 */}
                         <div className="mb-6 md:mb-8">
                             <h1 className="text-2xl md:text-3xl font-black text-white mb-2">後台管理系統</h1>
-                            <p className="text-stone-400 text-sm">
+                            <p className="text-stone-300 text-sm">
                                 歡迎回來，
                                 <span className="text-white font-bold">{currentUser?.username || supabaseUser?.email}</span>
                                 {(currentUser?.role === 'super_admin' || isSuperAdmin) && <span className="ml-2 px-2 py-0.5 bg-gold-500/20 text-gold-400 text-xs font-bold rounded border border-gold-500/30">超管</span>}
@@ -6467,28 +6467,28 @@
                             <div className="bg-gradient-to-br from-gold-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-gold-700/30 shadow-lg">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Coins size={16} className="text-gold-400" />
-                                    <p className="text-stone-400 text-xs font-bold">本月總營收</p>
+                                    <p className="text-white/95 text-xs font-bold">本月總營收</p>
                                 </div>
                                 <p className="text-xl md:text-2xl font-black text-gold-400">NT$ {totalAmount.toLocaleString()}</p>
                             </div>
                             <div className="bg-gradient-to-br from-fire-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-fire-700/30 shadow-lg">
                                 <div className="flex items-center gap-2 mb-2">
                                     <AlertCircle size={16} className="text-fire-400" />
-                                    <p className="text-stone-400 text-xs font-bold">待處理</p>
+                                    <p className="text-white/95 text-xs font-bold">待處理</p>
                                 </div>
                                 <p className="text-xl md:text-2xl font-black text-fire-400">{pendingCount}</p>
                             </div>
                             <div className="bg-gradient-to-br from-green-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-green-700/30 shadow-lg">
                                 <div className="flex items-center gap-2 mb-2">
                                     <CheckCircle size={16} className="text-green-400" />
-                                    <p className="text-stone-400 text-xs font-bold">已完成</p>
+                                    <p className="text-white/95 text-xs font-bold">已完成</p>
                                 </div>
                                 <p className="text-xl md:text-2xl font-black text-green-400">{completedCount}</p>
                             </div>
                             <div className="bg-gradient-to-br from-blue-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-blue-700/30 shadow-lg">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Heart size={16} className="text-blue-400" />
-                                    <p className="text-stone-400 text-xs font-bold">總贊助數</p>
+                                    <p className="text-white/95 text-xs font-bold">總贊助數</p>
                                 </div>
                                 <p className="text-xl md:text-2xl font-black text-blue-400">{data.length}</p>
                             </div>
@@ -6498,35 +6498,35 @@
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4">
                             <div className="w-full lg:w-auto overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0">
                                 <div className="flex gap-2 min-w-max">
-                                    <button onClick={() => setCurrentTab('donations')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'donations' ? 'bg-gold-500 text-white shadow-lg shadow-gold-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('donations')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'donations' ? 'bg-amber-500 text-amber-950 shadow-lg shadow-amber-900/30' : 'bg-amber-950/50 text-amber-200/90 hover:bg-amber-900/50 hover:text-amber-100 border border-amber-800/40'}`}>
                                         贊助管理
                                     </button>
-                                    <button onClick={() => setCurrentTab('guides')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'guides' ? 'bg-purple-500 text-white shadow-lg shadow-purple-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('guides')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'guides' ? 'bg-purple-500 text-white shadow-lg shadow-purple-900/20' : 'bg-purple-950/50 text-purple-200/90 hover:bg-purple-900/50 hover:text-purple-100 border border-purple-800/40'}`}>
                                         <BookOpen size={16}/>
                                         <span>活動攻略</span>
                                     </button>
-                                    <button onClick={() => setCurrentTab('stats')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'stats' ? 'bg-wind-500 text-white shadow-lg shadow-wind-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('stats')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'stats' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-900/20' : 'bg-cyan-950/50 text-cyan-200/90 hover:bg-cyan-900/50 hover:text-cyan-100 border border-cyan-800/40'}`}>
                                         <Coins size={16}/>
                                         <span>報表統計</span>
                                     </button>
-                                    <button onClick={() => setCurrentTab('events')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'events' ? 'bg-water-500 text-white shadow-lg shadow-water-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('events')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'events' ? 'bg-sky-500 text-white shadow-lg shadow-sky-900/20' : 'bg-sky-950/50 text-sky-200/90 hover:bg-sky-900/50 hover:text-sky-100 border border-sky-800/40'}`}>
                                         活動管理
                                     </button>
-                                    <button onClick={() => setCurrentTab('music')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'music' ? 'bg-fire-500 text-white shadow-lg shadow-fire-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('music')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'music' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'bg-rose-950/50 text-rose-200/90 hover:bg-rose-900/50 hover:text-rose-100 border border-rose-800/40'}`}>
                                         <Music size={16}/>
                                         <span>音樂</span>
                                     </button>
-                                    <button onClick={() => setCurrentTab('settings')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'settings' ? 'bg-stone-700 text-white shadow-lg' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                    <button onClick={() => setCurrentTab('settings')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'settings' ? 'bg-stone-600 text-white shadow-lg' : 'bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white border border-stone-600/50'}`}>
                                         <Settings size={16}/>
                                         <span>設定</span>
                                     </button>
                                     {isSuperAdmin && (
                                         <>
-                                            <button onClick={() => setCurrentTab('registered_users')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'registered_users' ? 'bg-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                            <button onClick={() => setCurrentTab('registered_users')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'registered_users' ? 'bg-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-blue-950/50 text-blue-200/90 hover:bg-blue-900/50 hover:text-blue-100 border border-blue-800/40'}`}>
                                                 <Users size={16}/>
                                                 <span>註冊用戶</span>
                                             </button>
-                                            <button onClick={() => setCurrentTab('super_admins')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'super_admins' ? 'bg-purple-500 text-white shadow-lg shadow-purple-900/20' : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white'}`}>
+                                            <button onClick={() => setCurrentTab('super_admins')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'super_admins' ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/20' : 'bg-violet-950/50 text-violet-200/90 hover:bg-violet-900/50 hover:text-violet-100 border border-violet-800/40'}`}>
                                                 <UserPlus size={16}/>
                                                 <span>超管</span>
                                             </button>
@@ -6540,17 +6540,17 @@
                                     {selectedIds.length > 0 && (
                                         <button 
                                             onClick={() => setShowBatchActions(!showBatchActions)} 
-                                            className="px-4 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-stone-600/50 text-stone-200 border-stone-600/50"
+                                            className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-stone-500/60 text-white border-stone-500/50"
                                         >
                                             <Check size={16}/>
                                             批次操作 ({selectedIds.length})
                                         </button>
                                     )}
-                                    <button onClick={exportToCSV} className="px-4 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-stone-600/50 text-stone-200 border-stone-600/50" title="匯出 CSV">
+                                    <button onClick={exportToCSV} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-stone-500/60 text-white border-stone-500/50" title="匯出 CSV">
                                         <Download size={16}/>
                                         <span className="hidden md:inline">匯出 CSV</span>
                                     </button>
-                                    <button onClick={handleLogout} className="px-3 py-2 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border bg-stone-700/50 hover:bg-red-500/20 text-stone-300 hover:text-red-400 border-stone-600/50"><LogOut size={16}/></button>
+                                    <button onClick={handleLogout} className="px-3 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-red-500/30 text-stone-100 hover:text-red-300 border-stone-500/50"><LogOut size={16}/></button>
                                 </div>
                             )}
                              {currentTab !== 'donations' && (
@@ -6564,12 +6564,12 @@
                             <>
                                 {/* 搜尋與篩選（舒適間距與對比） */}
                                 <div className="space-y-4 mb-6">
-                                    <div className="flex flex-col md:flex-row gap-3">
+                                    <div className="flex flex-col md:flex-row gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/25 via-stone-800/60 to-stone-800/60 border border-amber-800/30">
                                         <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" size={16}/>
-                                            <input type="text" placeholder="搜尋遊戲帳號或 Email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800/60 border border-stone-600/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none transition-colors"/>
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400/80" size={16}/>
+                                            <input type="text" placeholder="搜尋遊戲帳號或 Email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800/80 border border-stone-600/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-stone-400 focus:border-amber-500/50 outline-none transition-colors"/>
                                         </div>
-                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800/60 border border-stone-600/50 rounded-xl px-4 py-2.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-stone-500 transition-colors">
+                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800/80 border border-stone-600/50 rounded-xl px-4 py-2.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-amber-500/50 transition-colors">
                                             <option value="all">全部狀態</option>
                                             <option value="pending">待處理</option>
                                             <option value="completed">已完成</option>
@@ -6577,7 +6577,7 @@
                                         </select>
                                         <button
                                             onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                                            className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border ${showAdvancedSearch ? 'bg-stone-600 text-stone-100 border-stone-500/50' : 'bg-stone-800/60 text-stone-400 hover:text-stone-200 border-stone-600/50 hover:border-stone-500/50'}`}
+                                            className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border ${showAdvancedSearch ? 'bg-stone-600 text-white border-stone-500/50' : 'bg-stone-800/60 text-stone-100 hover:text-white border-stone-600/50 hover:border-stone-500/50'}`}
                                         >
                                             <Settings size={16} />
                                             進階搜尋
@@ -6586,28 +6586,28 @@
                                     
                                     {/* 進階搜尋選項 */}
                                     {showAdvancedSearch && (
-                                        <div className="bg-stone-800/40 border border-stone-600/40 rounded-2xl p-4 space-y-3">
+                                        <div className="bg-slate-900/50 border border-sky-800/40 rounded-2xl p-4 space-y-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">開始日期</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">開始日期</label>
                                                     <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">結束日期</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">結束日期</label>
                                                     <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">最低金額</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">最低金額</label>
                                                     <input type="number" placeholder="NT$ 0" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">最高金額</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">最高金額</label>
                                                     <input type="number" placeholder="無上限" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">支付方式</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">支付方式</label>
                                                     <select value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         <option value="shopline">SHOPLINE</option>
@@ -6615,7 +6615,7 @@
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-500 text-xs font-medium mb-1.5">標籤</label>
+                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">標籤</label>
                                                     <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         {TAG_OPTIONS.map(tag => (
@@ -6634,10 +6634,10 @@
                                     
                                     {/* 批次操作面板 */}
                                     {showBatchActions && selectedIds.length > 0 && (
-                                        <div className="bg-stone-800/40 border border-stone-600/40 rounded-2xl p-4">
+                                        <div className="bg-amber-950/30 border border-amber-700/40 rounded-2xl p-4">
                                             <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1">
-                                                    <p className="text-stone-500 text-sm font-medium mb-2">批次更新狀態</p>
+                                                    <p className="text-stone-100 text-sm font-semibold mb-2">批次更新狀態</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         <button onClick={() => batchUpdateStatus('completed')} className="px-3 py-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 rounded-lg font-medium text-sm hover:bg-emerald-500/25 transition-colors">已完成</button>
                                                         <button onClick={() => batchUpdateStatus('pending')} className="px-3 py-2 bg-amber-500/15 text-amber-400 border border-amber-500/40 rounded-lg font-medium text-sm hover:bg-amber-500/25 transition-colors">待處理</button>
@@ -6645,7 +6645,7 @@
                                                     </div>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-stone-500 text-sm font-medium mb-2">批次加入標籤</p>
+                                                    <p className="text-stone-100 text-sm font-semibold mb-2">批次加入標籤</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {TAG_OPTIONS.map(tag => (
                                                             <button key={tag.value} onClick={() => batchAddTag(tag.value)} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${tag.color} hover:opacity-90 transition-opacity`}>+ {tag.label}</button>
@@ -6663,28 +6663,28 @@
                         
                         {/* 贊助紀錄列表 */}
                         {filteredData.length === 0 ? (
-                            <div className="rounded-2xl border border-stone-600/40 bg-stone-800/30 p-16 md:p-20">
-                                <div className="text-stone-400 text-center flex flex-col items-center">
-                                    <Clipboard size={40} className="mb-3 opacity-40"/>
-                                    <p className="text-base font-medium text-stone-300">暫無贊助紀錄</p>
-                                    <p className="text-sm mt-1 text-stone-500">等待玩家進行贊助</p>
+                            <div className="rounded-2xl border border-amber-800/30 bg-gradient-to-br from-amber-950/20 to-stone-800/50 p-16 md:p-20">
+                                <div className="text-stone-100 text-center flex flex-col items-center">
+                                    <Clipboard size={40} className="mb-3 text-amber-400/70"/>
+                                    <p className="text-lg font-semibold text-white">暫無贊助紀錄</p>
+                                    <p className="text-sm mt-1 text-stone-200">等待玩家進行贊助</p>
                                 </div>
                             </div>
                         ) : (
                             <>
                                 {/* 工具列：全選 + 檢視切換（舒適間距與視覺） */}
-                                <div className="px-4 py-3 mb-1 flex flex-wrap items-center gap-5 rounded-2xl bg-stone-800/30 border border-stone-700/50">
-                                    <label className="flex items-center gap-2.5 cursor-pointer text-stone-300 hover:text-stone-100 text-sm font-medium transition-colors">
+                                <div className="px-4 py-3 mb-1 flex flex-wrap items-center gap-5 rounded-2xl bg-amber-950/25 border border-amber-700/30">
+                                    <label className="flex items-center gap-2.5 cursor-pointer text-stone-100 hover:text-white text-sm font-semibold transition-colors">
                                         <input type="checkbox" checked={selectedIds.length === paginatedData.length && paginatedData.length > 0} onChange={toggleSelectAll} className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 focus:ring-2 cursor-pointer" />
                                         全選本頁
                                     </label>
-                                    {selectedIds.length > 0 && <span className="text-water-400/90 text-sm font-medium">已選 {selectedIds.length} 筆</span>}
+                                    {selectedIds.length > 0 && <span className="text-amber-200 text-sm font-semibold">已選 {selectedIds.length} 筆</span>}
                                     <div className="flex rounded-xl overflow-hidden border border-stone-600/50 bg-stone-900/50 p-0.5">
-                                        <button type="button" onClick={() => setDonationListView('cards')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${donationListView === 'cards' ? 'bg-stone-700 text-stone-100 shadow-sm' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'}`}>
+                                        <button type="button" onClick={() => setDonationListView('cards')} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${donationListView === 'cards' ? 'bg-stone-600 text-white shadow-sm' : 'text-stone-200 hover:text-white hover:bg-stone-800/50'}`}>
                                             <LayoutGrid size={16} strokeWidth={2} />
                                             卡片
                                         </button>
-                                        <button type="button" onClick={() => setDonationListView('list')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${donationListView === 'list' ? 'bg-stone-700 text-stone-100 shadow-sm' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'}`}>
+                                        <button type="button" onClick={() => setDonationListView('list')} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${donationListView === 'list' ? 'bg-stone-600 text-white shadow-sm' : 'text-stone-200 hover:text-white hover:bg-stone-800/50'}`}>
                                             <List size={16} strokeWidth={2} />
                                             條列式
                                         </button>
@@ -6692,7 +6692,7 @@
                                 </div>
                                 {/* 條列式：表格（舒適間距與對比） */}
                                 {donationListView === 'list' && (
-                                <div className="rounded-2xl border border-stone-600/40 bg-stone-800/40 overflow-hidden shadow-inner">
+                                <div className="rounded-2xl border border-amber-800/30 bg-gradient-to-b from-amber-950/15 to-stone-800/50 overflow-hidden shadow-inner">
                                     <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead className="bg-stone-800/60 border-b border-stone-600/40">
@@ -6705,18 +6705,18 @@
                                                         className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer"
                                                     />
                                                 </th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">訂單編號</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">時間</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">玩家資訊</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">方案</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">金額</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">金幣</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">支付方式</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">IP / 位置</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">標籤</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide">狀態</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide max-w-[120px]">備註</th>
-                                                <th className="px-5 py-3.5 text-left text-xs font-medium text-stone-400 tracking-wide bg-stone-800/80 sticky right-0 backdrop-blur-sm">操作</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">訂單編號</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">時間</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">玩家資訊</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">方案</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">金額</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">金幣</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">支付方式</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">IP / 位置</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">標籤</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide">狀態</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide max-w-[120px]">備註</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-semibold text-stone-100 tracking-wide bg-stone-800/80 sticky right-0 backdrop-blur-sm">操作</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-stone-700/30">
@@ -6929,7 +6929,7 @@
                                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                     {paginatedData.map((item) => (
                                         <React.Fragment key={item.id}>
-                                        <div className="bg-stone-800/50 rounded-2xl border border-stone-600/40 overflow-hidden flex flex-col shadow-sm hover:border-stone-500/50 transition-colors">
+                                        <div className="bg-gradient-to-br from-amber-950/20 to-stone-800/70 rounded-2xl border border-amber-700/25 overflow-hidden flex flex-col shadow-sm hover:border-amber-600/40 transition-colors">
                                             {/* 卡片頭部 */}
                                             <div className="px-4 py-3 border-b border-stone-600/30 bg-stone-800/30">
                                                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -6943,13 +6943,13 @@
                                                             {item.status === 'completed' ? '已完成' : item.status === 'pending' ? '待處理' : '已取消'}
                                                         </span>
                                                     </div>
-                                                    <span className="text-stone-500 text-xs tabular-nums">
+                                                    <span className="text-stone-100 text-xs font-medium tabular-nums">
                                                         {new Date(item.created_at).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
                                                 {item.order_number && (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-stone-500 text-xs">訂單</span>
+                                                        <span className="text-stone-100 text-xs font-semibold">訂單</span>
                                                         <code className="text-sm font-medium text-stone-200 bg-stone-700/50 px-2 py-1 rounded-md border border-stone-600/40">{item.order_number}</code>
                                                         <button onClick={() => { navigator.clipboard.writeText(item.order_number); showToast('訂單編號已複製', 'success'); }} className="p-1.5 text-stone-400 hover:text-stone-200 hover:bg-stone-700/50 rounded-md transition-colors"><Copy size={14} /></button>
                                                     </div>
@@ -6960,20 +6960,20 @@
                                             <div className="p-4 space-y-4 flex-1">
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1.5">
-                                                        <User size={13} className="text-stone-500" />
-                                                        <span className="text-xs text-stone-500 font-medium">玩家</span>
+                                                        <User size={13} className="text-stone-200" />
+                                                        <span className="text-xs text-stone-100 font-semibold">玩家</span>
                                                     </div>
                                                     <div className="pl-5 space-y-0.5">
-                                                        {item.game_account && <div className="text-stone-100 font-medium text-sm">{item.game_account}</div>}
-                                                        <div className="text-stone-400 text-xs break-all">{item.email}</div>
-                                                        {item.line_name && <div className="text-stone-400 text-xs">LINE/Discord: {item.line_name}</div>}
+                                                        {item.game_account && <div className="text-white font-medium text-sm">{item.game_account}</div>}
+                                                        <div className="text-stone-200 text-xs break-all">{item.email}</div>
+                                                        {item.line_name && <div className="text-stone-200 text-xs">LINE/Discord: {item.line_name}</div>}
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="rounded-xl p-3 bg-stone-700/30 border border-stone-600/30">
                                                     <div className="flex items-center justify-between mb-1.5">
-                                                        <span className="text-stone-500 text-xs">方案</span>
-                                                        <span className="text-stone-200 font-medium text-sm">{item.plan_name}</span>
+                                                        <span className="text-stone-100 text-xs font-semibold">方案</span>
+                                                        <span className="text-white font-medium text-sm">{item.plan_name}</span>
                                                     </div>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-stone-100 font-semibold text-lg">NT$ {item.amount?.toLocaleString() || 0}</span>
@@ -6986,19 +6986,19 @@
                                                 
                                                 <div className="flex flex-wrap items-center gap-3 text-xs">
                                                     <div className="flex items-center gap-2">
-                                                        <CreditCard size={12} className="text-stone-500 shrink-0" />
+                                                        <CreditCard size={12} className="text-stone-200 shrink-0" />
                                                         <select value={item.payment_method || ''} onChange={(e) => updatePaymentMethod(item.id, e.target.value)} className="text-xs font-medium px-2 py-1.5 rounded-lg border bg-stone-700/50 text-stone-200 border-stone-600/50 focus:border-stone-500 outline-none cursor-pointer" title="支付方式">
                                                             <option value="linepay">LINE Pay</option>
                                                             <option value="shopline">SHOPLINE</option>
                                                             {item.payment_method && item.payment_method !== 'linepay' && item.payment_method !== 'shopline' && <option value={item.payment_method}>{item.payment_method}</option>}
                                                         </select>
                                                     </div>
-                                                    {item.ip_address && <span className="text-stone-500 font-mono">{item.ip_address}</span>}
+                                                    {item.ip_address && <span className="text-stone-200 font-mono text-xs">{item.ip_address}</span>}
                                                 </div>
                                                 
                                                 <div className="text-xs">
-                                                    <span className="text-stone-500">備註 </span>
-                                                    <span className="text-stone-400" title={item.notes || ''}>{item.notes ? (item.notes.length > 36 ? item.notes.slice(0, 36) + '…' : item.notes) : '—'}</span>
+                                                    <span className="text-stone-100 font-semibold">備註 </span>
+                                                    <span className="text-stone-200" title={item.notes || ''}>{item.notes ? (item.notes.length > 36 ? item.notes.slice(0, 36) + '…' : item.notes) : '—'}</span>
                                                 </div>
                                                 
                                                 {item.tags && item.tags.length > 0 && (
@@ -7013,7 +7013,7 @@
                                             
                                             {/* 卡片底部操作 */}
                                             <div className="px-4 py-3 border-t border-stone-600/30 bg-stone-800/20 flex gap-2">
-                                                <button onClick={() => startEditNotes(item)} className="flex-1 px-3 py-2 bg-stone-700/60 hover:bg-stone-600/60 text-stone-200 font-medium rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
+                                                <button onClick={() => startEditNotes(item)} className="flex-1 px-3 py-2 bg-stone-600/70 hover:bg-stone-500/70 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
                                                     <Edit size={14} />
                                                     編輯
                                                 </button>
@@ -7027,23 +7027,23 @@
                                         {editingId === item.id && (
                                             <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-stone-600/40 bg-stone-800/60 p-4 md:p-5">
                                                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 rounded-xl bg-stone-700/30 border border-stone-600/30">
-                                                    <p className="text-stone-300 text-sm font-medium">編輯此筆訂單 · 儲存後同步至註冊用戶累計</p>
+                                                    <p className="text-white text-sm font-semibold">編輯此筆訂單 · 儲存後同步至註冊用戶累計</p>
                                                     <div className="flex gap-2">
                                                         <button onClick={() => saveNotes(item.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-semibold rounded-xl text-sm transition-colors">✓ 確認儲存</button>
-                                                        <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button>
+                                                        <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-white font-medium rounded-lg text-sm transition-colors">取消</button>
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
-                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-100 text-xs font-semibold mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
-                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-100 text-xs font-semibold mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
                                                 </div>
-                                                <div className="mb-3"><label className="block text-stone-500 text-xs font-medium mb-1">備註</label><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="管理員備註" rows="2" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 resize-none focus:border-stone-500 outline-none" /></div>
+                                                <div className="mb-3"><label className="block text-stone-100 text-xs font-semibold mb-1">備註</label><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="管理員備註" rows="2" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 resize-none focus:border-stone-500 outline-none" /></div>
                                                 <div className="flex gap-2"><button onClick={() => saveNotes(item.id)} className="px-5 py-2 bg-water-600 hover:bg-water-500 text-white font-medium rounded-lg text-sm transition-colors">確認儲存</button><button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button></div>
                                             </div>
                                         )}
@@ -7056,15 +7056,15 @@
                         
                         {/* 分頁控制 */}
                         {filteredData.length > 0 && (
-                            <div className="mt-5 flex flex-col md:flex-row items-center justify-between gap-4 py-3 px-4 rounded-2xl bg-stone-800/30 border border-stone-600/30">
-                                <div className="text-stone-500 text-sm font-medium">
+                            <div className="mt-5 flex flex-col md:flex-row items-center justify-between gap-4 py-3 px-4 rounded-2xl bg-amber-950/20 border border-amber-700/25">
+                                <div className="text-stone-100 text-sm font-semibold">
                                     顯示 {startIndex + 1}–{Math.min(endIndex, filteredData.length)} / 共 {filteredData.length} 筆
-                                    {filteredData.length !== data.length && <span className="text-stone-500"> (篩選自 {data.length} 筆)</span>}
+                                    {filteredData.length !== data.length && <span className="text-stone-200"> (篩選自 {data.length} 筆)</span>}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-stone-500 text-sm">每頁</span>
-                                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="bg-stone-700/50 border border-stone-600/50 rounded-lg px-2.5 py-1.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-stone-500 transition-colors">
+                                        <span className="text-stone-100 text-sm font-medium">每頁</span>
+                                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="bg-stone-700/50 border border-stone-600/50 rounded-lg px-2.5 py-1.5 text-sm text-white font-medium outline-none cursor-pointer focus:border-stone-500 transition-colors">
                                             <option value={10}>10</option>
                                             <option value={20}>20</option>
                                             <option value={50}>50</option>
@@ -7072,25 +7072,25 @@
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="第一頁"><ChevronsLeft size={16} /></button>
-                                        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="上一頁"><ChevronLeft size={16} /></button>
+                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="第一頁"><ChevronsLeft size={16} /></button>
+                                        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="上一頁"><ChevronLeft size={16} /></button>
                                         <div className="flex items-center gap-1">
                                             {[...Array(totalPages)].map((_, i) => {
                                                 const pageNum = i + 1;
                                                 if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
                                                     return (
-                                                        <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`min-w-[2rem] px-2.5 py-1.5 rounded-lg font-medium text-sm transition-colors ${currentPage === pageNum ? 'bg-stone-600 text-stone-100' : 'bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50'}`}>
+                                                        <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`min-w-[2rem] px-2.5 py-1.5 rounded-lg font-semibold text-sm transition-colors ${currentPage === pageNum ? 'bg-stone-600 text-white' : 'bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50'}`}>
                                                             {pageNum}
                                                         </button>
                                                     );
                                                 } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                                                    return <span key={pageNum} className="text-stone-500 px-0.5">…</span>;
+                                                    return <span key={pageNum} className="text-stone-300 px-0.5">…</span>;
                                                 }
                                                 return null;
                                             })}
                                         </div>
-                                        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="下一頁"><ChevronRight size={16} /></button>
-                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-400 hover:text-stone-100 hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="最後一頁"><ChevronsRight size={16} /></button>
+                                        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="下一頁"><ChevronRight size={16} /></button>
+                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="最後一頁"><ChevronsRight size={16} /></button>
                                     </div>
                                 </div>
                             </div>
@@ -7187,23 +7187,23 @@
                                         </div>
                                     </div>
                                     
-                                    <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                    <div className="bg-gradient-to-br from-cyan-950/40 to-stone-800 rounded-2xl p-6 border border-cyan-700/30 shadow-xl">
                                         <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                            <Calendar size={24} className="text-wind-500" />
+                                            <Calendar size={24} className="text-cyan-400" />
                                             時間統計
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border border-stone-700">
-                                                <p className="text-stone-400 text-sm font-medium mb-2">今日</p>
-                                                <p className="text-white text-2xl font-black">NT$ {stats.today.toLocaleString()}</p>
+                                            <div className="bg-gradient-to-br from-amber-900/40 to-stone-800/80 rounded-xl p-5 border border-amber-700/30">
+                                                <p className="text-amber-100 text-sm font-semibold mb-2">今日</p>
+                                                <p className="text-amber-50 text-2xl font-black">NT$ {stats.today.toLocaleString()}</p>
                                             </div>
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border border-stone-700">
-                                                <p className="text-stone-400 text-sm font-medium mb-2">本週 (7天)</p>
-                                                <p className="text-white text-2xl font-black">NT$ {stats.week.toLocaleString()}</p>
+                                            <div className="bg-gradient-to-br from-sky-900/40 to-stone-800/80 rounded-xl p-5 border border-sky-700/30">
+                                                <p className="text-sky-100 text-sm font-semibold mb-2">本週 (7天)</p>
+                                                <p className="text-sky-50 text-2xl font-black">NT$ {stats.week.toLocaleString()}</p>
                                             </div>
-                                            <div className="bg-stone-900/50 rounded-xl p-5 border border-stone-700">
-                                                <p className="text-stone-400 text-sm font-medium mb-2">本月 (30天)</p>
-                                                <p className="text-white text-2xl font-black">NT$ {stats.month.toLocaleString()}</p>
+                                            <div className="bg-gradient-to-br from-emerald-900/40 to-stone-800/80 rounded-xl p-5 border border-emerald-700/30">
+                                                <p className="text-emerald-100 text-sm font-semibold mb-2">本月 (30天)</p>
+                                                <p className="text-emerald-50 text-2xl font-black">NT$ {stats.month.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -7212,9 +7212,9 @@
                                     {data.length > 0 && (
                                         <>
                                             {/* 贊助趨勢圖 */}
-                                            <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                            <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
                                                 <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                    <TrendingUp size={24} className="text-gold-500" />
+                                                    <TrendingUp size={24} className="text-amber-400" />
                                                     贊助趨勢分析（最近 30 天）
                                                 </h3>
                                                 <div className="relative h-80">
@@ -7224,9 +7224,9 @@
                                             
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                 {/* 支付方式分布 */}
-                                                <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                                <div className="bg-gradient-to-br from-sky-950/30 to-stone-800 rounded-2xl p-6 border border-sky-700/30 shadow-xl">
                                                     <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                        <CreditCard size={24} className="text-water-500" />
+                                                        <CreditCard size={24} className="text-sky-400" />
                                                         支付方式分布
                                                     </h3>
                                                     <div className="relative h-80">
@@ -7235,9 +7235,9 @@
                                                 </div>
                                                 
                                                 {/* 方案選擇統計 */}
-                                                <div className="bg-stone-800 rounded-2xl p-6 border border-stone-700 shadow-xl">
+                                                <div className="bg-gradient-to-br from-rose-950/30 to-stone-800 rounded-2xl p-6 border border-rose-700/30 shadow-xl">
                                                     <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                        <BarChart3 size={24} className="text-fire-500" />
+                                                        <BarChart3 size={24} className="text-rose-400" />
                                                         熱門方案 TOP 10
                                                     </h3>
                                                     <div className="relative h-80">
@@ -7249,12 +7249,12 @@
                                     )}
                                     
                                     {data.length === 0 && (
-                                        <div className="bg-stone-800 rounded-2xl p-12 border border-stone-700 shadow-xl text-center">
-                                            <div className="text-stone-500 mb-4">
-                                                <BarChart3 size={64} className="mx-auto opacity-20" />
+                                        <div className="bg-gradient-to-br from-stone-800 to-slate-900 rounded-2xl p-12 border border-cyan-700/30 shadow-xl text-center">
+                                            <div className="text-cyan-500/40 mb-4">
+                                                <BarChart3 size={64} className="mx-auto" />
                                             </div>
                                             <p className="text-white font-bold text-lg mb-2">暫無數據</p>
-                                            <p className="text-stone-400 text-sm">等待贊助紀錄產生後即可查看圖表分析</p>
+                                            <p className="text-stone-200 text-sm font-medium">等待贊助紀錄產生後即可查看圖表分析</p>
                                         </div>
                                     )}
                                 </div>
@@ -7269,9 +7269,9 @@
 
                         {currentTab === 'events' && (
                             <div className="space-y-8">
-                                <div className="bg-stone-800 rounded-3xl p-6 border border-stone-700 shadow-xl">
+                                <div className="bg-gradient-to-br from-sky-950/30 to-stone-800 rounded-3xl p-6 border border-sky-700/30 shadow-xl">
                                     <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                                        {editingEventId ? <Edit2 size={20} className="text-water-500"/> : <Plus size={20} className="text-fire-500"/>} 
+                                        {editingEventId ? <Edit2 size={20} className="text-sky-400"/> : <Plus size={20} className="text-rose-400"/>} 
                                         {editingEventId ? '編輯活動' : '發布新活動'}
                                     </h3>
                                     <div className="space-y-4">
@@ -7296,11 +7296,11 @@
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-bold text-stone-400 px-2 uppercase tracking-wider">已發布活動 ({events.length})</h3>
+                                    <h3 className="text-lg font-bold text-stone-100 px-2 uppercase tracking-wider">已發布活動 ({events.length})</h3>
                                     {events.map((event) => {
                                         const tag = EVENT_TAGS.find(t => t.id === event.tag) || EVENT_TAGS[0];
                                         return (
-                                            <div key={event.id} className="bg-stone-800 p-6 rounded-2xl border border-stone-700 flex flex-col md:flex-row gap-6 relative group hover:border-stone-600 transition-colors">
+                                            <div key={event.id} className="bg-gradient-to-r from-slate-800/60 to-stone-800/80 p-6 rounded-2xl border border-sky-700/30 flex flex-col md:flex-row gap-6 relative group hover:border-sky-600/50 transition-colors">
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <span className={`text-xs px-2 py-0.5 rounded ${tag.color} bg-opacity-20 border border-current`}>{tag.label}</span>
