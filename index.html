@@ -48,6 +48,9 @@
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://esm.sh">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://pheoswycciabslxpsjyw.supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="https://pheoswycciabslxpsjyw.supabase.co">
+    <link rel="dns-prefetch" href="https://unpkg.com">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -64,29 +67,41 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-    <!-- Quill.js 富文本編輯器（支援從 Word 貼上） -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-
-    <!-- Mammoth.js - Word 文檔解析器 -->
-    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
-
-    <!-- PDF.js - PDF 文字擷取 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- 後台專用腳本改為延遲載入，首頁/攻略/活動等無需等待，進入後台時再載入 -->
     <script>
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-        }
+        window.__adminScriptsPromise = null;
+        window.loadAdminScripts = function() {
+            if (window.__adminScriptsPromise) return window.__adminScriptsPromise;
+            if (window.Chart && window.Quill) return Promise.resolve();
+            window.__adminScriptsPromise = (function() {
+                var urls = [
+                    'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+                    'https://cdn.quilljs.com/1.3.6/quill.min.js',
+                    'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js',
+                    'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+                    'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+                ];
+                var link = document.createElement('link');
+                link.rel = 'stylesheet'; link.href = 'https://cdn.quilljs.com/1.3.6/quill.snow.css';
+                document.head.appendChild(link);
+                var load = function(src) {
+                    return new Promise(function(res, rej) {
+                        if (src.indexOf('pdf.min') !== -1 && window.pdfjsLib) return res();
+                        if (src.indexOf('chart') !== -1 && window.Chart) return res();
+                        if (src.indexOf('quill') !== -1 && window.Quill) return res();
+                        var s = document.createElement('script');
+                        s.src = src; s.onload = res; s.onerror = rej;
+                        document.head.appendChild(s);
+                    });
+                };
+                return Promise.all(urls.map(load)).then(function() {
+                    if (window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                });
+            })();
+            return window.__adminScriptsPromise;
+        };
     </script>
-
-    <!-- SheetJS - Excel 讀取 -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
-    <!-- html2canvas - 將表格轉成圖片以在編輯器顯示 -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- Import Map (使用生產版本，減少文件大小) -->
     <script type="importmap">
@@ -164,7 +179,7 @@
     </script>
 
     <style>
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         body { 
             background-color: #fbf6e9;
             color: #4a4036;
@@ -227,6 +242,10 @@
         }
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        @media (max-width: 768px) {
+            .event-content img { max-width: 100%; height: auto; }
+            .event-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         }
         
         ::selection {
@@ -308,7 +327,23 @@
         // --- Supabase 配置 ---
         const SUPABASE_URL = 'https://pheoswycciabslxpsjyw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZW9zd3ljY2lhYnNseHBzanl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTA4NDcsImV4cCI6MjA4NTY2Njg0N30.zQm1nL1mbg4ClpCEo_upK4eHVKODF6gy9hB-JevXb38';
+        // 自訂 fetch：對 AbortError（專案冷啟動、網路慢）自動重試，最多 2 次
+        const fetchWithRetry = (url, opts = {}) => {
+            const doFetch = (attempt) => {
+                const fetchOpts = attempt > 0 ? { ...opts, signal: undefined } : opts;
+                return fetch(url, fetchOpts).catch((err) => {
+                    const isAbort = err?.name === 'AbortError' || String(err?.message || '').includes('aborted');
+                    if (isAbort && attempt < 2) {
+                        const delay = (attempt + 1) * 2500;
+                        return new Promise(r => setTimeout(r, delay)).then(() => doFetch(attempt + 1));
+                    }
+                    throw err;
+                });
+            };
+            return doFetch(0);
+        };
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: { fetch: fetchWithRetry },
             auth: {
                 persistSession: true,        // 持久化 session 到 localStorage
                 autoRefreshToken: true,      // 自動刷新 token
@@ -1197,6 +1232,33 @@
             return null;
         };
 
+        // 全站即時同步：donations、events、playlist、guides 任一變更即廣播，所有頁面自動更新
+        // 延遲 2 秒訂閱，讓首屏資料先載入完成，減少首次載入負擔
+        const GlobalRealtimeSync = () => {
+            useEffect(() => {
+                let channels = [];
+                const t = setTimeout(() => {
+                    try {
+                        ['donations', 'events', 'playlist', 'guides'].forEach(table => {
+                            const ch = supabase.channel(`sync-${table}`)
+                                .on('postgres_changes', { event: '*', schema: 'public', table }, () => {
+                                    window.dispatchEvent(new Event('storage-update'));
+                                });
+                            ch.subscribe();
+                            channels.push(ch);
+                        });
+                    } catch (err) {
+                        console.warn('[全站同步] Realtime 訂閱略過:', err);
+                    }
+                }, 2000);
+                return () => {
+                    clearTimeout(t);
+                    channels.forEach(ch => supabase.removeChannel(ch));
+                };
+            }, []);
+            return null;
+        };
+
         // Toast 通知（取代 alert）
         const showToast = (message, type = 'info') => {
             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -1310,13 +1372,20 @@
                 };
             }, []);
             
-            const navItems = useMemo(() => [
-                { path: '/', label: '首頁', icon: Home },
-                { path: '/guides', label: '攻略', icon: BookOpen },
-                { path: '/events', label: '活動', icon: Calendar },
-                { path: '/recharge', label: '金幣', icon: Coins },
-                { path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User },
-            ], [user]);
+            const navItems = useMemo(() => {
+                const base = [
+                    { path: '/', label: '首頁', icon: Home },
+                    { path: '/guides', label: '攻略', icon: BookOpen },
+                    { path: '/events', label: '活動', icon: Calendar },
+                    { path: '/recharge', label: '金幣', icon: Coins },
+                ];
+                const role = user?.user_metadata?.role;
+                if (role === 'admin' || role === 'super_admin') {
+                    base.push({ path: '/admin', label: '後台', icon: Settings });
+                }
+                base.push({ path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User });
+                return base;
+            }, [user]);
 
             return (
                 <div className="fixed bottom-0 left-0 w-full bg-white/98 backdrop-blur-xl border-t border-stone-200/80 z-50 pb-safe md:hidden shadow-[0_-8px_30px_rgba(139,90,43,0.08)]">
@@ -1466,7 +1535,11 @@
                     if (isLogin) {
                         const { error } = await authHelpers.signIn(email, password);
                         if (error) {
-                            setError(error.message === 'Invalid login credentials' ? '帳號或密碼錯誤' : error.message);
+                            const msg = error.message || '';
+                            let errText = msg === 'Invalid login credentials' ? '帳號或密碼錯誤' : msg;
+                            if (msg.includes('Email not confirmed')) errText = '請先到信箱點擊驗證連結';
+                            else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) errText = '網路連線失敗，請檢查網路或稍後再試';
+                            setError(errText);
                         } else {
                             // 處理記住帳號密碼
                             if (rememberMe) {
@@ -1975,6 +2048,8 @@
                 };
                 
                 loadUserData();
+                window.addEventListener('storage-update', loadUserData);
+                return () => window.removeEventListener('storage-update', loadUserData);
             }, []);
             
             const handleLogout = async () => {
@@ -2916,13 +2991,18 @@
 
             useEffect(() => {
                 if (!contentRef.current || !guide.content) return;
-                const headings = contentRef.current.querySelectorAll('h1, h2, h3');
+                const root = contentRef.current;
+                const headings = root.querySelectorAll('h1, h2, h3');
                 const items = [];
                 headings.forEach((el, i) => {
                     const id = `heading-${i}`;
                     el.id = id;
                     const level = parseInt(el.tagName[1]);
                     items.push({ id, text: el.textContent?.slice(0, 40) || '', level });
+                });
+                root.querySelectorAll('img').forEach((img) => {
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
                 });
                 setTocItems(items);
             }, [guide.content]);
@@ -2945,7 +3025,7 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pt-24 md:pt-32 pb-24 md:pb-32 px-4 md:px-6 lg:px-8 min-h-screen bg-stone-50"
+                    className="pt-24 md:pt-32 pb-36 md:pb-32 px-4 md:px-6 lg:px-8 min-h-screen bg-stone-50"
                 >
                     <div className="max-w-4xl mx-auto">
                         {/* 麵包屑 */}
@@ -3010,12 +3090,27 @@
                                         </div>
                                     </aside>
                                 )}
-                                <article className="flex-1 min-w-0">
-                                    <div
-                                        ref={contentRef}
-                                        className="bg-white rounded-2xl px-6 md:px-10 py-10 md:py-14 shadow-sm border border-stone-100 guide-content"
-                                        dangerouslySetInnerHTML={{ __html: guide.content || '' }}
-                                    />
+                                <article className="flex-1 min-w-0 overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                    {(function() {
+                                        const html = (guide.content || '').trim();
+                                        const isEmpty = !html || html === '<p><br></p>' || html === '<p></p>';
+                                        if (isEmpty) {
+                                            return (
+                                                <div className="bg-white rounded-2xl px-4 sm:px-6 md:px-10 py-12 md:py-16 shadow-sm border border-stone-100 text-center">
+                                                    <p className="text-stone-500 text-lg mb-2">此攻略尚無內容</p>
+                                                    <p className="text-stone-400 text-sm">若您已上傳內容卻未顯示，請用電腦版後台確認是否已儲存並改為「發布」</p>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <div
+                                                ref={contentRef}
+                                                className="bg-white rounded-2xl px-4 sm:px-6 md:px-10 py-8 md:py-14 shadow-sm border border-stone-100 guide-content"
+                                                style={{ overflowWrap: 'break-word', minHeight: '120px' }}
+                                                dangerouslySetInnerHTML={{ __html: guide.content }}
+                                            />
+                                        );
+                                    })()}
                                 </article>
                             </div>
                             <style>{`
@@ -3115,6 +3210,8 @@
                                     .guide-content {
                                         font-size: 16px;
                                         line-height: 2;
+                                        overflow-wrap: break-word;
+                                        word-break: break-word;
                                     }
                                     .guide-content h1 {
                                         font-size: 1.75em;
@@ -3126,6 +3223,13 @@
                                     }
                                     .guide-content img {
                                         margin: 2em auto;
+                                        max-width: 100%;
+                                        height: auto;
+                                    }
+                                    .guide-content table {
+                                        display: block;
+                                        overflow-x: auto;
+                                        -webkit-overflow-scrolling: touch;
                                     }
                                 }
                             `}</style>
@@ -3204,8 +3308,10 @@
         // 攻略前台頁面
         const GuidesPage = () => {
             const [guides, setGuides] = useState([]);
-            const [loading, setLoading] = useState(false);
+            const [loading, setLoading] = useState(true);
             const [selectedGuide, setSelectedGuide] = useState(null);
+            const [loadingDetail, setLoadingDetail] = useState(false);
+            const [loadingGuideId, setLoadingGuideId] = useState(null);
             const [category, setCategory] = useState('all');
             const [viewMode, setViewMode] = useState(localStorage.getItem('guidesViewMode') || 'grid');
             const [searchTerm, setSearchTerm] = useState('');
@@ -3219,34 +3325,74 @@
                 localStorage.setItem('guidesViewMode', mode);
             };
 
-            const loadGuides = async () => {
+            const loadGuides = async (retries = 2) => {
+                setLoading(true);
                 try {
-                    let query = supabase
-                        .from('guides')
-                        .select('*')
-                        .eq('status', 'published')
-                        .order('is_pinned', { ascending: false })
-                        .order('publish_date', { ascending: false });
+                    for (let attempt = 0; attempt <= retries; attempt++) {
+                        try {
+                            let query = supabase
+                                .from('guides')
+                                .select('id, title, thumbnail, category, author_name, views, likes, publish_date, created_at, is_pinned')
+                                .eq('status', 'published')
+                                .order('is_pinned', { ascending: false })
+                                .order('publish_date', { ascending: false });
 
-                    if (category !== 'all') {
-                        query = query.eq('category', category);
+                            if (category !== 'all') {
+                                query = query.eq('category', category);
+                            }
+
+                            const { data, error } = await query;
+
+                            if (error) throw error;
+                            setGuides(data || []);
+                            return;
+                        } catch (error) {
+                            console.error('載入攻略失敗:', error);
+                            if (attempt === retries) {
+                                const msg = error?.message || '';
+                                showToast('載入失敗，請檢查網路後重試' + (msg ? '：' + msg.slice(0, 40) : ''), 'error');
+                            } else {
+                                await new Promise(r => setTimeout(r, 800));
+                            }
+                        }
                     }
-
-                    const { data, error } = await query;
-
-                    if (error) throw error;
-                    setGuides(data || []);
-                } catch (error) {
-                    console.error('載入攻略失敗:', error);
-                    showToast('載入攻略失敗', 'error');
+                } finally {
+                    setLoading(false);
                 }
             };
+
+            const fetchGuideDetail = async (guideId, retries = 2) => {
+                setLoadingDetail(true);
+                for (let attempt = 0; attempt <= retries; attempt++) {
+                    try {
+                        const { data, error } = await supabase.from('guides').select('*').eq('id', guideId).single();
+                        if (error) throw error;
+                        setLoadingDetail(false);
+                        return data;
+                    } catch (err) {
+                        console.error('載入攻略內容失敗:', err);
+                        if (attempt === retries) {
+                            showToast('載入內容失敗，請檢查網路後重試', 'error');
+                            setLoadingDetail(false);
+                            return null;
+                        }
+                        await new Promise(r => setTimeout(r, 600));
+                    }
+                }
+                setLoadingDetail(false);
+                return null;
+            };
+
+            useEffect(() => {
+                const handler = () => loadGuides();
+                window.addEventListener('storage-update', handler);
+                return () => window.removeEventListener('storage-update', handler);
+            }, [category]);
 
             const filteredGuides = guides.filter(g => {
                 if (!searchTerm.trim()) return true;
                 const term = searchTerm.toLowerCase();
                 return (g.title && g.title.toLowerCase().includes(term)) ||
-                       (g.content && g.content.toLowerCase().includes(term)) ||
                        (g.author_name && g.author_name.toLowerCase().includes(term));
             });
 
@@ -3258,11 +3404,29 @@
                 }
             };
 
-            const handleGuideClick = (guide) => {
-                setSelectedGuide(guide);
+            const handleGuideClick = async (guide) => {
                 incrementViews(guide.id);
+                setLoadingGuideId(guide.id);
+                const fullGuide = await fetchGuideDetail(guide.id);
+                setLoadingGuideId(null);
+                if (fullGuide) setSelectedGuide(fullGuide);
             };
 
+            const retryLoadDetail = () => {
+                if (loadingGuideId) handleGuideClick({ id: loadingGuideId });
+            };
+
+            if (loadingDetail) {
+                return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-36 min-h-screen flex flex-col items-center justify-center gap-6 px-4">
+                        <LoadingSpinner message="載入攻略內容中..." />
+                        <p className="text-sm text-stone-500">若載入較久，可能是內容較大或網路較慢</p>
+                        <button onClick={retryLoadDetail} className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm transition-colors">
+                            重試載入
+                        </button>
+                    </motion.div>
+                );
+            }
             if (selectedGuide) {
                 return <GuideDetailView guide={selectedGuide} onBack={() => setSelectedGuide(null)} />;
             }
@@ -3272,7 +3436,7 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
+                    className="pt-32 md:pt-44 pb-36 md:pb-24 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
                 >
                     {/* 標題區：巴哈風格、舒適間距 */}
                     <div className="max-w-7xl mx-auto mb-12">
@@ -3387,7 +3551,7 @@
             const [title, setTitle] = useState(guide?.title || '');
             const [authorName, setAuthorName] = useState(guide?.author_name || '管理員');
             const [category, setCategory] = useState(guide?.category || 'general');
-            const [status, setStatus] = useState(guide?.status || 'draft');
+            const [status, setStatus] = useState(guide?.status || 'published');
             const [isPinned, setIsPinned] = useState(guide?.is_pinned || false);
             const [saving, setSaving] = useState(false);
             const quillRef = useRef(null);
@@ -3448,19 +3612,96 @@
 
                         input.onchange = async () => {
                             const file = input.files[0];
-                            if (file) {
+                            if (!file) return;
+                            const maxW = 1200;
+                            const quality = 0.82;
+                            const isPng = file.type === 'image/png';
+                            const compressImage = (blob) => new Promise((resolve) => {
+                                const img = new Image();
+                                const url = URL.createObjectURL(blob);
+                                img.onload = () => {
+                                    URL.revokeObjectURL(url);
+                                    if (img.width <= maxW && file.size < 250000) {
+                                        resolve(blob);
+                                        return;
+                                    }
+                                    const c = document.createElement('canvas');
+                                    const scale = Math.min(1, maxW / img.width);
+                                    c.width = Math.round(img.width * scale);
+                                    c.height = Math.round(img.height * scale);
+                                    const ctx = c.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, c.width, c.height);
+                                    const mime = isPng ? 'image/png' : 'image/jpeg';
+                                    c.toBlob((b) => resolve(b || blob), mime, isPng ? 0.9 : quality);
+                                };
+                                img.onerror = () => { URL.revokeObjectURL(url); resolve(blob); };
+                                img.src = url;
+                            });
+                            try {
+                                const compressed = await compressImage(file);
                                 const reader = new FileReader();
                                 reader.onload = (e) => {
                                     const range = quill.getSelection();
-                                    quill.insertEmbed(range.index, 'image', e.target.result);
+                                    quill.insertEmbed(range?.index ?? 0, 'image', e.target.result);
+                                };
+                                reader.readAsDataURL(compressed);
+                            } catch (err) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    const range = quill.getSelection();
+                                    quill.insertEmbed(range?.index ?? 0, 'image', e.target.result);
                                 };
                                 reader.readAsDataURL(file);
                             }
                         };
                     });
 
-                    quill.root.addEventListener('paste', (e) => {
-                        const text = (e.clipboardData && e.clipboardData.getData('text/plain')) || '';
+                    quill.root.addEventListener('paste', async (e) => {
+                        const cd = e.clipboardData;
+                        if (!cd) return;
+                        for (let i = 0; i < cd.items.length; i++) {
+                            const item = cd.items[i];
+                            if (item.type.indexOf('image') !== 0) continue;
+                            e.preventDefault();
+                            const file = item.getAsFile();
+                            if (!file) return;
+                            const maxW = 1200, quality = 0.82;
+                            const compressBlob = (blob) => new Promise((resolve) => {
+                                const img = new Image();
+                                const url = URL.createObjectURL(blob);
+                                img.onload = () => {
+                                    URL.revokeObjectURL(url);
+                                    if (img.width <= maxW && blob.size < 250000) return resolve(blob);
+                                    const c = document.createElement('canvas');
+                                    const scale = Math.min(1, maxW / img.width);
+                                    c.width = Math.round(img.width * scale);
+                                    c.height = Math.round(img.height * scale);
+                                    const ctx = c.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, c.width, c.height);
+                                    c.toBlob((b) => resolve(b || blob), 'image/jpeg', quality);
+                                };
+                                img.onerror = () => { URL.revokeObjectURL(url); resolve(blob); };
+                                img.src = url;
+                            });
+                            try {
+                                const compressed = await compressBlob(file);
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                    const idx = quill.getSelection(true)?.index ?? quill.getLength();
+                                    quill.insertEmbed(idx, 'image', ev.target.result);
+                                };
+                                reader.readAsDataURL(compressed);
+                            } catch (err) {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                    const idx = quill.getSelection(true)?.index ?? quill.getLength();
+                                    quill.insertEmbed(idx, 'image', ev.target.result);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                            return;
+                        }
+                        const text = cd.getData('text/plain') || '';
                         if (!text || text.indexOf('\t') === -1) return;
                         var rows = text.split(/\r?\n/).filter(function(r) { return r.length; });
                         if (rows.length === 0) return;
@@ -3519,17 +3760,17 @@
                         const arrayBuffer = await file.arrayBuffer();
                         const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                         const numPages = Math.min(pdf.numPages, 30);
-                        const scale = 2;
+                        const scale = 1.5;
                         const imgHtml = [];
                         for (let i = 1; i <= numPages; i++) {
                             const page = await pdf.getPage(i);
-                            const viewport = page.getViewport({ scale: scale });
+                            const viewport = page.getViewport({ scale });
                             const canvas = document.createElement('canvas');
                             canvas.width = viewport.width;
                             canvas.height = viewport.height;
                             const ctx = canvas.getContext('2d');
-                            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                            const dataUrl = canvas.toDataURL('image/png');
+                            await page.render({ canvasContext: ctx, viewport }).promise;
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                             imgHtml.push('<p class="pdf-page"><img src="' + dataUrl + '" alt="PDF 第' + i + '頁" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
                         }
                         const html = imgHtml.join('');
@@ -3558,7 +3799,7 @@
                         if (typeof html2canvas !== 'undefined') {
                             html2canvas(wrap, { scale: 2, useCORS: true, logging: false }).then(function(canvas) {
                                 document.body.removeChild(wrap);
-                                var dataUrl = canvas.toDataURL('image/png');
+                                var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                                 lastExcelHtmlRef.current = '<p class="pdf-page"><img src="' + dataUrl + '" alt="Excel 表格" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>';
                                 q.focus();
                                 q.setSelection(0);
@@ -3631,14 +3872,14 @@
                             .eq('id', guide.id);
 
                         if (error) throw error;
-                        showToast('更新成功', 'success');
+                        showToast(status === 'published' ? '更新成功' : '已儲存為草稿（前台不顯示）', 'success');
                     } else {
                         const { error } = await supabase
                             .from('guides')
                             .insert([guideData]);
 
                         if (error) throw error;
-                        showToast('新增成功', 'success');
+                        showToast(status === 'published' ? '新增成功，前台可見' : '已儲存為草稿（請改為「發布」後再儲存才會顯示）', status === 'draft' ? 'warning' : 'success');
                     }
 
                     onClose();
@@ -3745,7 +3986,7 @@
                                 }
                             `}</style>
                             <p className="text-xs text-stone-500 mt-2">
-                                💡 建議用上方「上傳 Word / PDF / Excel」選擇檔案（.docx、.pdf、.xlsx、.xls），Excel 用上傳可保留表格格式
+                                💡 不需上傳 HTML，直接在編輯器輸入或上傳 Word / PDF / Excel 即可，系統會自動轉成網頁格式
                             </p>
                         </div>
 
@@ -3766,11 +4007,15 @@
                                     value={status}
                                     onChange={(e) => setStatus(e.target.value)}
                                     className="p-2 rounded-xl bg-stone-800 border-2 border-stone-700 text-white focus:border-gold-400"
+                                    title="選「發布」前台才看得到"
                                 >
-                                    <option value="draft">草稿</option>
-                                    <option value="published">發布</option>
+                                    <option value="draft">草稿（前台不顯示）</option>
+                                    <option value="published">發布（前台可見）</option>
                                     <option value="archived">封存</option>
                                 </select>
+                                {status === 'draft' && (
+                                    <span className="text-amber-400 text-xs font-bold">⚠️ 草稿不會顯示在攻略頁</span>
+                                )}
                             </label>
                         </div>
 
@@ -3807,6 +4052,12 @@
             useEffect(() => {
                 loadCurrentUser();
                 loadGuides();
+            }, []);
+
+            useEffect(() => {
+                const handler = () => loadGuides();
+                window.addEventListener('storage-update', handler);
+                return () => window.removeEventListener('storage-update', handler);
             }, []);
 
             const loadCurrentUser = async () => {
@@ -3866,17 +4117,81 @@
                 loadGuides();
             };
 
+            const compressDataUrlImage = (dataUrl, maxW = 1200, quality = 0.82) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (img.width <= maxW && dataUrl.length < 200000) return resolve(dataUrl);
+                        const c = document.createElement('canvas');
+                        const scale = Math.min(1, maxW / img.width);
+                        c.width = Math.round(img.width * scale);
+                        c.height = Math.round(img.height * scale);
+                        const ctx = c.getContext('2d');
+                        ctx.drawImage(img, 0, 0, c.width, c.height);
+                        c.toBlob((b) => {
+                            if (!b) return resolve(dataUrl);
+                            const r = new FileReader();
+                            r.onload = () => resolve(r.result);
+                            r.readAsDataURL(b);
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = () => resolve(dataUrl);
+                    img.src = dataUrl;
+                });
+            };
+
+            const handleCompressAllGuides = async () => {
+                if (!confirm('將批次壓縮所有攻略中的圖片，需時較久，確定繼續？')) return;
+                showToast('開始壓縮攻略圖片...', 'info');
+                let done = 0, updated = 0;
+                for (const guide of guides) {
+                    const html = guide.content || '';
+                    const dataUrlRegex = /<img[^>]+src="(data:image\/[^"]+)"[^>]*>/gi;
+                    let match;
+                    const replacements = [];
+                    while ((match = dataUrlRegex.exec(html)) !== null) {
+                        const original = match[1];
+                        if (original.length > 50000) {
+                            try {
+                                const compressed = await compressDataUrlImage(original);
+                                if (compressed.length < original.length) replacements.push({ from: original, to: compressed });
+                            } catch (e) { /* skip */ }
+                        }
+                    }
+                    if (replacements.length > 0) {
+                        let newContent = html;
+                        replacements.forEach(r => { newContent = newContent.split(r.from).join(r.to); });
+                        try {
+                            const { error } = await supabase.from('guides').update({ content: newContent }).eq('id', guide.id);
+                            if (!error) updated++;
+                        } catch (e) { /* skip */ }
+                    }
+                    done++;
+                    if (done % 2 === 0) showToast(`處理中 ${done}/${guides.length}...`, 'info');
+                }
+                showToast(`完成！共更新 ${updated} 篇攻略的圖片`, 'success');
+                loadGuides();
+            };
+
             if (showEditor) {
                 return <GuideEditor guide={editingGuide} currentUser={currentUser} onClose={handleEditorClose} />;
             }
 
             return (
                 <div>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                         <h2 className="text-2xl font-black text-white">活動攻略管理</h2>
-                        <Button onClick={handleCreate} variant="gold" icon={Plus}>
-                            新增攻略
-                        </Button>
+                        <div className="flex gap-2">
+                            {guides.length > 0 && (
+                                <button onClick={handleCompressAllGuides} className="px-4 py-2.5 rounded-xl bg-stone-600 hover:bg-stone-500 text-white font-bold text-sm border border-stone-500 transition-colors flex items-center gap-2" title="壓縮所有攻略中已上傳的圖片，減小載入體積">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    壓縮現有圖片
+                                </button>
+                            )}
+                            <Button onClick={handleCreate} variant="gold" icon={Plus}>
+                                新增攻略
+                            </Button>
+                        </div>
                     </div>
 
                     {loading ? (
@@ -4183,8 +4498,13 @@
 
             useEffect(() => {
                 const loadEvents = async () => {
-                    const loadedEvents = await getSupabaseData(DB_TABLES.EVENTS);
-                    setEvents(loadedEvents.sort((a, b) => b.timestamp - a.timestamp));
+                    setLoading(true);
+                    try {
+                        const loadedEvents = await getSupabaseData(DB_TABLES.EVENTS);
+                        setEvents(loadedEvents.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
+                    } finally {
+                        setLoading(false);
+                    }
                 };
 
                 loadEvents();
@@ -4195,11 +4515,13 @@
             }, []);
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-36 md:pb-24 px-4 md:px-6 min-h-screen">
                     <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
-                        {events.length === 0 ? (
+                        {loading ? (
+                            <LoadingSpinner message="載入活動中..." />
+                        ) : events.length === 0 ? (
                             <div className="stone-panel p-16 text-center text-stone-400">
                                 <div className="bg-stone-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Megaphone size={32} className="opacity-30"/>
@@ -4224,7 +4546,7 @@
                                         <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-wood-600 transition-colors">
                                             {event.title}
                                         </h3>
-                                        <div className="text-stone-600 text-lg leading-loose font-medium prose prose-stone max-w-none" dangerouslySetInnerHTML={{ __html: event.content || '' }} />
+                                        <div className="text-stone-600 text-base sm:text-lg leading-loose font-medium prose prose-stone max-w-none overflow-x-auto break-words event-content" style={{ WebkitOverflowScrolling: 'touch' }} dangerouslySetInnerHTML={{ __html: event.content || '' }} />
                                     </div>
                                 );
                             })
@@ -4363,6 +4685,7 @@
                         showToast('儲存紀錄時發生錯誤，請聯繫客服', 'error');
                         return false;
                     }
+                    window.dispatchEvent(new Event('storage-update'));
                     
                     // 儲存詳細的 IP 位置資訊到 ip_locations 表
                     if (ipData && ipData.country) {
@@ -5142,6 +5465,12 @@
 
         const AdminPage = () => {
             // ✅ 已遷移到 Supabase Auth 認證系統
+            const [adminScriptsReady, setAdminScriptsReady] = useState(() => !!(window.Chart && window.Quill));
+            useEffect(() => {
+                if (window.loadAdminScripts) {
+                    window.loadAdminScripts().then(() => setAdminScriptsReady(true));
+                }
+            }, []);
             // 狀態管理
             const [data, setData] = useState([]);
             const [events, setEvents] = useState([]);
@@ -5474,8 +5803,14 @@
                     });
                     
                     if (error) {
-                        setError('帳號或密碼錯誤');
-                        showToast('帳號或密碼錯誤', 'error');
+                        const msg = error.message || '';
+                        let errText = '帳號或密碼錯誤';
+                        if (msg.includes('Email not confirmed')) errText = '請先到信箱點擊驗證連結';
+                        else if (msg.includes('Invalid login credentials')) errText = '帳號或密碼錯誤';
+                        else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) errText = '網路連線失敗，請檢查網路或稍後再試';
+                        else if (msg.length > 0 && msg.length < 80) errText = msg;
+                        setError(errText);
+                        showToast(errText, 'error');
                         return;
                     }
                     
@@ -5548,7 +5883,7 @@
                 }
             };
 
-            // 載入所有資料
+            // 載入所有資料 + donations 即時同步（含手機版）
             useEffect(() => {
                 if (!isLoggedIn) return;
 
@@ -5573,6 +5908,17 @@
                 window.addEventListener('storage-update', loadData);
                 return () => window.removeEventListener('storage-update', loadData);
             }, [isLoggedIn]);
+
+            // 手動重新載入 donations（供手機版「重新整理」按鈕使用）
+            const refreshDonations = async () => {
+                try {
+                    const { data: loaded } = await supabase.from('donations').select('*').order('created_at', { ascending: false });
+                    setData(loaded || []);
+                    showToast('已更新', 'success');
+                } catch (e) {
+                    showToast('更新失敗', 'error');
+                }
+            };
 
             // 修改密碼
             const handleChangePassword = async () => {
@@ -5727,6 +6073,63 @@
                         },
                         placeholder: '活動內容… 可從 Word 貼上或使用下方上傳'
                     });
+                    var compressAndInsert = function(file, done) {
+                        var maxW = 1200, quality = 0.82;
+                        var compressBlob = function(blob) {
+                            return new Promise(function(resolve) {
+                                var img = new Image();
+                                var url = URL.createObjectURL(blob);
+                                img.onload = function() {
+                                    URL.revokeObjectURL(url);
+                                    if (img.width <= maxW && blob.size < 250000) return resolve(blob);
+                                    var c = document.createElement('canvas');
+                                    var scale = Math.min(1, maxW / img.width);
+                                    c.width = Math.round(img.width * scale);
+                                    c.height = Math.round(img.height * scale);
+                                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                                    c.toBlob(function(b) { resolve(b || blob); }, 'image/jpeg', quality);
+                                };
+                                img.onerror = function() { URL.revokeObjectURL(url); resolve(blob); };
+                                img.src = url;
+                            });
+                        };
+                        compressBlob(file).then(function(compressed) {
+                            var r = new FileReader();
+                            r.onload = function(e) {
+                                var idx = quill.getSelection(true);
+                                quill.insertEmbed(idx ? idx.index : quill.getLength(), 'image', e.target.result);
+                            };
+                            r.readAsDataURL(compressed);
+                        }).catch(function() {
+                            var r = new FileReader();
+                            r.onload = function(e) {
+                                var idx = quill.getSelection(true);
+                                quill.insertEmbed(idx ? idx.index : quill.getLength(), 'image', e.target.result);
+                            };
+                            r.readAsDataURL(file);
+                        });
+                    };
+                    quill.getModule('toolbar').addHandler('image', function() {
+                        var input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = function() {
+                            var f = input.files[0];
+                            if (f) compressAndInsert(f);
+                        };
+                        input.click();
+                    });
+                    quill.root.addEventListener('paste', function(e) {
+                        var cd = e.clipboardData;
+                        if (!cd) return;
+                        for (var i = 0; i < cd.items.length; i++) {
+                            if (cd.items[i].type.indexOf('image') !== 0) continue;
+                            e.preventDefault();
+                            var f = cd.items[i].getAsFile();
+                            if (f) compressAndInsert(f);
+                            return;
+                        }
+                    });
                     eventEditorRef.current = quill;
                     if (eventContent) quill.root.innerHTML = eventContent;
                 }, 150);
@@ -5758,7 +6161,7 @@
                         var ab = await file.arrayBuffer();
                         var pdf = await window.pdfjsLib.getDocument({ data: ab }).promise;
                         var numPages = Math.min(pdf.numPages, 20);
-                        var scale = 2;
+                        var scale = 1.5;
                         var imgHtml = [];
                         for (var i = 1; i <= numPages; i++) {
                             var page = await pdf.getPage(i);
@@ -5767,7 +6170,7 @@
                             canvas.width = vp.width; canvas.height = vp.height;
                             var ctx = canvas.getContext('2d');
                             await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                            imgHtml.push('<p><img src="' + canvas.toDataURL('image/png') + '" alt="PDF頁' + i + '" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
+                            imgHtml.push('<p><img src="' + canvas.toDataURL('image/jpeg', 0.85) + '" alt="PDF頁' + i + '" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
                         }
                         setEventEditorHtml(imgHtml.join(''));
                         showToast('PDF 已載入（' + numPages + ' 頁）', 'success');
@@ -5790,7 +6193,7 @@
                         if (typeof html2canvas !== 'undefined') {
                             html2canvas(wrap, { scale: 2, logging: false }).then(function(canvas) {
                                 document.body.removeChild(wrap);
-                                var dataUrl = canvas.toDataURL('image/png');
+                                var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                                 setEventEditorHtml('<p><img src="' + dataUrl + '" alt="Excel表格" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
                                 showToast('Excel 已載入（表格圖片）', 'success');
                             }).catch(function() {
@@ -6786,6 +7189,14 @@
                     </div>
                 );
             }
+
+            if (isLoggedIn && !adminScriptsReady) {
+                return (
+                    <div className="pt-32 pb-24 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
+                        <LoadingSpinner message="載入後台中..." />
+                    </div>
+                );
+            }
             
             return (
                 <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-gradient-to-br from-amber-950/30 via-stone-900 to-slate-900 text-white">
@@ -6876,6 +7287,10 @@
                             
                             {currentTab === 'donations' && (
                                 <div className="flex gap-2 w-full lg:w-auto flex-wrap">
+                                    <button onClick={refreshDonations} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-amber-600/40 hover:bg-amber-500/50 text-amber-100 border-amber-500/40" title="重新載入資料（手機版若不同步請點此）">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                        <span className="md:inline">重新整理</span>
+                                    </button>
                                     {selectedIds.length > 0 && (
                                         <button 
                                             onClick={() => setShowBatchActions(!showBatchActions)} 
@@ -6901,6 +7316,10 @@
                         {/* 贊助管理分頁 */}
                         {currentTab === 'donations' && (
                             <>
+                                {/* 手機版提示：資料同步 */}
+                                <div className="md:hidden mb-3 px-3 py-2 rounded-xl bg-amber-900/30 border border-amber-700/30 text-amber-200/90 text-xs">
+                                    💡 手機版若資料未同步，請點上方「重新整理」
+                                </div>
                                 {/* 搜尋與篩選（舒適間距與對比） */}
                                 <div className="space-y-4 mb-6">
                                     <div className="flex flex-col md:flex-row gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/25 via-stone-800/60 to-stone-800/60 border border-amber-800/30">
@@ -7029,10 +7448,10 @@
                                         </button>
                                     </div>
                                 </div>
-                                {/* 條列式：表格（精簡欄位、狀態與操作置前，避免橫向捲動） */}
+                                {/* 條列式：表格（精簡欄位、手機版可橫向滑動） */}
                                 {donationListView === 'list' && (
                                 <div className="rounded-2xl border border-amber-800/30 bg-gradient-to-b from-amber-950/15 to-stone-800/50 overflow-hidden shadow-inner">
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                                     <table className="w-full min-w-[720px]">
                                         <thead className="bg-stone-800/60 border-b border-stone-600/40">
                                             <tr>
@@ -8513,6 +8932,7 @@
                     </AnimatePresence>
 
                     <ToastContainer />
+                    <GlobalRealtimeSync />
 
                     {/* 大字模式切換（中高齡友善） */}
                     <button
