@@ -1,0 +1,14 @@
+欄位名稱,資料類型,預設值,是否必填,說明
+id,uuid,gen_random_uuid(),必填,主鍵（自動生成）
+user_id,uuid,,選填,用戶ID（關聯 auth.users）
+email,text,,必填,用戶 Email
+game_account,text,,必填,遊戲帳號名稱
+amount,int4,,必填,贊助金額
+plan_name,text,,必填,方案名稱（例如：金幣100）
+payment_method,text,,必填,付款方式（例如：ATM轉帳）
+status,text,pending,必填,狀態（pending/completed/cancelled）
+created_at,timestamptz,now(),必填,建立時間
+updated_at,timestamptz,now(),必填,更新時間
+processed_by,uuid,,選填,處理者ID（管理員）
+processed_at,timestamptz,,選填,處理時間
+notes,text,,選填,管理員備註
