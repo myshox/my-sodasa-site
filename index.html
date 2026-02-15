@@ -311,7 +311,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, memo } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+        import { HashRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
         import { motion, AnimatePresence } from 'framer-motion';
         import { 
             ShieldCheck, Shield, Star, Home, Download, MessageSquare, 
@@ -321,7 +321,7 @@
             Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
-            BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type
+            BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -3063,9 +3063,20 @@
                                             <p className="text-sm text-stone-500">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm text-stone-500 ml-auto">
+                                    <div className="flex items-center gap-4 text-sm text-stone-500 ml-auto flex-wrap">
                                         <span className="flex items-center gap-1.5"><Eye size={18} />{guide.views || 0} 次瀏覽</span>
                                         <span className="flex items-center gap-1.5"><Heart size={18} />{guide.likes || 0} 人覺得有幫助</span>
+                                        <button
+                                            onClick={() => {
+                                                const url = `${window.location.origin}${window.location.pathname || ''}#/guides/${guide.id}`;
+                                                navigator.clipboard?.writeText(url).then(() => showToast('連結已複製到剪貼簿', 'success')).catch(() => showToast('無法複製，請手動複製網址列', 'error'));
+                                            }}
+                                            className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-colors font-medium"
+                                            title="複製分享連結"
+                                        >
+                                            <Share2 size={18} />
+                                            分享
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -3078,14 +3089,18 @@
                                             <h3 className="font-bold text-stone-800 mb-3 text-sm">目錄</h3>
                                             <nav className="space-y-2">
                                                 {tocItems.map((item, i) => (
-                                                    <a
+                                                    <button
                                                         key={item.id}
-                                                        href={`#${item.id}`}
-                                                        className={`block text-stone-600 hover:text-amber-600 transition-colors leading-snug truncate ${item.level === 1 ? 'font-semibold' : item.level === 2 ? 'pl-3 text-sm' : 'pl-5 text-sm'}`}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const el = document.getElementById(item.id);
+                                                            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        }}
+                                                        className={`block w-full text-left text-stone-600 hover:text-amber-600 transition-colors leading-snug truncate ${item.level === 1 ? 'font-semibold' : item.level === 2 ? 'pl-3 text-sm' : 'pl-5 text-sm'}`}
                                                         style={{ paddingLeft: item.level > 1 ? `${(item.level - 1) * 0.75}rem` : 0 }}
                                                     >
                                                         {item.text}{item.text.length >= 40 ? '…' : ''}
-                                                    </a>
+                                                    </button>
                                                 ))}
                                             </nav>
                                         </div>
@@ -3308,6 +3323,8 @@
 
         // 攻略前台頁面
         const GuidesPage = () => {
+            const { id: guideIdFromUrl } = useParams();
+            const navigate = useNavigate();
             const [guides, setGuides] = useState([]);
             const [loading, setLoading] = useState(true);
             const [selectedGuide, setSelectedGuide] = useState(null);
@@ -3320,6 +3337,23 @@
             useEffect(() => {
                 loadGuides();
             }, [category]);
+
+            // 從 URL 載入指定攻略（個別連結分享用）
+            useEffect(() => {
+                if (!guideIdFromUrl) return;
+                const loadFromUrl = async () => {
+                    setLoadingGuideId(guideIdFromUrl);
+                    const fullGuide = await fetchGuideDetail(guideIdFromUrl);
+                    setLoadingGuideId(null);
+                    if (fullGuide) {
+                        setSelectedGuide(fullGuide);
+                        incrementViews(guideIdFromUrl);
+                    } else {
+                        navigate('/guides', { replace: true });
+                    }
+                };
+                loadFromUrl();
+            }, [guideIdFromUrl]);
 
             const handleViewModeChange = (mode) => {
                 setViewMode(mode);
@@ -3405,16 +3439,20 @@
                 }
             };
 
-            const handleGuideClick = async (guide) => {
-                incrementViews(guide.id);
-                setLoadingGuideId(guide.id);
-                const fullGuide = await fetchGuideDetail(guide.id);
-                setLoadingGuideId(null);
-                if (fullGuide) setSelectedGuide(fullGuide);
+            const handleGuideClick = (guide) => {
+                navigate(`/guides/${guide.id}`);
             };
 
-            const retryLoadDetail = () => {
-                if (loadingGuideId) handleGuideClick({ id: loadingGuideId });
+            const retryLoadDetail = async () => {
+                const id = guideIdFromUrl || loadingGuideId;
+                if (!id) return;
+                setLoadingGuideId(id);
+                const fullGuide = await fetchGuideDetail(id);
+                setLoadingGuideId(null);
+                if (fullGuide) {
+                    setSelectedGuide(fullGuide);
+                    incrementViews(id);
+                }
             };
 
             if (loadingDetail) {
@@ -3429,7 +3467,7 @@
                 );
             }
             if (selectedGuide) {
-                return <GuideDetailView guide={selectedGuide} onBack={() => setSelectedGuide(null)} />;
+                return <GuideDetailView guide={selectedGuide} onBack={() => { setSelectedGuide(null); navigate('/guides'); }} />;
             }
 
             return (
@@ -9011,6 +9049,7 @@
                                 <Route path="/support" element={<SupportPage />} />
                                 <Route path="/terms" element={<TermsPage />} />
                                 <Route path="/download" element={<DownloadPage />} />
+                                <Route path="/guides/:id" element={<GuidesPage />} />
                                 <Route path="/guides" element={<GuidesPage />} />
                                 <Route path="/events" element={<EventsPage />} />
                                 <Route path="/admin" element={<AdminPage />} />
