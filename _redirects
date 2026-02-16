@@ -1,1 +1,6 @@
+# SPA: 非靜態檔路徑皆回傳 index.html
 /*    /index.html   200
+
+# HTTP 強制轉 HTTPS（從 Google 點進來可能是 http）
+http://sodasa.org/*    https://sodasa.org/:splat    301
+http://www.sodasa.org/*    https://sodasa.org/:splat    301

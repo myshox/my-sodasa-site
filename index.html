@@ -2033,7 +2033,7 @@
         const MemberPage = () => {
             const [user, setUser] = useState(null);
             const [sponsorships, setSponsorships] = useState([]);
-            const [loading, setLoading] = useState(false); // 改為 false，使用樂觀 UI
+            const [loading, setLoading] = useState(true); // 登入檢查中
             const [gameAccounts, setGameAccounts] = useState([]);
             const [showAddAccount, setShowAddAccount] = useState(false);
             const [newAccountName, setNewAccountName] = useState('');
@@ -2042,13 +2042,13 @@
             
             useEffect(() => {
                 const loadUserData = async () => {
-                    const currentUser = await authHelpers.getCurrentUser();
-                    if (!currentUser) {
-                        window.location.href = '/auth';
-                        return;
-                    }
-                    
-                    setUser(currentUser);
+                    try {
+                        const currentUser = await authHelpers.getCurrentUser();
+                        if (!currentUser) {
+                            window.location.href = '/auth';
+                            return;
+                        }
+                        setUser(currentUser);
                     // 讀取遊戲帳號列表（支援舊格式和新格式）
                     const accounts = currentUser.user_metadata?.game_accounts || 
                                    (currentUser.user_metadata?.game_account ? [{
@@ -2076,6 +2076,9 @@
                     } catch (err) {
                         console.error('載入贊助紀錄異常:', err);
                         setSponsorships([]);
+                    }
+                    } finally {
+                        setLoading(false);
                     }
                 };
                 
@@ -5585,8 +5588,16 @@
             // ✅ 已遷移到 Supabase Auth 認證系統
             const [adminScriptsReady, setAdminScriptsReady] = useState(() => !!(window.Chart && window.Quill));
             useEffect(() => {
+                if (window.Chart && window.Quill) {
+                    setAdminScriptsReady(true);
+                    return;
+                }
                 if (window.loadAdminScripts) {
-                    window.loadAdminScripts().then(() => setAdminScriptsReady(true));
+                    const timer = setTimeout(() => setAdminScriptsReady(true), 8000); // 8 秒超時，避免 CDN 失敗時卡住
+                    window.loadAdminScripts().then(() => { clearTimeout(timer); setAdminScriptsReady(true); });
+                    return () => clearTimeout(timer);
+                } else {
+                    setAdminScriptsReady(true);
                 }
             }, []);
             // 狀態管理
