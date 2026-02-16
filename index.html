@@ -1231,6 +1231,27 @@
             return null;
         };
 
+        const PAGE_TITLES = {
+            '/': '蘇打石器 | 最人情味的石器時代私服 2.5',
+            '/events': '最新活動 | 蘇打石器',
+            '/guides': '攻略專區 | 蘇打石器',
+            '/recharge': '金幣贊助 | 蘇打石器',
+            '/support': '官方客服 | 蘇打石器',
+            '/download': '下載專區 | 蘇打石器',
+            '/terms': '服務條款 | 蘇打石器',
+            '/auth': '登入 / 註冊 | 蘇打石器',
+            '/member': '會員中心 | 蘇打石器',
+            '/admin': '後台管理 | 蘇打石器',
+        };
+        const PageTitle = () => {
+            const { pathname } = useLocation();
+            useEffect(() => {
+                const base = pathname.startsWith('/guides/') ? '攻略詳情 | 蘇打石器' : PAGE_TITLES[pathname];
+                document.title = base || '蘇打石器 | 最人情味的石器時代私服 2.5';
+            }, [pathname]);
+            return null;
+        };
+
         // 全站即時同步：donations、events、playlist、guides 任一變更即廣播，所有頁面自動更新
         // 延遲 2 秒訂閱，讓首屏資料先載入完成，減少首次載入負擔
         const GlobalRealtimeSync = () => {
@@ -5507,6 +5528,27 @@
             );
         };
 
+        const NotFoundPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="min-h-screen flex items-center justify-center px-4 pt-20">
+                    <div className="text-center max-w-md">
+                        <div className="text-8xl font-black text-stone-200 mb-4">404</div>
+                        <h1 className="text-2xl font-black text-stone-800 mb-3">找不到頁面</h1>
+                        <p className="text-stone-500 mb-8">你要找的頁面不存在或已被移除。</p>
+                        <div className="flex gap-3 justify-center">
+                            <button onClick={() => navigate(-1)} className="px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition-colors">
+                                返回上一頁
+                            </button>
+                            <Link to="/" className="px-6 py-3 bg-gradient-to-r from-gold-500 to-orange-500 hover:from-gold-600 hover:to-orange-600 text-white font-bold rounded-xl transition-colors">
+                                回首頁
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const AdminPage = () => {
             // ✅ 已遷移到 Supabase Auth 認證系統
             const [adminScriptsReady, setAdminScriptsReady] = useState(() => !!(window.Chart && window.Quill));
@@ -9361,6 +9403,7 @@
                     </button>
 
                     <ScrollToTop />
+                    <PageTitle />
                     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2.5 bg-white/95 backdrop-blur-xl shadow-md shadow-stone-200/30 border-b border-stone-100' : 'py-5 bg-transparent'}`}>
                         <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
                             <Link to="/" className="flex items-center gap-4 group min-h-[44px] min-w-[44px] md:min-w-0">
@@ -9433,6 +9476,7 @@
                                 <Route path="/guides" element={<GuidesPage />} />
                                 <Route path="/events" element={<EventsPage />} />
                                 <Route path="/admin" element={<AdminPage />} />
+                                <Route path="*" element={<NotFoundPage />} />
                             </Routes>
                         </AnimatePresence>
                     </div>

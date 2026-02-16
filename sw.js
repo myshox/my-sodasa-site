@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
 // Version 1.0.0
 
-const CACHE_NAME = 'soda-stone-v1.0.0';
+const CACHE_NAME = 'soda-stone-v2.0.0';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install
@@ -9,8 +9,10 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/offline.html',
+  '/images/icon-192.png',
+  '/images/icon-512.png',
+  '/images/logo.jpg'
 ];
 
 // CDN resources to cache
@@ -82,12 +84,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // SPA navigation: for same-origin HTML requests, serve index.html
+  const isNavigation = request.mode === 'navigate' && url.origin === self.location.origin;
+
   // Strategy: Cache First, fallback to Network
   event.respondWith(
-    caches.match(request)
+    caches.match(isNavigation ? '/index.html' : request)
       .then((cachedResponse) => {
         if (cachedResponse) {
-          console.log('[SW] Serving from cache:', request.url);
           return cachedResponse;
         }
 
@@ -170,8 +174,8 @@ async function syncDonations() {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : '新的通知',
-    icon: '/icon-192.png',
-    badge: '/icon-72.png',
+    icon: '/images/icon-192.png',
+    badge: '/images/icon-72.png',
     vibrate: [200, 100, 200],
     data: {
       dateOfArrival: Date.now(),
