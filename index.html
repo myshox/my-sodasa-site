@@ -310,6 +310,24 @@
     </script>
     <div id="root"></div>
 
+    <!-- 白畫面提示：載入後顯示數秒，若畫面異常可依提示操作 -->
+    <div id="white-screen-hint" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.5s ease;">
+        💡 若畫面空白，請按 <kbd style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:6px;">Ctrl+F5</kbd>（Mac: Cmd+Shift+R）強制重新整理
+    </div>
+    <script>
+        (function(){
+            var hint = document.getElementById('white-screen-hint');
+            if (!hint) return;
+            var hideHint = function(){
+                hint.style.opacity = '0';
+                setTimeout(function(){ hint.style.display = 'none'; }, 500);
+            };
+            window.addEventListener('load', function(){
+                setTimeout(hideHint, 5000);
+            });
+        })();
+    </script>
+
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, memo } from 'react';
         import { createRoot } from 'react-dom/client';
