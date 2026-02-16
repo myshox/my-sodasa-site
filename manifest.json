@@ -54,7 +54,7 @@
       "name": "贊助",
       "short_name": "贊助",
       "description": "快速前往贊助頁面",
-      "url": "/#/support",
+      "url": "/support",
       "icons": [
         {
           "src": "/images/icon-192.png",
@@ -66,7 +66,7 @@
       "name": "下載",
       "short_name": "下載",
       "description": "下載遊戲客戶端",
-      "url": "/#/download",
+      "url": "/download",
       "icons": [
         {
           "src": "/images/icon-192.png",

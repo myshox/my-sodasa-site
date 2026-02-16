@@ -311,7 +311,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, memo } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { HashRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+        import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
         import { motion, AnimatePresence } from 'framer-motion';
         import { 
             ShieldCheck, Shield, Star, Home, Download, MessageSquare, 
@@ -878,7 +878,7 @@
                                                 <p className="text-sm text-red-700 font-bold">💡 客服會核對您的訂單編號和支付憑證後發放金幣</p>
                                             </div>
                                         </div>,
-                                        () => { window.location.hash = '#/member'; showToast('已建立訂單，請將截圖傳送給客服', 'success'); },
+                                        () => { window.location.href = '/member'; showToast('已建立訂單，請將截圖傳送給客服', 'success'); },
                                         '前往會員後台查看'
                                     );
                                 };
@@ -968,7 +968,7 @@
                                                 window.open(plan.url, '_blank');
                                                 // 跳轉到會員後台
                                                 setTimeout(() => {
-                                                    window.location.hash = '#/member';
+                                                    window.location.href = '/member';
                                                     showToast('訂單已建立，請完成支付後聯繫客服', 'success');
                                                 }, 500);
                                             },
@@ -1489,7 +1489,7 @@
                             setIsRecoveryMode(false);
                             setNewPassword('');
                             setNewPasswordConfirm('');
-                            window.location.hash = '#/auth';
+                            window.location.href = '/auth';
                         }, 2000);
                     }
                 } catch (err) {
@@ -1549,7 +1549,7 @@
                                 localStorage.removeItem('rememberedPassword');
                             }
                             showToast('登入成功！', 'success');
-                            window.location.hash = '#/member';
+                            window.location.href = '/member';
                         }
                     } else {
                         const { error } = await authHelpers.signUp(email, password, gameAccount);
@@ -1578,7 +1578,7 @@
                 
                 try {
                     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-                        redirectTo: window.location.origin + '/#/auth'
+                        redirectTo: window.location.origin + '/auth'
                     });
                     
                     if (error) {
@@ -1826,7 +1826,7 @@
                                             type="button"
                                             onClick={() => {
                                                 setIsRecoveryMode(false);
-                                                window.location.hash = '#/auth';
+                                                window.location.href = '/auth';
                                             }}
                                             className="text-stone-500 hover:text-stone-700 transition-colors text-sm"
                                         >
@@ -2012,7 +2012,7 @@
                 const loadUserData = async () => {
                     const currentUser = await authHelpers.getCurrentUser();
                     if (!currentUser) {
-                        window.location.hash = '#/auth';
+                        window.location.href = '/auth';
                         return;
                     }
                     
@@ -2056,7 +2056,7 @@
                 if (confirm('確定要登出嗎？')) {
                     await authHelpers.signOut();
                     showToast('已登出', 'info');
-                    window.location.hash = '#/';
+                    window.location.href = '/';
                 }
             };
             
@@ -2487,7 +2487,7 @@
         };
         
         const HomePage = () => {
-            const handleDownload = () => window.location.hash = '#/download';
+            const handleDownload = () => window.location.href = '/download';
             const handleDiscord = () => window.open('https://discord.gg/dS2p7j5yMZ', '_blank');
             const handleLineCommunity = () => window.open('https://line.me/ti/g2/k7x6Y9Y0BkSAAQm6LD-UuG1ihCORUPeCfoixMg?utm_source=invitation&utm_medium=link_copy&utm_campaign=default', '_blank'); // FIXED: LINE 社群
             
@@ -2897,7 +2897,7 @@
                             {/* 同意按鈕 */}
                             <div className="text-center pt-4">
                                 <a
-                                    href="#/"
+                                    href="/"
                                     className="inline-flex items-center gap-2 px-8 py-4 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
                                 >
                                     <CheckCircle size={20} />
@@ -3067,7 +3067,7 @@
                                         <span className="flex items-center gap-1.5"><Heart size={18} />{guide.likes || 0} 人覺得有幫助</span>
                                         <button
                                             onClick={() => {
-                                                const url = `${window.location.origin}${window.location.pathname || ''}#/guides/${guide.id}`;
+                                                const url = `${window.location.origin}/guides/${guide.id}`;
                                                 navigator.clipboard?.writeText(url).then(() => showToast('連結已複製到剪貼簿', 'success')).catch(() => showToast('無法複製，請手動複製網址列', 'error'));
                                             }}
                                             className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-colors font-medium"
@@ -4642,7 +4642,7 @@
                             console.log('未登入，跳轉到登入頁');
                             showToast('請先登入才能贊助', 'warning');
                             setTimeout(() => {
-                                window.location.hash = '#/auth';
+                                window.location.href = '/auth';
                             }, 500);
                             return;
                         }
@@ -4835,7 +4835,7 @@
                                     window.open(selectedPlan.url, '_blank');
                                     // 跳轉到會員後台
                                     setTimeout(() => {
-                                        window.location.hash = '#/member';
+                                        window.location.href = '/member';
                                         showToast('訂單已建立，請完成支付後聯繫客服', 'success');
                                     }, 500);
                                 },
@@ -4974,7 +4974,7 @@
                                         <p className="text-gold-800 font-bold mb-2">尚未設定遊戲帳號</p>
                                         <p className="text-gold-700 text-sm mb-4">請先到會員中心新增遊戲帳號</p>
                                         <a 
-                                            href="#/member" 
+                                            href="/member" 
                                             className="inline-flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl transition-colors"
                                         >
                                             前往會員中心
@@ -5053,7 +5053,7 @@
                                             <div className="mt-4 p-3 bg-stone-50 rounded-xl">
                                                 <p className="text-stone-600 text-xs">
                                                     💡 您還可以新增 {5 - gameAccounts.length} 個遊戲帳號。
-                                                    <a href="#/member" className="text-gold-600 hover:text-gold-700 font-bold ml-1">前往會員中心管理</a>
+                                                    <a href="/member" className="text-gold-600 hover:text-gold-700 font-bold ml-1">前往會員中心管理</a>
                                                 </p>
                                             </div>
                                         )}
@@ -9498,9 +9498,9 @@
 
         const root = createRoot(document.getElementById('root'));
         root.render(
-            <HashRouter>
+            <BrowserRouter>
                 <App />
-            </HashRouter>
+            </BrowserRouter>
         );
     </script>
 
