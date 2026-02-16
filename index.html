@@ -539,7 +539,18 @@
             SPONSORSHIPS: 'sponsorships',
             ADMINS: 'admins',
             EVENTS: 'events',
-            PLAYLIST: 'playlist'
+            PLAYLIST: 'playlist',
+            ANNOUNCEMENTS: 'announcements'
+        };
+
+        const BANNER_ICONS = {
+            megaphone: Megaphone,
+            bookopen: BookOpen,
+            gift: Gift,
+            star: Star,
+            flame: Flame,
+            bell: Bell,
+            sparkles: Sparkles,
         };
 
         // 從 Supabase 讀取資料（可選 columns、limit 以減少傳輸量）
@@ -2513,6 +2524,7 @@
             const handleLineCommunity = () => window.open('https://line.me/ti/g2/k7x6Y9Y0BkSAAQm6LD-UuG1ihCORUPeCfoixMg?utm_source=invitation&utm_medium=link_copy&utm_campaign=default', '_blank'); // FIXED: LINE 社群
             
             const [events, setEvents] = useState([]);
+            const [banners, setBanners] = useState([]);
             const [onlinePlayers, setOnlinePlayers] = useState(1247);
             
             // 模擬線上人數變化
@@ -2539,6 +2551,19 @@
                 const handleStorageChange = () => loadEvents();
                 window.addEventListener('storage-update', handleStorageChange);
                 return () => window.removeEventListener('storage-update', handleStorageChange);
+            }, []);
+
+            // Load Announcement Banners
+            useEffect(() => {
+                const loadBanners = async () => {
+                    const data = await getSupabaseData(DB_TABLES.ANNOUNCEMENTS, { columns: 'id, title, subtitle, link, icon, badge, is_active, sort_order' });
+                    const active = (data || []).filter(b => b.is_active).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+                    setBanners(active);
+                };
+                loadBanners();
+                const handleBannerRefresh = () => loadBanners();
+                window.addEventListener('banner-updated', handleBannerRefresh);
+                return () => window.removeEventListener('banner-updated', handleBannerRefresh);
             }, []);
 
             return (
@@ -2628,26 +2653,33 @@
                     </section>
 
                     {/* 新功能公告 - 活動攻略 */}
-                    <section className="bg-gradient-to-r from-gold-50 via-amber-50 to-orange-50 border-y-2 border-gold-200 py-4 relative z-20">
-                        <div className="max-w-7xl mx-auto px-4 md:px-6">
-                            <Link to="/guides" className="flex items-center justify-center gap-3 group">
-                                <div className="bg-gold-500 text-white p-2 rounded-xl shrink-0 group-hover:bg-gold-600 transition-colors shadow-md">
-                                    <BookOpen size={20} />
+                    {banners.length > 0 && banners.map(banner => {
+                        const IconComp = BANNER_ICONS[banner.icon] || Megaphone;
+                        return (
+                            <section key={banner.id} className="bg-gradient-to-r from-gold-50 via-amber-50 to-orange-50 border-y-2 border-gold-200 py-4 relative z-20">
+                                <div className="max-w-7xl mx-auto px-4 md:px-6">
+                                    <Link to={banner.link || '/events'} className="flex items-center justify-center gap-3 group">
+                                        <div className="bg-gold-500 text-white p-2 rounded-xl shrink-0 group-hover:bg-gold-600 transition-colors shadow-md">
+                                            <IconComp size={20} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                {banner.badge && <span className="bg-fire-500 text-white text-xs font-bold px-2 py-1 rounded-full">{banner.badge}</span>}
+                                                <span className="font-black text-stone-800 text-base md:text-lg group-hover:text-gold-600 transition-colors">
+                                                    {banner.title}
+                                                </span>
+                                            </div>
+                                            {banner.subtitle && (
+                                                <p className="text-xs md:text-sm text-stone-600 mt-1">
+                                                    {banner.subtitle} →
+                                                </p>
+                                            )}
+                                        </div>
+                                    </Link>
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="bg-fire-500 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
-                                        <span className="font-black text-stone-800 text-base md:text-lg group-hover:text-gold-600 transition-colors">
-                                            🎉 全新「活動攻略」功能上線！
-                                        </span>
-                                    </div>
-                                    <p className="text-xs md:text-sm text-stone-600 mt-1">
-                                        最新活動資訊、遊戲技巧、精彩攻略一次掌握 →
-                                    </p>
-                                </div>
-                            </Link>
-                        </div>
-                    </section>
+                            </section>
+                        );
+                    })}
 
                     {/* News Section (Powered by Events) */}
                     <section className="bg-white/95 border-b border-stone-100 py-4 relative z-20 shadow-sm backdrop-blur-sm">
@@ -5644,6 +5676,70 @@
             const [filterStatus, setFilterStatus] = useState('all');
             const [currentTab, setCurrentTab] = useState('donations');
             
+            // 公告橫幅管理
+            const [adminBanners, setAdminBanners] = useState([]);
+            const [editingBanner, setEditingBanner] = useState(null);
+            const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+
+            const loadAdminBanners = async () => {
+                const data = await getSupabaseData(DB_TABLES.ANNOUNCEMENTS, { columns: 'id, title, subtitle, link, icon, badge, is_active, sort_order, created_at' });
+                setAdminBanners((data || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
+            };
+
+            useEffect(() => {
+                if (isLoggedIn && currentTab === 'banners') loadAdminBanners();
+            }, [isLoggedIn, currentTab]);
+
+            const handleSaveBanner = async () => {
+                if (!bannerForm.title.trim()) { showToast('請輸入標題', 'error'); return; }
+                try {
+                    if (editingBanner) {
+                        const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).update(bannerForm).eq('id', editingBanner.id);
+                        if (error) throw error;
+                        showToast('公告橫幅已更新');
+                    } else {
+                        const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).insert(bannerForm);
+                        if (error) throw error;
+                        showToast('公告橫幅已新增');
+                    }
+                    setEditingBanner(null);
+                    setBannerForm({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('儲存失敗: ' + e.message, 'error'); }
+            };
+
+            const handleDeleteBanner = async (id) => {
+                if (!confirm('確定刪除此公告橫幅？')) return;
+                try {
+                    const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('已刪除');
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('刪除失敗: ' + e.message, 'error'); }
+            };
+
+            const handleToggleBannerActive = async (banner) => {
+                try {
+                    const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).update({ is_active: !banner.is_active }).eq('id', banner.id);
+                    if (error) throw error;
+                    showToast(banner.is_active ? '已停用' : '已啟用');
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('操作失敗: ' + e.message, 'error'); }
+            };
+
+            const startEditBanner = (banner) => {
+                setEditingBanner(banner);
+                setBannerForm({ title: banner.title, subtitle: banner.subtitle || '', link: banner.link || '/events', icon: banner.icon || 'megaphone', badge: banner.badge || '', is_active: banner.is_active, sort_order: banner.sort_order || 0 });
+            };
+
+            const cancelEditBanner = () => {
+                setEditingBanner(null);
+                setBannerForm({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+            };
+
             // 進階搜尋
             const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
             const [dateFrom, setDateFrom] = useState('');
@@ -7483,6 +7579,10 @@
                                         <Music size={16}/>
                                         <span>音樂</span>
                                     </button>
+                                    <button onClick={() => setCurrentTab('banners')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'banners' ? 'bg-orange-500 text-white shadow-lg shadow-orange-900/20' : 'bg-orange-950/50 text-orange-200/90 hover:bg-orange-900/50 hover:text-orange-100 border border-orange-800/40'}`}>
+                                        <Megaphone size={16}/>
+                                        <span>公告橫幅</span>
+                                    </button>
                                     <button onClick={() => setCurrentTab('settings')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'settings' ? 'bg-stone-600 text-white shadow-lg' : 'bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white border border-stone-600/50'}`}>
                                         <Settings size={16}/>
                                         <span>設定</span>
@@ -8337,6 +8437,131 @@
                         )}
 
                         {/* Settings 分頁 */}
+                        {/* 公告橫幅管理分頁 */}
+                        {currentTab === 'banners' && (
+                            <div className="space-y-6">
+                                <div className="bg-stone-800 rounded-3xl p-6 md:p-8 border border-stone-700 shadow-xl">
+                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4">
+                                        <Megaphone size={20} className="text-orange-400" />
+                                        {editingBanner ? '編輯公告橫幅' : '新增公告橫幅'}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">標題 <span className="text-red-400">*</span></label>
+                                            <input type="text" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-orange-500 outline-none transition-colors" placeholder="如：🎉 全新「活動攻略」功能上線！"/>
+                                        </div>
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">副標題</label>
+                                            <input type="text" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-orange-500 outline-none transition-colors" placeholder="如：最新活動資訊、遊戲技巧一次掌握"/>
+                                        </div>
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">連結路徑</label>
+                                            <input type="text" value={bannerForm.link} onChange={e => setBannerForm({...bannerForm, link: e.target.value})} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-orange-500 outline-none transition-colors" placeholder="/events 或 /guides"/>
+                                        </div>
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">徽章文字</label>
+                                            <input type="text" value={bannerForm.badge} onChange={e => setBannerForm({...bannerForm, badge: e.target.value})} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-orange-500 outline-none transition-colors" placeholder="如 NEW、HOT、限時"/>
+                                        </div>
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">圖示</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {Object.entries(BANNER_ICONS).map(([key, Icon]) => (
+                                                    <button key={key} onClick={() => setBannerForm({...bannerForm, icon: key})} className={`p-2.5 rounded-xl border transition-colors ${bannerForm.icon === key ? 'bg-orange-500 border-orange-400 text-white' : 'bg-stone-900 border-stone-600 text-stone-400 hover:border-orange-500/50 hover:text-orange-300'}`} title={key}>
+                                                        <Icon size={18}/>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-stone-400 text-sm font-bold mb-1">排序（數字越小越前面）</label>
+                                            <input type="number" value={bannerForm.sort_order} onChange={e => setBannerForm({...bannerForm, sort_order: parseInt(e.target.value) || 0})} className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-orange-500 outline-none transition-colors"/>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex items-center gap-3">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" checked={bannerForm.is_active} onChange={e => setBannerForm({...bannerForm, is_active: e.target.checked})} className="w-4 h-4 rounded accent-orange-500"/>
+                                            <span className="text-stone-300 text-sm font-bold">立即啟用</span>
+                                        </label>
+                                    </div>
+
+                                    {/* 預覽 */}
+                                    {bannerForm.title && (
+                                        <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-gold-50 via-amber-50 to-orange-50 border-2 border-gold-200">
+                                            <p className="text-stone-500 text-xs font-bold mb-2">預覽效果：</p>
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-gold-500 text-white p-2 rounded-xl shrink-0 shadow-md">
+                                                    {(() => { const IC = BANNER_ICONS[bannerForm.icon] || Megaphone; return <IC size={20}/>; })()}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        {bannerForm.badge && <span className="bg-fire-500 text-white text-xs font-bold px-2 py-1 rounded-full">{bannerForm.badge}</span>}
+                                                        <span className="font-black text-stone-800 text-base">{bannerForm.title}</span>
+                                                    </div>
+                                                    {bannerForm.subtitle && <p className="text-xs text-stone-600 mt-1">{bannerForm.subtitle} →</p>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-6 flex gap-3">
+                                        <button onClick={handleSaveBanner} className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                                            <Check size={18}/> {editingBanner ? '更新公告' : '新增公告'}
+                                        </button>
+                                        {editingBanner && (
+                                            <button onClick={cancelEditBanner} className="px-6 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold py-3 rounded-xl transition-colors">
+                                                取消
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* 現有公告列表 */}
+                                <div className="space-y-3">
+                                    <h4 className="text-white font-bold flex items-center gap-2"><List size={18}/> 所有公告橫幅 ({adminBanners.length})</h4>
+                                    {adminBanners.length === 0 && (
+                                        <div className="text-center py-12 text-stone-500">
+                                            <Megaphone size={40} className="mx-auto mb-3 opacity-30"/>
+                                            <p>尚未建立任何公告橫幅</p>
+                                        </div>
+                                    )}
+                                    {adminBanners.map(banner => {
+                                        const BIcon = BANNER_ICONS[banner.icon] || Megaphone;
+                                        return (
+                                            <div key={banner.id} className={`bg-stone-800 rounded-2xl p-5 border transition-colors ${banner.is_active ? 'border-orange-700/50' : 'border-stone-700 opacity-60'}`}>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className={`p-2 rounded-xl shrink-0 ${banner.is_active ? 'bg-orange-500/20 text-orange-400' : 'bg-stone-700 text-stone-500'}`}>
+                                                            <BIcon size={20}/>
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                {banner.badge && <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${banner.is_active ? 'bg-fire-500 text-white' : 'bg-stone-600 text-stone-400'}`}>{banner.badge}</span>}
+                                                                <span className="font-bold text-white truncate">{banner.title}</span>
+                                                                {!banner.is_active && <span className="text-xs bg-stone-600 text-stone-400 px-2 py-0.5 rounded-full">已停用</span>}
+                                                            </div>
+                                                            {banner.subtitle && <p className="text-stone-400 text-sm mt-1 truncate">{banner.subtitle}</p>}
+                                                            <p className="text-stone-500 text-xs mt-1">連結：{banner.link} ・ 排序：{banner.sort_order}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <button onClick={() => handleToggleBannerActive(banner)} className={`p-2 rounded-lg transition-colors ${banner.is_active ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-stone-600 hover:bg-stone-500 text-stone-300'}`} title={banner.is_active ? '點擊停用' : '點擊啟用'}>
+                                                            {banner.is_active ? <Eye size={16}/> : <EyeOff size={16}/>}
+                                                        </button>
+                                                        <button onClick={() => startEditBanner(banner)} className="p-2 rounded-lg bg-orange-600/30 hover:bg-orange-600 text-orange-300 hover:text-white transition-colors" title="編輯">
+                                                            <Edit2 size={16}/>
+                                                        </button>
+                                                        <button onClick={() => handleDeleteBanner(banner.id)} className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white transition-colors" title="刪除">
+                                                            <Trash2 size={16}/>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                         {currentTab === 'settings' && (
                             <div className="max-w-2xl mx-auto">
                                 <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">

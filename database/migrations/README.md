@@ -32,6 +32,8 @@
 | 040 | `040_events_popup_featured.sql` | 活動彈窗主打 (`is_popup_featured`) |
 | 041 | `041_events_popup_aspect.sql` | 彈窗圖片比例 (`popup_aspect_ratio`) |
 | 042 | `042_events_show_in_popup.sql` | 顯示於彈窗 (`show_in_popup`) |
+| 043 | `043_performance_indexes.sql` | 效能索引 |
+| 044 | `044_announcements_banner.sql` | 公告橫幅系統 (`announcements` 表) |
 
 ---
 
