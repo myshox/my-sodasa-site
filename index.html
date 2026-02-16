@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>蘇打石器：公益服 | 最人情味的石器時代私服 2.5</title>
     
     <!-- SEO Meta Tags -->
@@ -757,6 +759,7 @@
         };
 
         const PaymentModal = ({ method, plan, gameAccount, lineName, orderNumber, onClose, onSaveRecord, showConfirm }) => {
+            const navigate = useNavigate();
             if (!method || !plan) return null;
             
             const ReminderSection = () => (
@@ -889,7 +892,7 @@
                                                 <p className="text-sm text-red-700 font-bold">💡 客服會核對您的訂單編號和支付憑證後發放金幣</p>
                                             </div>
                                         </div>,
-                                        () => { window.location.href = '/member'; showToast('已建立訂單，請將截圖傳送給客服', 'success'); },
+                                        () => { navigate('/member'); showToast('已建立訂單，請將截圖傳送給客服', 'success'); },
                                         '前往會員後台查看'
                                     );
                                 };
@@ -977,9 +980,9 @@
                                             </div>,
                                             () => {
                                                 window.open(plan.url, '_blank');
-                                                // 跳轉到會員後台
+                                                // 跳轉到會員後台（使用 navigate 避免整頁載入、白畫面）
                                                 setTimeout(() => {
-                                                    window.location.href = '/member';
+                                                    navigate('/member');
                                                     showToast('訂單已建立，請完成支付後聯繫客服', 'success');
                                                 }, 500);
                                             },
@@ -1446,6 +1449,7 @@
         
         // 登入/註冊頁面
         const AuthPage = () => {
+            const navigate = useNavigate();
             const [isLogin, setIsLogin] = useState(true);
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
@@ -1521,7 +1525,7 @@
                             setIsRecoveryMode(false);
                             setNewPassword('');
                             setNewPasswordConfirm('');
-                            window.location.href = '/auth';
+                            navigate('/auth');
                         }, 2000);
                     }
                 } catch (err) {
@@ -1581,7 +1585,7 @@
                                 localStorage.removeItem('rememberedPassword');
                             }
                             showToast('登入成功！', 'success');
-                            window.location.href = '/member';
+                            navigate('/member');
                         }
                     } else {
                         const { error } = await authHelpers.signUp(email, password, gameAccount);
@@ -1858,7 +1862,7 @@
                                             type="button"
                                             onClick={() => {
                                                 setIsRecoveryMode(false);
-                                                window.location.href = '/auth';
+                                                navigate('/auth');
                                             }}
                                             className="text-stone-500 hover:text-stone-700 transition-colors text-sm"
                                         >
@@ -2031,6 +2035,7 @@
         
         // 會員中心頁面
         const MemberPage = () => {
+            const navigate = useNavigate();
             const [user, setUser] = useState(null);
             const [sponsorships, setSponsorships] = useState([]);
             const [loading, setLoading] = useState(true); // 登入檢查中
@@ -2045,7 +2050,7 @@
                     try {
                         const currentUser = await authHelpers.getCurrentUser();
                         if (!currentUser) {
-                            window.location.href = '/auth';
+                            navigate('/auth');
                             return;
                         }
                         setUser(currentUser);
@@ -4697,9 +4702,7 @@
                         if (!currentUser) {
                             console.log('未登入，跳轉到登入頁');
                             showToast('請先登入才能贊助', 'warning');
-                            setTimeout(() => {
-                                window.location.href = '/auth';
-                            }, 500);
+                            setTimeout(() => navigate('/auth'), 500);
                             return;
                         }
                         
@@ -4889,9 +4892,9 @@
                                 () => {
                                     // 開啟外部支付頁面
                                     window.open(selectedPlan.url, '_blank');
-                                    // 跳轉到會員後台
+                                    // 跳轉到會員後台（使用 navigate 避免整頁載入、白畫面）
                                     setTimeout(() => {
-                                        window.location.href = '/member';
+                                        navigate('/member');
                                         showToast('訂單已建立，請完成支付後聯繫客服', 'success');
                                     }, 500);
                                 },
