@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
-// Version 1.0.0
+// Version 1.0.1 - 首頁改為網路優先，避免快取舊版導致白畫面
 
-const CACHE_NAME = 'soda-stone-v2.0.0';
+const CACHE_NAME = 'soda-stone-v2.0.1';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install
@@ -84,59 +84,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // SPA navigation: for same-origin HTML requests, serve index.html
+  // SPA navigation: 首頁與導航改用「網路優先」，避免快取舊版導致白畫面
   const isNavigation = request.mode === 'navigate' && url.origin === self.location.origin;
+  const isIndexHtml = url.pathname === '/' || url.pathname === '/index.html';
 
-  // Strategy: Cache First, fallback to Network
+  if (isNavigation || isIndexHtml) {
+    // 網路優先：先從網路取最新版，失敗才用快取
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put('/index.html', clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+    );
+    return;
+  }
+
+  // 其他資源：快取優先
   event.respondWith(
-    caches.match(isNavigation ? '/index.html' : request)
+    caches.match(request)
       .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Not in cache, fetch from network
-        return fetch(request)
-          .then((networkResponse) => {
-            // Don't cache if not a success response
-            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'error') {
-              return networkResponse;
-            }
-
-            // Clone the response
-            const responseToCache = networkResponse.clone();
-
-            // Cache CDN resources and static assets
-            if (
-              url.hostname.includes('cdn.') || 
-              url.hostname.includes('fonts.') ||
-              url.hostname.includes('esm.sh') ||
-              STATIC_ASSETS.includes(url.pathname)
-            ) {
-              caches.open(RUNTIME_CACHE)
-                .then((cache) => {
-                  console.log('[SW] Caching runtime asset:', request.url);
-                  cache.put(request, responseToCache);
-                });
-            }
-
-            return networkResponse;
-          })
-          .catch((error) => {
-            console.error('[SW] Fetch failed:', error);
-            
-            // Return offline page if available
-            return caches.match('/offline.html')
-              .then((offlineResponse) => {
-                return offlineResponse || new Response('離線模式：無法連接到網路', {
-                  status: 503,
-                  statusText: 'Service Unavailable',
-                  headers: new Headers({
-                    'Content-Type': 'text/html; charset=utf-8'
-                  })
-                });
-              });
-          });
+        if (cachedResponse) return cachedResponse;
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && (
+            url.hostname.includes('cdn.') || url.hostname.includes('fonts.') ||
+            url.hostname.includes('esm.sh') || STATIC_ASSETS.some((p) => url.pathname === p || url.pathname === p + '/')
+          )) {
+            const clone = networkResponse.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        }).catch(() => caches.match('/offline.html').then((r) => r || new Response('離線', { status: 503, statusText: 'Unavailable' })));
       })
   );
 });
