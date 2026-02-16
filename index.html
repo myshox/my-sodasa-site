@@ -9102,15 +9102,28 @@
         const LARGE_MODE_KEY = 'sodasa-accessibility-large';
         const ACTIVITY_FLOAT_DISMISSED_KEY = 'sodasa-activity-float-dismissed';
         const HOMEPAGE_POPUP_SHOWN_KEY = 'sodasa-homepage-popup-shown';
+        const POPUP_NEVER_AUTO_KEY = 'sodasa-popup-never-auto';
 
         // 右下角活動浮動按鈕：點擊彈出最新活動
         const FloatingActivityButton = () => {
             const navigate = useNavigate();
             const location = useLocation();
-            const [dismissed, setDismissed] = useState(() => localStorage.getItem(ACTIVITY_FLOAT_DISMISSED_KEY) === '1');
+            const [dismissed, setDismissed] = useState(() => {
+                const raw = localStorage.getItem(ACTIVITY_FLOAT_DISMISSED_KEY);
+                if (!raw) return false;
+                const ts = parseInt(raw, 10);
+                if (isNaN(ts)) return raw === '1';  // 舊格式相容
+                const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+                if (Date.now() - ts > SEVEN_DAYS) {
+                    localStorage.removeItem(ACTIVITY_FLOAT_DISMISSED_KEY);
+                    return false;
+                }
+                return true;
+            });
             const [showModal, setShowModal] = useState(false);
             const [events, setEvents] = useState([]);
             const [loading, setLoading] = useState(false);
+            const [neverAuto, setNeverAuto] = useState(() => localStorage.getItem(POPUP_NEVER_AUTO_KEY) === '1');
 
             const POPUP_EVENTS_COLUMNS = 'id, title, tag, timestamp, content, is_popup_featured, popup_aspect_ratio, show_in_popup';
             const fetchPopupEvents = () => getSupabaseData(DB_TABLES.EVENTS, { columns: POPUP_EVENTS_COLUMNS, limit: 20 })
@@ -9131,9 +9144,9 @@
                 return () => window.removeEventListener('storage', onStorage);
             }, [showModal]);
 
-            // 首頁自動彈窗（每 session 僅一次）
+            // 首頁自動彈窗（每 session 僅一次；若使用者勾選「不再自動顯示」則跳過）
             useEffect(() => {
-                if (location.pathname !== '/' || dismissed) return;
+                if (location.pathname !== '/' || dismissed || neverAuto) return;
                 if (sessionStorage.getItem(HOMEPAGE_POPUP_SHOWN_KEY) === '1') return;
                 const t = setTimeout(() => {
                     sessionStorage.setItem(HOMEPAGE_POPUP_SHOWN_KEY, '1');
@@ -9142,7 +9155,7 @@
                     fetchPopupEvents().then(setEvents).finally(() => setLoading(false));
                 }, 1500);
                 return () => clearTimeout(t);
-            }, [location.pathname, dismissed]);
+            }, [location.pathname, dismissed, neverAuto]);
 
             const extractFirstImage = (html) => {
                 if (!html) return null;
@@ -9164,7 +9177,7 @@
             const handleDismiss = (e) => {
                 e.stopPropagation();
                 setDismissed(true);
-                localStorage.setItem(ACTIVITY_FLOAT_DISMISSED_KEY, '1');
+                localStorage.setItem(ACTIVITY_FLOAT_DISMISSED_KEY, Date.now().toString());
             };
 
             if (dismissed) return null;
@@ -9261,13 +9274,26 @@
                                             })()
                                         )}
                                     </div>
-                                    <div className="p-4 border-t border-stone-200">
+                                    <div className="p-4 border-t border-stone-200 space-y-3">
                                         <button
                                             onClick={() => { setShowModal(false); navigate('/events'); }}
                                             className="w-full py-3 bg-gradient-to-r from-gold-500 to-orange-500 hover:from-gold-600 hover:to-orange-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
                                         >
                                             查看全部活動 <ArrowRight size={18} />
                                         </button>
+                                        <label className="flex items-center justify-center gap-2 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={neverAuto}
+                                                onChange={(e) => {
+                                                    const v = e.target.checked;
+                                                    setNeverAuto(v);
+                                                    localStorage.setItem(POPUP_NEVER_AUTO_KEY, v ? '1' : '0');
+                                                }}
+                                                className="w-4 h-4 rounded border-stone-300 text-orange-500 focus:ring-orange-400"
+                                            />
+                                            <span className="text-xs text-stone-400 group-hover:text-stone-600 transition-colors select-none">不再自動彈出此視窗</span>
+                                        </label>
                                     </div>
                                 </motion.div>
                             </motion.div>
