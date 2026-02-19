@@ -188,8 +188,24 @@
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             font-size: 16px;
-            line-height: 1.65;
-            letter-spacing: 0.01em;
+            line-height: 1.7;
+            letter-spacing: 0.02em;
+            font-feature-settings: "palt" 1;
+        }
+        /* 閱讀區塊：適合長文寬度與行高（電腦／手機通用） */
+        .reading-content {
+            max-width: 42rem;
+            line-height: 1.8;
+        }
+        @media (min-width: 768px) {
+            body { font-size: 17px; }
+            .reading-content { max-width: 44rem; }
+        }
+        @media (max-width: 767px) {
+            body { line-height: 1.75; letter-spacing: 0.025em; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
         #root:empty::before {
             content: '正在前往尼斯大陸...';
@@ -245,6 +261,14 @@
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
+        /* 長文閱讀觀感：段落與標題間距 */
+        .content-prose p { margin-bottom: 1.25em; }
+        .content-prose p:last-child { margin-bottom: 0; }
+        .content-prose h1, .content-prose h2, .content-prose h3 { margin-top: 1.75em; margin-bottom: 0.6em; }
+        .content-prose h1:first-child, .content-prose h2:first-child, .content-prose h3:first-child { margin-top: 0; }
+        @media (max-width: 767px) {
+            .content-prose p { margin-bottom: 1.5em; }
+        }
         @media (max-width: 768px) {
             .event-content img { max-width: 100%; height: auto; }
             .event-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -299,6 +323,61 @@
         html.accessibility-large .text-base { font-size: 1.125rem !important; }
         html.accessibility-large .text-lg { font-size: 1.25rem !important; }
         html.accessibility-large .text-xl { font-size: 1.375rem !important; }
+
+        /* 新擬物風格 Neumorphism（選單用，無動態以保效能） */
+        .neu-raised {
+            background: #e8e4e0;
+            box-shadow: 8px 8px 16px rgba(163, 152, 139, 0.25), -8px -8px 16px rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+        }
+        .neu-pressed {
+            background: #e8e4e0;
+            box-shadow: inset 4px 4px 8px rgba(163, 152, 139, 0.2), inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+        }
+        .neu-nav-bg {
+            background: #e8e4e0;
+            box-shadow: 0 8px 24px rgba(139, 119, 101, 0.15), 0 -4px 12px rgba(255, 255, 255, 0.6);
+        }
+        .neu-item {
+            background: #e0dcd6;
+            box-shadow: 6px 6px 12px rgba(163, 152, 139, 0.2), -6px -6px 12px rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+        }
+        .neu-item-active {
+            background: #f5f1eb;
+            box-shadow: inset 3px 3px 6px rgba(163, 152, 139, 0.15), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+        }
+        .neu-bottom {
+            background: #e8e4e0;
+            box-shadow: 0 -8px 24px rgba(139, 119, 101, 0.2), 0 4px 12px rgba(255, 255, 255, 0.5);
+        }
+        /* 跳過至主內容：鍵盤焦點時顯示，無障礙友善 */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 0.5rem;
+            z-index: 9999;
+            padding: 0.75rem 1.25rem;
+            background: #4a4036;
+            color: #fbf6e9;
+            font-weight: bold;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .skip-link:focus {
+            left: 1rem;
+            outline: 2px solid #d4b483;
+            outline-offset: 2px;
+        }
+        /* 列印：隱藏導列、浮動按鈕、底導，主內容完整顯示 */
+        @media print {
+            body { background: #fff; color: #1a1614; }
+            nav, [class*="fixed"], .neu-bottom, [aria-label="大字模式"] { display: none !important; }
+            main { padding-top: 0 !important; }
+            a[href]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #666; }
+        }
     </style>
 </head>
 <body>
@@ -658,14 +737,24 @@
             <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17.15 14.53C17.15 14.78 16.96 15 16.7 15H15.15C15 15 14.88 14.93 14.79 14.82L13.2 12.72V14.53C13.2 14.78 13.01 15 12.75 15H11.95C11.69 15 11.5 14.78 11.5 14.53V9.47C11.5 9.22 11.69 9 11.95 9H13.5C13.65 9 13.77 9.07 13.86 9.18L15.45 11.28V9.47C15.45 9.22 15.64 9 15.9 9H16.7C16.96 9 17.15 9.22 17.15 9.47V14.53ZM9.9 14.53C9.9 14.78 9.71 15 9.45 15H7.05C6.79 15 6.6 14.78 6.6 14.53V9.47C6.6 9.22 6.79 9 7.05 9H7.85V11.6H9.45C9.71 11.6 9.9 11.81 9.9 12.07V12.53C9.9 12.79 9.71 13 9.45 13H7.85V14.53H9.9Z"/></svg>
         ));
 
-        const SmartImage = memo(({ src, alt, className, fallbackType = 'hero' }) => {
+        const SmartImage = memo(({ src, alt, className, fallbackType = 'hero', priority = false }) => {
             const [imgSrc, setImgSrc] = useState(src);
             const FALLBACKS = {
                 hero: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=2000', 
                 logo: 'https://cdn-icons-png.flaticon.com/512/3034/3034870.png',
             };
             useEffect(() => { setImgSrc(src); }, [src]);
-            return <img src={imgSrc} alt={alt || 'Logo'} className={className} onError={() => setImgSrc(FALLBACKS[fallbackType] || FALLBACKS.logo)} loading="lazy" />;
+            return (
+                <img
+                    src={imgSrc}
+                    alt={alt || 'Logo'}
+                    className={className}
+                    onError={() => setImgSrc(FALLBACKS[fallbackType] || FALLBACKS.logo)}
+                    loading={priority ? 'eager' : 'lazy'}
+                    decoding={priority ? 'sync' : 'async'}
+                    fetchPriority={priority ? 'high' : undefined}
+                />
+            );
         });
 
         // --- 組件 ---
@@ -1403,7 +1492,7 @@
                 </div>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-stone-800 mb-3 tracking-tight drop-shadow-sm font-display px-2">{title}</h1>
                 <div className="w-14 md:w-16 h-1 bg-stone-200 mx-auto mb-5 rounded-full"></div>
-                <p className="text-stone-500 text-base md:text-lg max-w-2xl mx-auto font-medium px-4 leading-relaxed">{subtitle}</p>
+                <p className="text-stone-500 text-base md:text-lg max-w-2xl mx-auto font-medium px-2 sm:px-4 leading-relaxed">{subtitle}</p>
             </div>
         ));
 
@@ -1440,7 +1529,7 @@
             }, [user]);
 
             return (
-                <div className="fixed bottom-0 left-0 w-full bg-white/98 backdrop-blur-xl border-t border-stone-200/80 z-50 pb-safe md:hidden shadow-[0_-8px_30px_rgba(139,90,43,0.08)]">
+                <div className="fixed bottom-0 left-0 w-full z-50 pb-safe md:hidden neu-bottom">
                     <div className="flex justify-around items-center h-[72px] px-2">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path;
@@ -1448,10 +1537,10 @@
                                 <Link 
                                     key={item.path} 
                                     to={item.path} 
-                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 px-1 rounded-2xl transition-all duration-200 active:scale-95 ${isActive ? 'text-wood-600' : 'text-stone-400'}`}
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 px-1 rounded-2xl ${isActive ? 'text-wood-600' : 'text-stone-500'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <div className={`p-2.5 rounded-2xl transition-all duration-200 ${isActive ? 'bg-sand-100 scale-110' : 'active:bg-stone-50'}`}>
+                                    <div className={`p-2.5 rounded-2xl ${isActive ? 'neu-item-active' : 'neu-item'}`}>
                                         <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                                     </div>
                                     <span className={`text-[11px] font-bold tracking-wide mt-0.5 truncate max-w-full ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
@@ -1653,7 +1742,7 @@
             };
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                     {/* 服務條款彈窗 */}
                     {showTermsModal && (
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-sm" onClick={() => setShowTermsModal(false)}>
@@ -2221,14 +2310,14 @@
             
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="載入中..." />
                     </motion.div>
                 );
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto">
                         <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
                         
@@ -2597,7 +2686,7 @@
                     <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-tribal">
                         <div className="absolute inset-0 z-0 opacity-100">
                             <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
-                                <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="Hero" className="w-full h-full object-cover" />
+                                <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="Hero" className="w-full h-full object-cover" priority />
                             </motion.div>
                             <div className="absolute inset-0 bg-gradient-to-b from-[#fbf6e9]/40 via-transparent to-[#fbf6e9]/50 z-10"></div>
                         </div>
@@ -2605,7 +2694,7 @@
                         <div className="relative z-20 text-center max-w-7xl px-6 pt-12 md:pt-20">
                             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-16 md:-mt-24">
                                 <div className="mb-8 md:mb-10 animate-float drop-shadow-lg">
-                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" />
+                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
 
                                 <div className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-7 py-2.5 rounded-full bg-white/90 border border-stone-200/80 text-stone-600 font-bold mb-6 md:mb-10 shadow-md shadow-stone-200/30 backdrop-blur-md text-base md:text-lg tracking-wide">
@@ -2768,9 +2857,9 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50 pt-32 pb-20"
+                    className="min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50 pt-28 md:pt-32 pb-32 md:pb-20"
                 >
-                    <div className="max-w-4xl mx-auto px-4 md:px-6">
+                    <div className="max-w-4xl mx-auto px-5 md:px-6 lg:px-8">
                         {/* 頁面標題 */}
                         <div className="text-center mb-12">
                             <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 flex items-center justify-center gap-3">
@@ -2787,7 +2876,7 @@
                                     <AlertCircle size={28} className="text-gold-500" />
                                     版權聲明
                                 </h2>
-                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                <div className="space-y-4 text-stone-700 leading-relaxed content-prose">
                                     <p className="font-bold">
                                         本伺服器為<strong className="text-red-600">非營利性質的粉絲私人伺服器</strong>，與原廠公司無任何關聯。
                                     </p>
@@ -2806,7 +2895,7 @@
                                     <CheckCircle size={28} className="text-wind-500" />
                                     服務條款
                                 </h2>
-                                <div className="space-y-6">
+                                <div className="space-y-6 content-prose">
                                     <div>
                                         <h3 className="font-black text-stone-800 text-lg mb-3">1. 帳號使用規範</h3>
                                         <ul className="space-y-2 text-stone-700 ml-6 list-disc">
@@ -2875,7 +2964,7 @@
                                     <ShieldCheck size={28} className="text-fire-500" />
                                     免責聲明
                                 </h2>
-                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                <div className="space-y-4 text-stone-700 leading-relaxed content-prose">
                                     <div>
                                         <h3 className="font-black text-stone-800 text-lg mb-3">1. 服務中斷</h3>
                                         <p>
@@ -2917,7 +3006,7 @@
                                     <Lock size={28} className="text-wind-500" />
                                     隱私權政策
                                 </h2>
-                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                <div className="space-y-4 text-stone-700 leading-relaxed content-prose">
                                     <div>
                                         <h3 className="font-black text-stone-800 text-lg mb-3">資料收集範圍</h3>
                                         <ul className="space-y-2 ml-6 list-disc">
@@ -2952,7 +3041,7 @@
                                     <User size={28} className="text-gold-500" />
                                     年齡限制與家長同意
                                 </h2>
-                                <div className="space-y-4 text-stone-700 leading-relaxed">
+                                <div className="space-y-4 text-stone-700 leading-relaxed content-prose">
                                     <p className="font-bold text-lg">
                                         本服務適用年齡：<strong className="text-gold-600">12 歲以上</strong>
                                     </p>
@@ -3017,7 +3106,7 @@
                     {/* 縮圖：巴哈風格大圖 */}
                     {guide.thumbnail ? (
                         <div className="h-44 md:h-48 bg-stone-100 overflow-hidden relative">
-                            <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
                         </div>
                     ) : (
                         <div className="h-44 md:h-48 bg-gradient-to-br from-stone-100 via-stone-50 to-amber-50 flex items-center justify-center">
@@ -3104,7 +3193,7 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pt-24 md:pt-32 pb-36 md:pb-32 px-4 md:px-6 lg:px-8 min-h-screen bg-stone-50"
+                    className="pt-28 md:pt-32 pb-32 md:pb-32 px-5 md:px-6 lg:px-8 min-h-screen bg-stone-50"
                 >
                     <div className="max-w-4xl mx-auto">
                         {/* 麵包屑 */}
@@ -3118,7 +3207,7 @@
                             {/* 封面圖（巴哈風格） */}
                             {guide.thumbnail && (
                                 <div className="rounded-2xl overflow-hidden shadow-xl aspect-video bg-stone-200">
-                                    <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover" />
+                                    <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                 </div>
                             )}
 
@@ -3210,55 +3299,58 @@
                             <style>{`
                                 .guide-content {
                                     font-size: 1.125rem;
-                                    line-height: 2.2;
+                                    line-height: 1.9;
                                     color: #2d2520;
-                                    letter-spacing: 0.02em;
+                                    letter-spacing: 0.025em;
                                 }
                                 .guide-content p {
-                                    margin-bottom: 2em;
+                                    margin-bottom: 1.6em;
                                     color: #44403c;
                                 }
                                 .guide-content h1, .guide-content h2, .guide-content h3 {
-                                    scroll-margin-top: 6rem;
+                                    scroll-margin-top: 6.5rem;
                                 }
                                 .guide-content h1 {
-                                    font-size: 2.25em;
+                                    font-size: 2rem;
                                     font-weight: 900;
                                     color: #1a1614;
-                                    margin-top: 2.5em;
-                                    margin-bottom: 1.2em;
-                                    border-bottom: 3px solid #fdcb6e;
-                                    padding-bottom: 0.75em;
-                                }
-                                .guide-content h2 {
-                                    font-size: 1.875em;
-                                    font-weight: 800;
-                                    color: #2d2520;
                                     margin-top: 2.25em;
                                     margin-bottom: 1em;
+                                    border-bottom: 3px solid #fdcb6e;
+                                    padding-bottom: 0.6em;
+                                    line-height: 1.3;
+                                }
+                                .guide-content h2 {
+                                    font-size: 1.625rem;
+                                    font-weight: 800;
+                                    color: #2d2520;
+                                    margin-top: 2em;
+                                    margin-bottom: 0.75em;
+                                    line-height: 1.35;
                                 }
                                 .guide-content h3 {
-                                    font-size: 1.5em;
+                                    font-size: 1.35rem;
                                     font-weight: 700;
                                     color: #44403c;
-                                    margin-top: 2em;
-                                    margin-bottom: 1em;
+                                    margin-top: 1.75em;
+                                    margin-bottom: 0.6em;
+                                    line-height: 1.4;
                                 }
                                 .guide-content img {
                                     border-radius: 16px;
                                     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-                                    margin: 3em auto;
+                                    margin: 2em auto;
                                     max-width: 100%;
                                     display: block;
                                 }
                                 .guide-content ul, .guide-content ol {
-                                    margin: 2em 0;
-                                    padding-left: 2.5em;
+                                    margin: 1.5em 0;
+                                    padding-left: 1.75em;
                                 }
                                 .guide-content li {
-                                    margin-bottom: 1em;
+                                    margin-bottom: 0.6em;
                                     color: #44403c;
-                                    line-height: 1.8;
+                                    line-height: 1.85;
                                 }
                                 .guide-content strong {
                                     color: #1a1614;
@@ -3266,7 +3358,7 @@
                                 }
                                 .guide-content .guide-excel-table {
                                     overflow-x: auto;
-                                    margin: 2em 0;
+                                    margin: 1.75em 0;
                                     border-radius: 12px;
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                 }
@@ -3294,17 +3386,19 @@
                                 .guide-content blockquote {
                                     border-left: 5px solid #fdcb6e;
                                     background: #fffbf0;
-                                    padding: 1.5em 2em;
-                                    margin: 2.5em 0;
+                                    padding: 1.25em 1.5em;
+                                    margin: 2em 0;
                                     border-radius: 12px;
                                     color: #57534e;
                                     font-style: italic;
                                 }
                                 @media (max-width: 768px) {
                                     .guide-content {
-                                        font-size: 16px;
-                                        line-height: 2;
+                                        font-size: 1.0625rem;
+                                        line-height: 1.85;
                                         overflow-wrap: break-word;
+                                        padding-left: 1.25rem;
+                                        padding-right: 1.25rem;
                                         word-break: break-word;
                                     }
                                     .guide-content h1 {
@@ -3368,7 +3462,7 @@
                     {/* 縮圖 */}
                     <div className="w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden shrink-0 bg-stone-100 flex-shrink-0">
                         {guide.thumbnail ? (
-                            <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" decoding="async" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-stone-100 to-amber-50">
                                 <span className="text-3xl opacity-50">{catInfo.icon}</span>
@@ -3553,7 +3647,7 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-32 md:pt-44 pb-36 md:pb-24 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
+                    className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
                 >
                     {/* 標題區：巴哈風格、舒適間距 */}
                     <div className="max-w-7xl mx-auto mb-12">
@@ -4391,7 +4485,7 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-28 md:pt-40 pb-24 md:pb-32 px-4 md:px-6 min-h-screen bg-gradient-to-b from-stone-100 via-amber-50/30 to-stone-100 relative overflow-hidden"
+                    className="pt-28 md:pt-40 pb-32 md:pb-32 px-5 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-stone-100 via-amber-50/30 to-stone-100 relative overflow-hidden"
                 >
                     {/* 背景裝飾 */}
                     <div className="absolute inset-0 pointer-events-none opacity-[0.03]" aria-hidden="true">
@@ -4632,7 +4726,7 @@
             }, []);
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-36 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
@@ -4671,7 +4765,7 @@
                                             <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-wood-600 transition-colors">
                                                 {event.title}
                                             </h3>
-                                            <div className="text-stone-600 text-base sm:text-lg leading-loose font-medium prose prose-stone max-w-none overflow-x-auto break-words event-content" style={{ WebkitOverflowScrolling: 'touch' }} dangerouslySetInnerHTML={{ __html: event.content || '' }} />
+                                            <div className="text-stone-600 text-base sm:text-lg leading-relaxed font-medium content-prose max-w-none overflow-x-auto break-words event-content" style={{ WebkitOverflowScrolling: 'touch' }} dangerouslySetInnerHTML={{ __html: event.content || '' }} />
                                         </div>
                                     </div>
                                 );
@@ -4935,14 +5029,14 @@
 
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="驗證登入中..." />
                     </motion.div>
                 );
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
                     
                     {/* 免責聲明提示 */}
@@ -5424,7 +5518,7 @@
             const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
 
             return (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-32 md:pt-44 pb-28 md:pb-24 px-4 md:px-6 min-h-screen">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto w-full space-y-8">
                         <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
                         
@@ -9678,7 +9772,8 @@
             }, []);
 
             return (
-                <div className="min-h-screen flex flex-col font-sans pb-20 md:pb-0 text-stone-800">
+                <div className="min-h-screen flex flex-col font-sans pb-20 md:pb-0 text-stone-800 relative">
+                    <a href="#main-content" className="skip-link">跳過至主內容</a>
                     <AnimatePresence>
                         {isLoading && <LoadingScreen key="loader" />}
                     </AnimatePresence>
@@ -9701,28 +9796,28 @@
 
                     <ScrollToTop />
                     <PageTitle />
-                    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2.5 bg-white/95 backdrop-blur-xl shadow-md shadow-stone-200/30 border-b border-stone-100' : 'py-5 bg-transparent'}`}>
+                    <nav className={`fixed top-0 w-full z-50 py-3 ${isScrolled ? 'neu-nav-bg' : ''}`}>
                         <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
-                            <Link to="/" className="flex items-center gap-4 group min-h-[44px] min-w-[44px] md:min-w-0">
-                                <div className="h-10 md:h-12 w-auto overflow-visible group-hover:scale-105 transition-transform duration-200 drop-shadow-sm">
+                            <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0">
+                                <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-sm">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
                                 </div>
                             </Link>
 
-                            <div className={`hidden lg:flex items-center gap-1 px-2 py-1.5 rounded-2xl transition-all duration-300 ${isScrolled ? 'bg-stone-100/60' : 'bg-white/80 backdrop-blur-lg border border-white/60 shadow-lg shadow-stone-200/20'}`}>
+                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl neu-raised">
                                 {['部落首頁', '活動攻略', '金幣贊助', '官方客服'].map((label, i) => {
                                     const path = i === 0 ? '/' : i === 1 ? '/guides' : i === 2 ? '/recharge' : '/support';
                                     const isActive = location.pathname === path;
                                     return (
                                         <Link key={path} to={path} className="rounded-xl">
-                                            <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${isActive ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700 hover:bg-white/60'}`}>
+                                            <div className={`px-4 py-2.5 rounded-xl text-sm font-bold ${isActive ? 'neu-item-active text-stone-800' : 'neu-item text-stone-600'}`}>
                                                 {label}
                                             </div>
                                         </Link>
                                     );
                                 })}
                                 <Link key="events" to="/events" className="rounded-xl">
-                                    <div className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${location.pathname === '/events' ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700 hover:bg-white/60'}`}>
+                                    <div className={`px-4 py-2.5 rounded-xl text-sm font-bold ${location.pathname === '/events' ? 'neu-item-active text-stone-800' : 'neu-item text-stone-600'}`}>
                                         最新活動
                                     </div>
                                 </Link>
@@ -9731,23 +9826,21 @@
                             <div className="flex items-center gap-2 md:gap-3">
                                 <MusicPlayer />
                                 
-                                {/* 會員/登入按鈕 */}
                                 {user ? (
-                                    <Link to="/member" className="hidden lg:flex items-center gap-2 px-3 py-2 text-stone-700 hover:text-stone-900 transition-colors bg-white/80 hover:bg-stone-50 border border-stone-200 rounded-xl shadow-sm font-bold text-sm" title="會員中心">
+                                    <Link to="/member" className="hidden lg:flex items-center gap-2 px-3 py-2 text-stone-700 neu-item rounded-xl font-bold text-sm" title="會員中心">
                                         <User className="w-4 h-4" />
                                         <span className="hidden xl:inline">會員中心</span>
                                     </Link>
                                 ) : (
-                                    <Link to="/auth" className="hidden lg:flex items-center gap-2 px-3 py-2 text-white bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 transition-all rounded-xl shadow-md font-bold text-sm" title="登入/註冊">
+                                    <Link to="/auth" className="hidden lg:flex items-center gap-2 px-3 py-2 text-white rounded-xl font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, #d4a84b 0%, #c4953a 100%)', boxShadow: '6px 6px 12px rgba(139,90,43,0.3), -2px -2px 6px rgba(255,255,255,0.2)' }} title="登入/註冊">
                                         <User className="w-4 h-4" />
                                         <span className="hidden xl:inline">登入</span>
                                     </Link>
                                 )}
                                 
-                                {/* 管理員專用：後台管理按鈕（最右邊） */}
                                 {(user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'super_admin') && (
-                                    <Link to="/admin" className="hidden lg:flex items-center gap-2 px-3 py-2 transition-colors rounded-xl shadow-sm font-bold text-sm" title="後台管理">
-                                        <div className={`flex items-center gap-2 ${location.pathname === '/admin' ? 'bg-gradient-to-r from-gold-500 to-orange-500 text-white px-3 py-2 rounded-xl' : 'text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-2 rounded-xl'}`}>
+                                    <Link to="/admin" className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-sm" title="後台管理">
+                                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${location.pathname === '/admin' ? 'text-white' : 'neu-item text-orange-700'}`} style={location.pathname === '/admin' ? { background: 'linear-gradient(135deg, #d4a84b, #c47819)', boxShadow: 'inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.1)' } : {}}>
                                             <Settings className="w-4 h-4" />
                                             <span className="hidden xl:inline">後台管理</span>
                                         </div>
@@ -9759,7 +9852,7 @@
 
                     <MobileBottomNav />
 
-                    <div className="flex-grow">
+                    <main id="main-content" className="flex-grow" tabIndex={-1}>
                         <AnimatePresence mode="wait">
                             <Routes location={location} key={location.pathname}>
                                 <Route path="/" element={<HomePage />} />
@@ -9776,7 +9869,7 @@
                                 <Route path="*" element={<NotFoundPage />} />
                             </Routes>
                         </AnimatePresence>
-                    </div>
+                    </main>
 
                     <footer className="bg-stone-900 py-12 md:py-16 px-6 border-t-4 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
                         <div className="max-w-7xl mx-auto space-y-8">
