@@ -192,17 +192,22 @@
             letter-spacing: 0.02em;
             font-feature-settings: "palt" 1;
         }
-        /* 閱讀區塊：適合長文寬度與行高（電腦／手機通用） */
+        /* 閱讀區塊：適合長文寬度與行高（手機／平板／電腦） */
         .reading-content {
             max-width: 42rem;
             line-height: 1.8;
         }
-        @media (min-width: 768px) {
+        @media (max-width: 767px) {
+            body { line-height: 1.75; letter-spacing: 0.025em; font-size: 16px; }
+            .reading-content { max-width: 100%; padding-left: 0.5rem; padding-right: 0.5rem; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            body { font-size: 17px; line-height: 1.8; }
+            .reading-content { max-width: 40rem; margin-left: auto; margin-right: auto; }
+        }
+        @media (min-width: 1024px) {
             body { font-size: 17px; }
             .reading-content { max-width: 44rem; }
-        }
-        @media (max-width: 767px) {
-            body { line-height: 1.75; letter-spacing: 0.025em; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -261,6 +266,13 @@
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
+        /* 手機／平板：主內容區圓角與閱讀舒適 */
+        @media (max-width: 1023px) {
+            .stone-panel { border-radius: 20px; }
+        }
+        @media (max-width: 767px) {
+            .stone-panel { border-radius: 18px; }
+        }
         /* 長文閱讀觀感：段落與標題間距 */
         .content-prose p { margin-bottom: 1.25em; }
         .content-prose p:last-child { margin-bottom: 0; }
@@ -268,10 +280,19 @@
         .content-prose h1:first-child, .content-prose h2:first-child, .content-prose h3:first-child { margin-top: 0; }
         @media (max-width: 767px) {
             .content-prose p { margin-bottom: 1.5em; }
+            .content-prose { font-size: 1rem; line-height: 1.8; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .content-prose p { margin-bottom: 1.35em; }
+            .content-prose { max-width: 40rem; margin-left: auto; margin-right: auto; }
         }
         @media (max-width: 768px) {
             .event-content img { max-width: 100%; height: auto; }
             .event-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+        .event-content { -webkit-overflow-scrolling: touch; }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .event-content { font-size: 1.0625rem; line-height: 1.85; max-width: 40rem; margin-left: auto; margin-right: auto; }
         }
         
         ::selection {
@@ -1742,7 +1763,7 @@
             };
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     {/* 服務條款彈窗 */}
                     {showTermsModal && (
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-sm" onClick={() => setShowTermsModal(false)}>
@@ -2310,14 +2331,14 @@
             
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="載入中..." />
                     </motion.div>
                 );
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto">
                         <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
                         
@@ -2859,7 +2880,7 @@
                     exit={{ opacity: 0 }}
                     className="min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50 pt-28 md:pt-32 pb-32 md:pb-20"
                 >
-                    <div className="max-w-4xl mx-auto px-5 md:px-6 lg:px-8">
+                    <div className="max-w-4xl mx-auto px-5 sm:px-6 md:px-6 lg:px-8">
                         {/* 頁面標題 */}
                         <div className="text-center mb-12">
                             <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 flex items-center justify-center gap-3">
@@ -3308,7 +3329,10 @@
                                     color: #44403c;
                                 }
                                 .guide-content h1, .guide-content h2, .guide-content h3 {
-                                    scroll-margin-top: 6.5rem;
+                                    scroll-margin-top: 5.5rem;
+                                }
+                                @media (min-width: 768px) {
+                                    .guide-content h1, .guide-content h2, .guide-content h3 { scroll-margin-top: 6.5rem; }
                                 }
                                 .guide-content h1 {
                                     font-size: 2rem;
@@ -3392,33 +3416,32 @@
                                     color: #57534e;
                                     font-style: italic;
                                 }
-                                @media (max-width: 768px) {
+                                @media (max-width: 767px) {
                                     .guide-content {
-                                        font-size: 1.0625rem;
+                                        font-size: 1rem;
                                         line-height: 1.85;
                                         overflow-wrap: break-word;
-                                        padding-left: 1.25rem;
-                                        padding-right: 1.25rem;
+                                        padding-left: 1rem;
+                                        padding-right: 1rem;
                                         word-break: break-word;
                                     }
-                                    .guide-content h1 {
-                                        font-size: 1.75em;
-                                        margin-top: 2em;
+                                    .guide-content h1 { font-size: 1.65em; margin-top: 1.75em; }
+                                    .guide-content h2 { font-size: 1.4em; margin-top: 1.5em; }
+                                    .guide-content h3 { font-size: 1.2em; margin-top: 1.35em; }
+                                    .guide-content img { margin: 1.5em auto; max-width: 100%; height: auto; }
+                                    .guide-content ul, .guide-content ol { padding-left: 1.5em; margin: 1.25em 0; }
+                                    .guide-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                                }
+                                @media (min-width: 768px) and (max-width: 1023px) {
+                                    .guide-content {
+                                        font-size: 1.125rem;
+                                        line-height: 1.9;
+                                        padding-left: 1.5rem;
+                                        padding-right: 1.5rem;
                                     }
-                                    .guide-content h2 {
-                                        font-size: 1.5em;
-                                        margin-top: 1.75em;
-                                    }
-                                    .guide-content img {
-                                        margin: 2em auto;
-                                        max-width: 100%;
-                                        height: auto;
-                                    }
-                                    .guide-content table {
-                                        display: block;
-                                        overflow-x: auto;
-                                        -webkit-overflow-scrolling: touch;
-                                    }
+                                    .guide-content h1 { font-size: 1.85em; }
+                                    .guide-content h2 { font-size: 1.5em; }
+                                    .guide-content h3 { font-size: 1.3em; }
                                 }
                             `}</style>
 
@@ -3647,7 +3670,7 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
+                    className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50"
                 >
                     {/* 標題區：巴哈風格、舒適間距 */}
                     <div className="max-w-7xl mx-auto mb-12">
@@ -4726,7 +4749,7 @@
             }, []);
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
@@ -5029,14 +5052,14 @@
 
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="驗證登入中..." />
                     </motion.div>
                 );
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
                     
                     {/* 免責聲明提示 */}
@@ -5518,7 +5541,7 @@
             const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
 
             return (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto w-full space-y-8">
                         <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
                         
