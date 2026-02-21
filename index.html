@@ -30,6 +30,18 @@
     <meta name="twitter:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定">
     <meta name="twitter:image" content="https://sodasa.org/images/og-image.jpg">
     
+    <!-- Meta Pixel（Facebook/Instagram 廣告用）：請到 Meta 事件管理工具取得 Pixel ID，替換下方的 YOUR_PIXEL_ID -->
+    <script>
+        var META_PIXEL_ID = '5730561630332365';
+        if (META_PIXEL_ID && META_PIXEL_ID !== 'YOUR_PIXEL_ID') {
+            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', META_PIXEL_ID);
+            fbq('track', 'PageView');
+        }
+        window.sodasaFbq = function(ev, opts) { try { if (typeof fbq !== 'undefined') fbq('track', ev, opts || {}); } catch(e) {} };
+    </script>
+    <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=5730561630332365&ev=PageView&noscript=1"/></noscript>
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#fdcb6e">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9793,6 +9805,14 @@
                     }
                 };
             }, []);
+
+            useEffect(() => {
+                if (typeof window.sodasaFbq !== 'function') return;
+                const p = location.pathname;
+                const names = { '/recharge': '金幣贊助', '/download': '下載遊戲', '/auth': '登入註冊', '/guides': '活動攻略', '/events': '最新活動', '/support': '官方客服' };
+                const name = names[p] || (p.startsWith('/guides/') ? '攻略內文' : null);
+                if (name) window.sodasaFbq('ViewContent', { content_name: name });
+            }, [location.pathname]);
 
             return (
                 <div className="min-h-screen flex flex-col font-sans pb-20 md:pb-0 text-stone-800 relative">
