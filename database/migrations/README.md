@@ -34,6 +34,8 @@
 | 042 | `042_events_show_in_popup.sql` | 顯示於彈窗 (`show_in_popup`) |
 | 043 | `043_performance_indexes.sql` | 效能索引 |
 | 044 | `044_announcements_banner.sql` | 公告橫幅系統 (`announcements` 表) |
+| 045 | `045_update_user_profile.sql` | 註冊用戶編輯：資料、角色、遊戲特殊編號 (`update_user_profile` + `get_all_users` 擴充) |
+| 046 | `046_five_role_special_ids.sql` | 五個角色各自特殊編號：`game_special_ids` 陣列、列表 5 欄、編輯 Modal 改版 |
 
 ---
 

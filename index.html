@@ -65,6 +65,8 @@
     <link rel="preconnect" href="https://pheoswycciabslxpsjyw.supabase.co" crossorigin>
     <link rel="dns-prefetch" href="https://pheoswycciabslxpsjyw.supabase.co">
     <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" as="script">
+    <link rel="preload" href="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js" as="script">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -673,6 +675,23 @@
             EVENTS: 'events',
             PLAYLIST: 'playlist',
             ANNOUNCEMENTS: 'announcements'
+        };
+
+        // VIP 等級：依「已完成」儲值累積金額自動判定（台幣）
+        const VIP_TIERS = [
+            { min: 20000, name: '宗師VIP', color: 'text-purple-600', bg: 'bg-purple-100' },
+            { min: 15000, name: '大師VIP', color: 'text-amber-700', bg: 'bg-amber-100' },
+            { min: 10000, name: '鑽石VIP', color: 'text-cyan-600', bg: 'bg-cyan-100' },
+            { min: 5000, name: '黃金VIP', color: 'text-gold-600', bg: 'bg-gold-100' },
+            { min: 1000, name: '白銀VIP', color: 'text-stone-600', bg: 'bg-stone-100' },
+        ];
+        const getVipTier = (cumulativeAmount) => {
+            const n = Number(cumulativeAmount) || 0;
+            const tier = VIP_TIERS.find(t => n >= t.min);
+            return tier || null;
+        };
+        const getCumulativeFromDonations = (donations) => {
+            return (donations || []).filter(d => d.status === 'completed').reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
         };
 
         const BANNER_ICONS = {
@@ -2204,13 +2223,14 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 載入用戶的贊助紀錄（從 donations 表）- 背景載入
+                    // 載入用戶的贊助紀錄（從 donations 表，限制筆數以加快載入）
                     try {
                         const { data: donations, error } = await supabase
                             .from('donations')
-                            .select('*')
+                            .select('id, order_number, amount, coins, plan_name, game_account, payment_method, status, created_at, processed_at, notes')
                             .eq('user_id', currentUser.id)
-                            .order('created_at', { ascending: false });
+                            .order('created_at', { ascending: false })
+                            .limit(200);
                         
                         if (error) {
                             console.error('載入贊助紀錄失敗:', error);
@@ -2542,9 +2562,32 @@
                             </div>
                         </div>
                         
+                        {/* 累積儲值與 VIP 等級 */}
+                        {(() => {
+                            const cumulative = getCumulativeFromDonations(sponsorships);
+                            const vip = getVipTier(cumulative);
+                            return (
+                                <div className="stone-panel p-6 md:p-8 mb-6">
+                                    <h2 className="text-2xl font-black text-stone-800 mb-4">儲值累積與 VIP</h2>
+                                    <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-stone-500 font-bold">累積儲值（已完成）：</span>
+                                            <span className="text-2xl font-black text-gold-600">NT$ {cumulative.toLocaleString()}</span>
+                                        </div>
+                                        {vip ? (
+                                            <span className={`px-4 py-2 rounded-xl font-black ${vip.bg} ${vip.color}`}>{vip.name}</span>
+                                        ) : (
+                                            <span className="px-4 py-2 rounded-xl font-bold bg-stone-100 text-stone-500">尚未達 VIP 門檻（累積滿 NT$1,000 為白銀VIP）</span>
+                                        )}
+                                    </div>
+                                    <p className="text-stone-500 text-sm mt-3">白銀 NT$1,000 → 黃金 NT$5,000 → 鑽石 NT$10,000 → 大師 NT$15,000 → 宗師 NT$20,000</p>
+                                </div>
+                            );
+                        })()}
+
                         {/* 贊助紀錄 */}
                         <div className="stone-panel p-6 md:p-8">
-                            <h2 className="text-2xl font-black text-stone-800 mb-6">我的贊助紀錄</h2>
+                            <h2 className="text-2xl font-black text-stone-800 mb-6">我的儲值紀錄</h2>
                             
                             {sponsorships.length === 0 ? (
                                 <div className="text-center py-16 text-stone-400">
@@ -3577,7 +3620,8 @@
                                 .select('id, title, thumbnail, category, author_name, views, likes, publish_date, created_at, is_pinned')
                                 .eq('status', 'published')
                                 .order('is_pinned', { ascending: false })
-                                .order('publish_date', { ascending: false });
+                                .order('publish_date', { ascending: false })
+                                .limit(100);
 
                             if (category !== 'all') {
                                 query = query.eq('category', category);
@@ -5757,6 +5801,8 @@
             const [playlist, setPlaylist] = useState([]);
             const [adminUsers, setAdminUsers] = useState([]);
             const [allUsers, setAllUsers] = useState([]);
+            const [userSortBy, setUserSortBy] = useState('created_at');
+            const [userSortDir, setUserSortDir] = useState('desc');
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [currentUser, setCurrentUser] = useState(null);
             const [supabaseUser, setSupabaseUser] = useState(null);
@@ -5971,6 +6017,18 @@
             const [editingAdmin, setEditingAdmin] = useState(null);
             const [newAdminEmail, setNewAdminEmail] = useState('');
             const [newAdminRole, setNewAdminRole] = useState('admin');
+            
+            // 註冊用戶編輯（資料、角色、遊戲特殊編號）
+            const [editingUser, setEditingUser] = useState(null);
+            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''] });
+            // 註冊用戶列表：哪一行的「操作」下拉選單正在開啟（方便手殘黨、版面不亂）
+            const [openUserActionId, setOpenUserActionId] = useState(null);
+            useEffect(() => {
+                if (!openUserActionId) return;
+                const close = (e) => { if (!e.target.closest('[data-action-menu]')) setOpenUserActionId(null); };
+                document.addEventListener('click', close);
+                return () => document.removeEventListener('click', close);
+            }, [openUserActionId]);
             
             // 操作日誌輔助函數
             const logAction = async (action, resourceType, resourceId, description, changes = null) => {
@@ -6227,14 +6285,15 @@
                 }
             };
 
-            // 載入所有資料 + donations 即時同步（含手機版）
+            // 載入所有資料 + donations 即時同步（含手機版）；donations 先載入最近筆數以加快首屏
+            const DONATIONS_INITIAL_LIMIT = 800;
             useEffect(() => {
                 if (!isLoggedIn) return;
 
                 const loadData = async () => {
                     const [donationsRes, loadedEvents, loadedPlaylist] = await Promise.all([
-                        supabase.from('donations').select('*').order('created_at', { ascending: false }),
-                        getSupabaseData(DB_TABLES.EVENTS),
+                        supabase.from('donations').select('*').order('created_at', { ascending: false }).limit(DONATIONS_INITIAL_LIMIT),
+                        getSupabaseData(DB_TABLES.EVENTS, { limit: 300 }),
                         getSupabaseData(DB_TABLES.PLAYLIST)
                     ]);
                     setData(donationsRes.data || []);
@@ -6247,12 +6306,14 @@
                 return () => window.removeEventListener('storage-update', loadData);
             }, [isLoggedIn]);
 
-            // 手動重新載入 donations（供手機版「重新整理」按鈕使用）
-            const refreshDonations = async () => {
+            // 手動重新載入 donations（供手機版「重新整理」按鈕使用；可載入全部）
+            const refreshDonations = async (loadAll = false) => {
                 try {
-                    const { data: loaded } = await supabase.from('donations').select('*').order('created_at', { ascending: false });
+                    let q = supabase.from('donations').select('*').order('created_at', { ascending: false });
+                    if (!loadAll) q = q.limit(DONATIONS_INITIAL_LIMIT);
+                    const { data: loaded } = await q;
                     setData(loaded || []);
-                    showToast('已更新', 'success');
+                    showToast(loadAll ? '已載入全部' : '已更新', 'success');
                 } catch (e) {
                     showToast('更新失敗', 'error');
                 }
@@ -7580,6 +7641,59 @@
             const pendingCount = data.filter(d => d.status === 'pending').length;
             const completedCount = data.filter(d => d.status === 'completed').length;
             
+            // 依 user_id 彙總：累積儲值（僅已完成）、VIP、儲值到哪些遊戲帳號（供註冊用戶與贊助管理使用）
+            const userDonationStats = useMemo(() => {
+                const byUser = {};
+                data.forEach(d => {
+                    const uid = d.user_id || '';
+                    if (!uid) return;
+                    if (!byUser[uid]) byUser[uid] = { cumulative: 0, game_accounts: new Set() };
+                    if (d.status === 'completed') {
+                        byUser[uid].cumulative += Number(d.amount) || 0;
+                        if (d.game_account && String(d.game_account).trim()) byUser[uid].game_accounts.add(String(d.game_account).trim());
+                    }
+                });
+                return Object.fromEntries(
+                    Object.entries(byUser).map(([uid, u]) => [
+                        uid,
+                        { cumulative: u.cumulative, vip: getVipTier(u.cumulative), game_accounts: [...u.game_accounts].filter(Boolean) }
+                    ])
+                );
+            }, [data]);
+            
+            // 註冊用戶列表排序（依欄位與升降序）
+            const sortedAllUsers = useMemo(() => {
+                const list = [...allUsers];
+                const getCumulative = (u) => (userDonationStats[u.id]?.cumulative ?? u.total_amount ?? 0);
+                const roleOrder = (r) => (r === 'super_admin' ? 3 : r === 'admin' ? 2 : 1);
+                const dir = userSortDir === 'asc' ? 1 : -1;
+                list.sort((a, b) => {
+                    let va, vb;
+                    if (userSortBy === 'created_at') {
+                        va = new Date(a.created_at).getTime();
+                        vb = new Date(b.created_at).getTime();
+                        return dir * (va - vb);
+                    }
+                    if (userSortBy === 'email') {
+                        va = (a.email || '').toLowerCase();
+                        vb = (b.email || '').toLowerCase();
+                        return dir * (va < vb ? -1 : va > vb ? 1 : 0);
+                    }
+                    if (userSortBy === 'cumulative') {
+                        va = getCumulative(a);
+                        vb = getCumulative(b);
+                        return dir * (va - vb);
+                    }
+                    if (userSortBy === 'role') {
+                        va = roleOrder(a.role);
+                        vb = roleOrder(b.role);
+                        return dir * (va - vb);
+                    }
+                    return 0;
+                });
+                return list;
+            }, [allUsers, userSortBy, userSortDir, userDonationStats]);
+            
             // 判斷是否為超級管理員
             const isSuperAdmin = supabaseUser?.user_metadata?.role === 'super_admin';
             
@@ -7761,9 +7875,12 @@
                             
                             {currentTab === 'donations' && (
                                 <div className="flex gap-2 w-full lg:w-auto flex-wrap">
-                                    <button onClick={refreshDonations} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-amber-600/40 hover:bg-amber-500/50 text-amber-100 border-amber-500/40" title="重新載入資料（手機版若不同步請點此）">
+                                    <button onClick={() => refreshDonations(false)} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-amber-600/40 hover:bg-amber-500/50 text-amber-100 border-amber-500/40" title="重新載入最近 800 筆">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                         <span className="md:inline">重新整理</span>
+                                    </button>
+                                    <button onClick={() => refreshDonations(true)} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/40 hover:bg-stone-500/50 text-stone-100 border-stone-500/40" title="載入全部贊助紀錄（筆數多時較慢）">
+                                        <span className="md:inline">載入全部</span>
                                     </button>
                                     {selectedIds.length > 0 && (
                                         <button 
@@ -8843,8 +8960,8 @@
                                         <p className="text-stone-400">共 {allUsers.length} 位註冊用戶 · 客人資源完整呈顯，累計儲值/金幣由贊助紀錄自動同步</p>
                                     </div>
                                 </div>
-                                <div className="bg-water-900/30 border border-water-700/50 rounded-xl px-4 py-3 mb-4">
-                                    <p className="text-water-200 text-sm font-bold">💡 註冊用戶的累計儲值、累計金幣由「贊助管理」的訂單自動計算並同步。管理員在贊助管理編輯任一訂單後，此處數據會自動更新。</p>
+                                <div className="bg-stone-800/60 border border-stone-600 rounded-xl px-5 py-4 mb-4">
+                                    <p className="text-stone-300 text-sm leading-relaxed">💡 累積儲值、VIP 等級、儲值到角色均由「贊助管理」的<strong className="text-stone-200">已完成</strong>訂單自動計算。金幣由訂單同步。切到贊助管理後再回此頁可重新整理數據。</p>
                                 </div>
                                 
                                 {/* 統計卡片 */}
@@ -8906,6 +9023,22 @@
                                     </div>
                                 </div>
                                 
+                                {/* 排序 */}
+                                {allUsers.length > 0 && (
+                                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                                        <span className="text-stone-400 text-sm font-bold">排序：</span>
+                                        <select value={userSortBy} onChange={(e) => setUserSortBy(e.target.value)} className="bg-stone-800 border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-amber-500 outline-none cursor-pointer">
+                                            <option value="created_at">註冊時間</option>
+                                            <option value="email">Email</option>
+                                            <option value="cumulative">累積儲值</option>
+                                            <option value="role">角色</option>
+                                        </select>
+                                        <button type="button" onClick={() => setUserSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-3 py-2 rounded-lg border border-stone-600 bg-stone-800 text-stone-200 text-sm font-bold hover:bg-stone-700 transition-colors" title={userSortDir === 'desc' ? '降序 → 改為升序' : '升序 → 改為降序'}>
+                                            {userSortDir === 'desc' ? '↓ 降序' : '↑ 升序'}
+                                        </button>
+                                    </div>
+                                )}
+                                
                                 {/* 用戶列表 */}
                                 {allUsers.length === 0 ? (
                                     <div className="text-center py-12 bg-stone-800/50 rounded-2xl border border-stone-700">
@@ -8914,63 +9047,86 @@
                                     </div>
                                 ) : (
                                     <>
-                                        {/* 桌面版：表格 */}
-                                        <div className="hidden lg:block bg-stone-800/50 rounded-2xl border border-stone-700 overflow-hidden">
+                                        <p className="text-stone-400 text-sm mb-4 leading-relaxed">管理員可協助編輯顯示名稱、權限與遊戲角色編號；變更權限前會再次確認。</p>
+                                        {/* 桌面版：表格（加大間距、字級與對比，閱讀更舒服） */}
+                                        <div className="hidden lg:block bg-stone-800/50 rounded-2xl border border-stone-600 overflow-hidden">
                                             <div className="overflow-x-auto">
                                                 <table className="w-full">
-                                                <thead className="bg-stone-900/50">
-                                                    <tr className="border-b border-stone-700">
-                                                        <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">Email</th>
-                                                        <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">角色</th>
-                                                        <th className="text-right px-6 py-4 text-stone-400 font-bold text-sm">累計儲值</th>
-                                                        <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">註冊時間</th>
-                                                        <th className="text-left px-6 py-4 text-stone-400 font-bold text-sm">用戶 ID</th>
-                                                        <th className="text-center px-6 py-4 text-stone-400 font-bold text-sm">操作</th>
+                                                <thead className="bg-stone-900/70">
+                                                    <tr className="border-b-2 border-stone-600">
+                                                        <th className="text-left px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">Email</th>
+                                                        <th className="text-left px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">角色</th>
+                                                        <th className="text-right px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">累積儲值 / VIP</th>
+                                                        <th className="text-left px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">儲值到角色</th>
+                                                        <th className="text-left px-4 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">遊戲角色編號 1～5</th>
+                                                        <th className="text-left px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">註冊時間</th>
+                                                        <th className="text-left px-5 py-4 text-stone-300 font-bold text-sm uppercase tracking-wide">用戶 ID</th>
+                                                        <th className="text-center px-4 py-4 text-stone-300 font-bold text-sm w-28">操作</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    {allUsers.map((user, idx) => (
-                                                        <tr key={user.id} className={`border-b border-stone-700/50 hover:bg-stone-700/30 transition-colors ${idx % 2 === 0 ? 'bg-stone-900/20' : ''}`}>
-                                                            <td className="px-6 py-4">
+                                                <tbody className="divide-y divide-stone-700/60">
+                                                    {sortedAllUsers.map((user, idx) => {
+                                                        const stats = userDonationStats[user.id];
+                                                        const cumulative = stats ? stats.cumulative : (user.total_amount ?? 0);
+                                                        const vip = stats?.vip;
+                                                        const gameAccounts = stats?.game_accounts || [];
+                                                        return (
+                                                        <tr key={user.id} className={`hover:bg-stone-700/20 transition-colors ${idx % 2 === 0 ? 'bg-stone-900/10' : 'bg-stone-800/30'}`}>
+                                                            <td className="px-5 py-5">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-sm">
+                                                                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-base flex-shrink-0">
                                                                         {(user.email || '?')[0].toUpperCase()}
                                                                     </div>
-                                                                    <span className="text-white font-medium">{user.email}</span>
+                                                                    <span className="text-stone-100 font-medium text-[15px] leading-snug break-all">{user.email}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-5 py-5">
                                                                 {user.role === 'super_admin' ? (
-                                                                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                                                    <span className="inline-block px-3 py-1.5 text-sm font-bold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                                                                         超級管理員
                                                                     </span>
                                                                 ) : user.role === 'admin' ? (
-                                                                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-gold-500/20 text-gold-400 border border-gold-500/30">
+                                                                    <span className="inline-block px-3 py-1.5 text-sm font-bold rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30">
                                                                         管理員
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-stone-700 text-stone-400">
+                                                                    <span className="inline-block px-3 py-1.5 text-sm font-bold rounded-full bg-stone-700/80 text-stone-300">
                                                                         一般玩家
                                                                     </span>
                                                                 )}
                                                             </td>
-                                                            <td className="px-6 py-4 text-right">
-                                                                <div className="flex flex-col items-end gap-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-gold-400 font-black text-lg">
-                                                                            {user.total_amount?.toLocaleString() || '0'}
-                                                                        </span>
-                                                                        <span className="text-stone-400 text-xs">元</span>
+                                                            <td className="px-5 py-5 text-right">
+                                                                <div className="flex flex-col items-end gap-1.5">
+                                                                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                                                                        <span className="text-gold-400 font-black text-lg">{Number(cumulative).toLocaleString()}</span>
+                                                                        <span className="text-stone-400 text-sm">元</span>
+                                                                        {vip && <span className={`px-2.5 py-1 rounded-lg text-sm font-bold ${vip.bg} ${vip.color}`}>{vip.name}</span>}
                                                                     </div>
-                                                                    <div className="flex items-center gap-1">
-                                                                        <Coins size={14} className="text-gold-500" />
-                                                                        <span className="text-gold-500 font-bold text-sm">
-                                                                            {user.total_coins?.toLocaleString() || '0'}
-                                                                        </span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Coins size={16} className="text-gold-500 flex-shrink-0" />
+                                                                        <span className="text-gold-500 font-bold text-sm">{user.total_coins?.toLocaleString() || '0'} 金幣</span>
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4 text-stone-300 text-sm">
+                                                            <td className="px-5 py-5">
+                                                                {gameAccounts.length > 0 ? (
+                                                                    <div className="flex flex-wrap gap-1.5 max-w-[220px]">
+                                                                        {gameAccounts.map((acc, i) => (
+                                                                            <span key={i} className="inline-block px-2.5 py-1 bg-stone-700/80 text-stone-200 text-sm font-medium rounded-md truncate max-w-[120px]" title={acc}>{acc}</span>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-stone-500 text-sm">—</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-5 max-w-[240px]">
+                                                                <div className="text-stone-200 text-sm font-mono leading-relaxed space-y-0.5">
+                                                                    {[1,2,3,4,5].map(n => (
+                                                                        <div key={n} className="flex gap-2"><span className="text-stone-500 shrink-0">角色{n}</span><span>{user['game_special_id_'+n] || '—'}</span></div>
+                                                                    ))}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-5 py-5 text-stone-200 text-sm whitespace-nowrap">
                                                                 {new Date(user.created_at).toLocaleString('zh-TW', {
                                                                     year: 'numeric',
                                                                     month: '2-digit',
@@ -8979,194 +9135,70 @@
                                                                     minute: '2-digit'
                                                                 })}
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <code className="text-xs text-stone-400 bg-stone-900 px-2 py-1 rounded font-mono">
-                                                                    {user.id.split('-')[0]}...
+                                                            <td className="px-5 py-5">
+                                                                <code className="text-sm text-stone-400 bg-stone-900/80 px-2 py-1.5 rounded font-mono">
+                                                                    {user.id.split('-')[0]}…
                                                                 </code>
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex items-center justify-center gap-2 flex-wrap">
+                                                            <td className="px-4 py-5 text-center relative align-middle">
+                                                                <div className="relative inline-block" data-action-menu>
                                                                     <button
-                                                                        onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); }}
-                                                                        className="px-3 py-1.5 bg-water-600/20 hover:bg-water-600/30 text-water-400 text-xs font-bold rounded-lg transition-colors border border-water-500/30"
-                                                                        title="查看該用戶的贊助紀錄"
+                                                                        type="button"
+                                                                        onClick={(e) => { e.stopPropagation(); setOpenUserActionId(openUserActionId === user.id ? null : user.id); }}
+                                                                        className="min-h-[44px] min-w-[100px] px-4 py-2.5 bg-stone-600 hover:bg-stone-500 text-stone-100 text-sm font-bold rounded-xl border border-stone-500/50 transition-colors flex items-center justify-center gap-1.5 mx-auto"
+                                                                        title="選擇操作（編輯、查看贊助、變更權限）"
                                                                     >
-                                                                        查看贊助
+                                                                        操作 <span className="text-xs opacity-80">▼</span>
                                                                     </button>
-                                                                    {user.id === supabaseUser?.id ? (
-                                                                        <span className="text-stone-500 text-xs">（本人）</span>
-                                                                    ) : user.role === 'super_admin' ? (
-                                                                        <button
-                                                                            onClick={async () => {
-                                                                                showConfirm(
-                                                                                    '移除超管權限',
-                                                                                    `確定要將「${user.email}」改為一般管理員嗎？`,
-                                                                                    async () => {
-                                                                                        try {
-                                                                                            const { error } = await supabase.rpc('update_user_role', {
-                                                                                                target_user_id: user.id,
-                                                                                                new_role: 'admin'
-                                                                                            });
-                                                                                            if (error) throw error;
-                                                                                            showToast('已降級為管理員', 'success');
-                                                                                            // 重新載入列表
-                                                                                            const { data } = await supabase.rpc('get_all_users');
-                                                                                            setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-                                                                                            hideConfirm();
-                                                                                        } catch (err) {
-                                                                                            console.error('更新失敗:', err);
-                                                                                            showToast('更新失敗', 'error');
-                                                                                        }
-                                                                                    }
-                                                                                );
-                                                                            }}
-                                                                            className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30"
-                                                                        >
-                                                                            降為管理員
-                                                                        </button>
-                                                                    ) : user.role === 'admin' ? (
-                                                                        <>
-                                                                            <button
-                                                                                onClick={async () => {
-                                                                                    showConfirm(
-                                                                                        '升級為超管',
-                                                                                        `確定要將「${user.email}」升級為超級管理員嗎？`,
-                                                                                        async () => {
-                                                                                            try {
-                                                                                                const { error } = await supabase.rpc('update_user_role', {
-                                                                                                    target_user_id: user.id,
-                                                                                                    new_role: 'super_admin'
-                                                                                                });
-                                                                                                if (error) throw error;
-                                                                                                showToast('已升級為超管', 'success');
-                                                                                                // 重新載入列表
-                                                                                                const { data } = await supabase.rpc('get_all_users');
-                                                                                                setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-                                                                                                hideConfirm();
-                                                                                            } catch (err) {
-                                                                                                console.error('更新失敗:', err);
-                                                                                                showToast('更新失敗', 'error');
-                                                                                            }
-                                                                                        }
-                                                                                    );
-                                                                                }}
-                                                                                className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30"
-                                                                            >
-                                                                                升為超管
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={async () => {
-                                                                                    showConfirm(
-                                                                                        '移除管理員權限',
-                                                                                        `確定要將「${user.email}」改為一般玩家嗎？`,
-                                                                                        async () => {
-                                                                                            try {
-                                                                                                const { error } = await supabase.rpc('update_user_role', {
-                                                                                                    target_user_id: user.id,
-                                                                                                    new_role: null
-                                                                                                });
-                                                                                                if (error) throw error;
-                                                                                                showToast('已改為一般玩家', 'success');
-                                                                                                // 重新載入列表
-                                                                                                const { data } = await supabase.rpc('get_all_users');
-                                                                                                setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-                                                                                                hideConfirm();
-                                                                                            } catch (err) {
-                                                                                                console.error('更新失敗:', err);
-                                                                                                showToast('更新失敗', 'error');
-                                                                                            }
-                                                                                        }
-                                                                                    );
-                                                                                }}
-                                                                                className="px-3 py-1.5 bg-stone-700 hover:bg-stone-600 text-stone-300 text-xs font-bold rounded-lg transition-colors"
-                                                                            >
-                                                                                移除權限
-                                                                            </button>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <button
-                                                                                onClick={async () => {
-                                                                                    showConfirm(
-                                                                                        '設為管理員',
-                                                                                        `確定要將「${user.email}」設為管理員嗎？`,
-                                                                                        async () => {
-                                                                                            try {
-                                                                                                const { error } = await supabase.rpc('update_user_role', {
-                                                                                                    target_user_id: user.id,
-                                                                                                    new_role: 'admin'
-                                                                                                });
-                                                                                                if (error) throw error;
-                                                                                                showToast('已設為管理員', 'success');
-                                                                                                await logAction('create', 'admin', user.id, `設定 ${user.email} 為管理員`);
-                                                                                                // 重新載入列表
-                                                                                                const { data } = await supabase.rpc('get_all_users');
-                                                                                                setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-                                                                                                hideConfirm();
-                                                                                            } catch (err) {
-                                                                                                console.error('更新失敗:', err);
-                                                                                                showToast('更新失敗', 'error');
-                                                                                            }
-                                                                                        }
-                                                                                    );
-                                                                                }}
-                                                                                className="px-3 py-1.5 bg-gold-600/20 hover:bg-gold-600/30 text-gold-400 text-xs font-bold rounded-lg transition-colors border border-gold-500/30"
-                                                                            >
-                                                                                設為管理員
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={async () => {
-                                                                                    showConfirm(
-                                                                                        '設為超管',
-                                                                                        `確定要將「${user.email}」設為超級管理員嗎？`,
-                                                                                        async () => {
-                                                                                            try {
-                                                                                                const { error } = await supabase.rpc('update_user_role', {
-                                                                                                    target_user_id: user.id,
-                                                                                                    new_role: 'super_admin'
-                                                                                                });
-                                                                                                if (error) throw error;
-                                                                                                showToast('已設為超管', 'success');
-                                                                                                await logAction('create', 'admin', user.id, `設定 ${user.email} 為超級管理員`);
-                                                                                                // 重新載入列表
-                                                                                                const { data } = await supabase.rpc('get_all_users');
-                                                                                                setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-                                                                                                hideConfirm();
-                                                                                            } catch (err) {
-                                                                                                console.error('更新失敗:', err);
-                                                                                                showToast('更新失敗', 'error');
-                                                                                            }
-                                                                                        }
-                                                                                    );
-                                                                                }}
-                                                                                className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 text-xs font-bold rounded-lg transition-colors border border-purple-500/30"
-                                                                            >
-                                                                                設為超管
-                                                                            </button>
-                                                                        </>
+                                                                    {openUserActionId === user.id && (
+                                                                        <div className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl bg-stone-800 border border-stone-600 shadow-xl py-1">
+                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-200 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setEditingUser(user); setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [ user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '', user.game_special_id_4 || '', user.game_special_id_5 || '' ] }); setOpenUserActionId(null); }}>編輯資料／角色／編號</button>
+                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-water-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); setOpenUserActionId(null); }}>查看贊助</button>
+                                                                            {user.id === supabaseUser?.id ? (
+                                                                                <div className="py-2.5 px-4 text-stone-500 text-sm">（本人）</div>
+                                                                            ) : user.role === 'super_admin' ? (
+                                                                                <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-purple-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => { setOpenUserActionId(null); showConfirm('移除超管權限', `確定要將「${user.email}」改為一般管理員嗎？`, async () => { try { const { error } = await supabase.rpc('update_user_role', { target_user_id: user.id, new_role: 'admin' }); if (error) throw error; showToast('已降級為管理員', 'success'); const { data } = await supabase.rpc('get_all_users'); setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))); hideConfirm(); } catch (err) { console.error('更新失敗:', err); showToast('更新失敗', 'error'); } }); }}>降為管理員</button>
+                                                                            ) : user.role === 'admin' ? (
+                                                                                <>
+                                                                                    <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-purple-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => { setOpenUserActionId(null); showConfirm('升級為超管', `確定要將「${user.email}」升級為超級管理員嗎？`, async () => { try { const { error } = await supabase.rpc('update_user_role', { target_user_id: user.id, new_role: 'super_admin' }); if (error) throw error; showToast('已升級為超管', 'success'); const { data } = await supabase.rpc('get_all_users'); setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))); hideConfirm(); } catch (err) { console.error('更新失敗:', err); showToast('更新失敗', 'error'); } }); }}>升為超管</button>
+                                                                                    <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => { setOpenUserActionId(null); showConfirm('移除管理員權限', `確定要將「${user.email}」改為一般玩家嗎？`, async () => { try { const { error } = await supabase.rpc('update_user_role', { target_user_id: user.id, new_role: null }); if (error) throw error; showToast('已改為一般玩家', 'success'); const { data } = await supabase.rpc('get_all_users'); setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))); hideConfirm(); } catch (err) { console.error('更新失敗:', err); showToast('更新失敗', 'error'); } }); }}>移除權限</button>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-gold-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => { setOpenUserActionId(null); showConfirm('設為管理員', `確定要將「${user.email}」設為管理員嗎？`, async () => { try { const { error } = await supabase.rpc('update_user_role', { target_user_id: user.id, new_role: 'admin' }); if (error) throw error; showToast('已設為管理員', 'success'); await logAction('create', 'admin', user.id, `設定 ${user.email} 為管理員`); const { data } = await supabase.rpc('get_all_users'); setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))); hideConfirm(); } catch (err) { console.error('更新失敗:', err); showToast('更新失敗', 'error'); } }); }}>設為管理員</button>
+                                                                                    <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-purple-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => { setOpenUserActionId(null); showConfirm('設為超管', `確定要將「${user.email}」設為超級管理員嗎？`, async () => { try { const { error } = await supabase.rpc('update_user_role', { target_user_id: user.id, new_role: 'super_admin' }); if (error) throw error; showToast('已設為超管', 'success'); await logAction('create', 'admin', user.id, `設定 ${user.email} 為超級管理員`); const { data } = await supabase.rpc('get_all_users'); setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))); hideConfirm(); } catch (err) { console.error('更新失敗:', err); showToast('更新失敗', 'error'); } }); }}>設為超管</button>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                     
-                                    {/* 手機版：卡片列表 */}
-                                    <div className="lg:hidden space-y-4">
-                                        {allUsers.map((user, idx) => (
-                                            <div key={user.id} className="bg-stone-800 rounded-2xl p-5 border border-stone-700">
+                                    {/* 手機版：卡片列表（加大留白與字級，閱讀更舒服） */}
+                                    <div className="lg:hidden space-y-5">
+                                        {sortedAllUsers.map((user, idx) => {
+                                            const stats = userDonationStats[user.id];
+                                            const cumulative = stats ? stats.cumulative : (user.total_amount ?? 0);
+                                            const vip = stats?.vip;
+                                            const gameAccounts = stats?.game_accounts || [];
+                                            return (
+                                            <div key={user.id} className="bg-stone-800/90 rounded-2xl p-6 border border-stone-600/80 shadow-lg">
                                                 {/* Email 和頭像 */}
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-base flex-shrink-0">
+                                                <div className="flex items-start justify-between mb-5">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-lg flex-shrink-0">
                                                             {(user.email || '?')[0].toUpperCase()}
                                                         </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-white font-bold text-sm break-all">{user.email}</p>
-                                                            <p className="text-stone-400 text-xs mt-1">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-stone-100 font-bold text-base break-all leading-snug">{user.email}</p>
+                                                            <p className="text-stone-500 text-sm mt-1.5">
                                                                 {new Date(user.created_at).toLocaleDateString('zh-TW', {
                                                                     year: 'numeric',
                                                                     month: '2-digit',
@@ -9178,48 +9210,82 @@
                                                 </div>
                                                 
                                                 {/* 角色標籤 */}
-                                                <div className="mb-4">
+                                                <div className="mb-5">
                                                     {user.role === 'super_admin' ? (
-                                                        <span className="inline-block px-3 py-1.5 text-xs font-bold rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                                                             🟣 超級管理員
                                                         </span>
                                                     ) : user.role === 'admin' ? (
-                                                        <span className="inline-block px-3 py-1.5 text-xs font-bold rounded-full bg-gold-500/20 text-gold-400 border border-gold-500/30">
+                                                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/30">
                                                             🟡 管理員
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-block px-3 py-1.5 text-xs font-bold rounded-full bg-stone-700 text-stone-400">
+                                                        <span className="inline-block px-4 py-2 text-sm font-bold rounded-full bg-stone-700/80 text-stone-300">
                                                             ⚪ 一般玩家
                                                         </span>
                                                     )}
                                                 </div>
                                                 
-                                                {/* 累計儲值 */}
-                                                <div className="bg-stone-900/50 rounded-xl p-4 mb-4">
-                                                    <p className="text-stone-400 text-xs mb-2">累計儲值</p>
-                                                    <div className="flex items-center justify-between">
+                                                {/* 累積儲值 / VIP */}
+                                                <div className="bg-stone-900/50 rounded-xl p-5 mb-4">
+                                                    <p className="text-stone-400 text-sm font-medium mb-3">累積儲值 / VIP</p>
+                                                    <div className="flex items-center justify-between flex-wrap gap-3">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-gold-400 font-black text-2xl">
-                                                                {user.total_amount?.toLocaleString() || '0'}
-                                                            </span>
-                                                            <span className="text-stone-400 text-sm">元</span>
+                                                            <span className="text-gold-400 font-black text-2xl">{Number(cumulative).toLocaleString()}</span>
+                                                            <span className="text-stone-400 text-base">元</span>
+                                                            {vip && <span className={`px-2.5 py-1 rounded-lg text-sm font-bold ${vip.bg} ${vip.color}`}>{vip.name}</span>}
                                                         </div>
-                                                        <div className="flex items-center gap-2 bg-gold-500/10 px-3 py-1.5 rounded-lg">
-                                                            <Coins size={16} className="text-gold-500" />
-                                                            <span className="text-gold-500 font-bold text-base">
-                                                                {user.total_coins?.toLocaleString() || '0'}
-                                                            </span>
+                                                        <div className="flex items-center gap-2 bg-gold-500/10 px-4 py-2 rounded-lg">
+                                                            <Coins size={18} className="text-gold-500 flex-shrink-0" />
+                                                            <span className="text-gold-500 font-bold text-base">{user.total_coins?.toLocaleString() || '0'} 金幣</span>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {/* 儲值到角色 */}
+                                                {gameAccounts.length > 0 && (
+                                                    <div className="mb-4">
+                                                        <p className="text-stone-400 text-sm font-medium mb-2">儲值到角色</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {gameAccounts.map((acc, i) => (
+                                                                <span key={i} className="inline-block px-3 py-1.5 bg-stone-700/80 text-stone-200 text-sm font-medium rounded-md" title={acc}>{acc}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {/* 五個角色特殊編號 */}
+                                                <div className="mb-4">
+                                                    <p className="text-stone-400 text-sm font-medium mb-2">遊戲角色編號 1～5</p>
+                                                    <div className="bg-stone-900/40 rounded-xl p-3 space-y-1">
+                                                        {[1,2,3,4,5].map(n => {
+                                                            const v = user['game_special_id_'+n];
+                                                            return <div key={n} className="flex gap-2 text-sm"><span className="text-stone-500 shrink-0">角色{n}</span><span className="text-stone-200 font-mono">{v || '—'}</span></div>;
+                                                        })}
+                                                    </div>
+                                                </div>
                                                 
-                                                {/* 操作按鈕 */}
-                                                <div className="space-y-2">
+                                                {/* 操作按鈕（加大可點擊區域） */}
+                                                <div className="space-y-3 pt-1">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingUser(user);
+                                                            setEditUserForm({
+                                                                display_name: user.display_name || user.email || '',
+                                                                role: user.role || '',
+                                                                game_special_ids: [
+                                                                    user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '',
+                                                                    user.game_special_id_4 || '', user.game_special_id_5 || ''
+                                                                ]
+                                                            });
+                                                        }}
+                                                        className="w-full min-h-[48px] px-5 py-3.5 bg-stone-600 hover:bg-stone-500 text-stone-100 text-base font-bold rounded-xl transition-colors border border-stone-500/50 flex items-center justify-center gap-2"
+                                                    >
+                                                        編輯資料／角色／五個角色編號
+                                                    </button>
                                                     <button
                                                         onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); }}
-                                                        className="w-full px-4 py-3 bg-water-600/20 hover:bg-water-600/30 text-water-400 text-sm font-bold rounded-xl transition-colors border border-water-500/30 flex items-center justify-center gap-2"
+                                                        className="w-full min-h-[48px] px-5 py-3.5 bg-water-600/20 hover:bg-water-600/30 text-water-400 text-base font-bold rounded-xl transition-colors border border-water-500/30 flex items-center justify-center gap-2"
                                                     >
-                                                        <Coins size={16} />
+                                                        <Coins size={18} />
                                                         查看該用戶贊助
                                                     </button>
                                                     {user.id === supabaseUser?.id ? (
@@ -9371,9 +9437,118 @@
                                                     )}
                                                 </div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                     </>
+                                )}
+                                
+                                {/* 編輯用戶 Modal（資料、後台角色、五個遊戲角色特殊編號） */}
+                                {editingUser && (
+                                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60" onClick={() => setEditingUser(null)}>
+                                        <div className="bg-stone-800 rounded-2xl border border-stone-600 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                                            <div className="p-6 md:p-8">
+                                                <div className="flex items-start justify-between gap-4 mb-6">
+                                                    <div>
+                                                        <h3 className="text-2xl font-black text-white mb-1">編輯用戶資料</h3>
+                                                        <p className="text-stone-400 text-sm">修改顯示名稱、後台權限與五個遊戲角色的特殊編號</p>
+                                                    </div>
+                                                    <button type="button" onClick={() => setEditingUser(null)} className="p-2 rounded-lg text-stone-400 hover:text-white hover:bg-stone-700 transition-colors" aria-label="關閉">×</button>
+                                                </div>
+                                                {/* 用戶識別區 */}
+                                                <div className="bg-stone-900/80 rounded-xl p-4 mb-6 border border-stone-700">
+                                                    <p className="text-white font-bold break-all">{editingUser.email}</p>
+                                                    <p className="text-stone-500 text-xs mt-1">註冊時間：{new Date(editingUser.created_at).toLocaleString('zh-TW')}</p>
+                                                    <p className="text-stone-500 text-xs font-mono">ID：{editingUser.id.split('-')[0]}…</p>
+                                                </div>
+                                                {/* 基本資料 */}
+                                                <div className="mb-6">
+                                                    <h4 className="text-stone-300 font-bold text-sm mb-3 pb-2 border-b border-stone-600">基本資料</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-stone-400 text-sm font-bold mb-1">顯示名稱</label>
+                                                            <input
+                                                                type="text"
+                                                                value={editUserForm.display_name}
+                                                                onChange={e => setEditUserForm(f => ({ ...f, display_name: e.target.value }))}
+                                                                className="w-full px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-600 text-white placeholder-stone-500 focus:border-water-500 outline-none"
+                                                                placeholder="對外顯示名稱（可與 Email 不同）"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-stone-400 text-sm font-bold mb-1">後台權限角色</label>
+                                                            <select
+                                                                value={editUserForm.role}
+                                                                onChange={e => setEditUserForm(f => ({ ...f, role: e.target.value }))}
+                                                                className="w-full px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-600 text-white focus:border-water-500 outline-none cursor-pointer"
+                                                            >
+                                                                <option value="">一般玩家</option>
+                                                                <option value="admin">管理員</option>
+                                                                <option value="super_admin">超級管理員</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* 五個角色特殊編號 */}
+                                                <div className="mb-6">
+                                                    <h4 className="text-stone-300 font-bold text-sm mb-2 pb-2 border-b border-stone-600">五個遊戲角色 · 各自特殊編號</h4>
+                                                    <p className="text-stone-500 text-xs mb-3">每位用戶可擁有最多 5 個遊戲角色，請依序填寫各角色在遊戲內的特殊編號（選填）。</p>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                                                        {[0, 1, 2, 3, 4].map(i => (
+                                                            <div key={i}>
+                                                                <label className="block text-stone-400 text-xs font-bold mb-1">角色{i + 1}</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={editUserForm.game_special_ids[i] || ''}
+                                                                    onChange={e => {
+                                                                        const next = [...(editUserForm.game_special_ids || ['', '', '', '', ''])];
+                                                                        next[i] = e.target.value;
+                                                                        setEditUserForm(f => ({ ...f, game_special_ids: next }));
+                                                                    }}
+                                                                    className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-sm placeholder-stone-500 focus:border-water-500 outline-none"
+                                                                    placeholder={`編號 ${i + 1}`}
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditingUser(null)}
+                                                        className="flex-1 py-3 rounded-xl border border-stone-600 text-stone-300 font-bold hover:bg-stone-700 transition-colors"
+                                                    >
+                                                        取消
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            try {
+                                                                const { error } = await supabase.rpc('update_user_profile', {
+                                                                    target_user_id: editingUser.id,
+                                                                    display_name: (editUserForm.display_name == null) ? null : String(editUserForm.display_name),
+                                                                    role: editUserForm.role || null,
+                                                                    game_special_ids: (editUserForm.game_special_ids || ['', '', '', '', '']).map(s => s == null ? '' : String(s))
+                                                                });
+                                                                if (error) throw error;
+                                                                showToast('已儲存用戶資料', 'success');
+                                                                const { data } = await supabase.rpc('get_all_users');
+                                                                setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+                                                                setEditingUser(null);
+                                                                await logAction('update', 'user', editingUser.id, `編輯用戶 ${editingUser.email}：顯示名稱、角色、五個角色特殊編號`);
+                                                            } catch (err) {
+                                                                console.error('更新用戶失敗:', err);
+                                                                showToast(err?.message || '更新失敗', 'error');
+                                                            }
+                                                        }}
+                                                        className="flex-1 py-3 rounded-xl bg-water-600 hover:bg-water-500 text-white font-bold transition-colors"
+                                                    >
+                                                        儲存
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -9809,6 +9984,7 @@
             useEffect(() => {
                 if (typeof window.sodasaFbq !== 'function') return;
                 const p = location.pathname;
+                window.sodasaFbq('PageView');
                 const names = { '/recharge': '金幣贊助', '/download': '下載遊戲', '/auth': '登入註冊', '/guides': '活動攻略', '/events': '最新活動', '/support': '官方客服' };
                 const name = names[p] || (p.startsWith('/guides/') ? '攻略內文' : null);
                 if (name) window.sodasaFbq('ViewContent', { content_name: name });
@@ -10057,5 +10233,7 @@
             }
         });
     </script>
+</body>
+</html>
 </body>
 </html>
