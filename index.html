@@ -302,7 +302,10 @@
         }
         @media (max-width: 768px) {
             .event-content img { max-width: 100%; height: auto; }
-            .event-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .event-content table,
+            .event-content .word-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; table-layout: fixed; width: 100%; max-width: 100%; }
+            .event-content .word-content td,
+            .event-content .word-content th { word-break: break-word; overflow-wrap: break-word; }
         }
         .event-content { -webkit-overflow-scrolling: touch; }
         @media (min-width: 768px) and (max-width: 1023px) {
@@ -3443,8 +3446,11 @@
                                     border-radius: 12px;
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                 }
-                                .guide-content table {
+                                .guide-content table,
+                                .guide-content .word-content table {
                                     width: 100%;
+                                    max-width: 100%;
+                                    table-layout: fixed;
                                     border-collapse: collapse;
                                     margin: 0;
                                     font-size: 0.95em;
@@ -3452,11 +3458,14 @@
                                     border-radius: 12px;
                                     overflow: hidden;
                                 }
-                                .guide-content th, .guide-content td {
+                                .guide-content th, .guide-content td,
+                                .guide-content .word-content th, .guide-content .word-content td {
                                     border: 1px solid #e7e5e4;
                                     padding: 0.75em 1em;
                                     text-align: left;
                                     color: #44403c;
+                                    word-break: break-word;
+                                    overflow-wrap: break-word;
                                 }
                                 .guide-content th {
                                     background: #fef3c7;
@@ -3487,7 +3496,8 @@
                                     .guide-content h3 { font-size: 1.2em; margin-top: 1.35em; }
                                     .guide-content img { margin: 1.5em auto; max-width: 100%; height: auto; }
                                     .guide-content ul, .guide-content ol { padding-left: 1.5em; margin: 1.25em 0; }
-                                    .guide-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                                    .guide-content table,
+                                    .guide-content .word-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                                 }
                                 @media (min-width: 768px) and (max-width: 1023px) {
                                     .guide-content {
@@ -4038,8 +4048,16 @@
                     try {
                         showToast('正在處理 Word 文件…', 'info');
                         const arrayBuffer = await file.arrayBuffer();
-                        const result = await window.mammoth.convertToHtml({ arrayBuffer });
-                        setTimeout(function() { setEditorHtml(result.value); }, 0);
+                        const opts = {
+                            convertImage: window.mammoth.images.imgElement ? window.mammoth.images.imgElement(function(img) {
+                                return img.read('base64').then(function(b64) {
+                                    return { src: 'data:' + img.contentType + ';base64,' + b64 };
+                                });
+                            }) : undefined
+                        };
+                        const result = await window.mammoth.convertToHtml({ arrayBuffer }, opts);
+                        const wrapped = '<div class="word-content">' + result.value + '</div>';
+                        setTimeout(function() { setEditorHtml(wrapped); }, 0);
                         showToast('Word 已成功載入', 'success');
                         if (result.messages?.length) console.log('轉換訊息:', result.messages);
                     } catch (err) {
@@ -4052,7 +4070,7 @@
                         const arrayBuffer = await file.arrayBuffer();
                         const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                         const numPages = Math.min(pdf.numPages, 30);
-                        const scale = 1.5;
+                        const scale = 2.5;
                         const imgHtml = [];
                         for (let i = 1; i <= numPages; i++) {
                             const page = await pdf.getPage(i);
@@ -4062,7 +4080,7 @@
                             canvas.height = viewport.height;
                             const ctx = canvas.getContext('2d');
                             await page.render({ canvasContext: ctx, viewport }).promise;
-                            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
                             imgHtml.push('<p class="pdf-page"><img src="' + dataUrl + '" alt="PDF 第' + i + '頁" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
                         }
                         const html = imgHtml.join('');
@@ -4275,6 +4293,23 @@
                                 .ql-editor ol,
                                 .ql-editor ul {
                                     color: #1a1614 !important;
+                                }
+                                .ql-editor img { max-width: 100%; height: auto; display: block; }
+                                .ql-editor table,
+                                .ql-editor .word-content table {
+                                    table-layout: fixed !important;
+                                    width: 100% !important;
+                                    max-width: 100%;
+                                    border-collapse: collapse;
+                                }
+                                .ql-editor td,
+                                .ql-editor th,
+                                .ql-editor .word-content td,
+                                .ql-editor .word-content th {
+                                    word-break: break-word;
+                                    overflow-wrap: break-word;
+                                    border: 1px solid #e7e5e4;
+                                    padding: 6px 10px;
                                 }
                             `}</style>
                             <p className="text-xs text-stone-500 mt-2">
@@ -6509,8 +6544,16 @@
                     try {
                         showToast('正在處理 Word…', 'info');
                         var ab = await file.arrayBuffer();
-                        var result = await window.mammoth.convertToHtml({ arrayBuffer: ab });
-                        setEventEditorHtml(result.value);
+                        var opts = {};
+                        if (window.mammoth && window.mammoth.images && window.mammoth.images.imgElement) {
+                            opts.convertImage = window.mammoth.images.imgElement(function(img) {
+                                return img.read('base64').then(function(b64) {
+                                    return { src: 'data:' + img.contentType + ';base64,' + b64 };
+                                });
+                            });
+                        }
+                        var result = await window.mammoth.convertToHtml({ arrayBuffer: ab }, opts);
+                        setEventEditorHtml('<div class="word-content">' + result.value + '</div>');
                         showToast('Word 已載入', 'success');
                     } catch (err) {
                         showToast('Word 上傳失敗', 'error');
@@ -6521,7 +6564,7 @@
                         var ab = await file.arrayBuffer();
                         var pdf = await window.pdfjsLib.getDocument({ data: ab }).promise;
                         var numPages = Math.min(pdf.numPages, 20);
-                        var scale = 1.5;
+                        var scale = 2.5;
                         var imgHtml = [];
                         for (var i = 1; i <= numPages; i++) {
                             var page = await pdf.getPage(i);
@@ -6530,7 +6573,7 @@
                             canvas.width = vp.width; canvas.height = vp.height;
                             var ctx = canvas.getContext('2d');
                             await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                            imgHtml.push('<p><img src="' + canvas.toDataURL('image/jpeg', 0.85) + '" alt="PDF頁' + i + '" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
+                            imgHtml.push('<p><img src="' + canvas.toDataURL('image/jpeg', 0.92) + '" alt="PDF頁' + i + '" style="max-width:100%;height:auto;display:block;margin:1em 0;" /></p>');
                         }
                         setEventEditorHtml(imgHtml.join(''));
                         showToast('PDF 已載入（' + numPages + ' 頁）', 'success');
@@ -8720,7 +8763,7 @@
                                                 </label>
                                             </div>
                                             <div className="event-editor-wrap rounded-xl overflow-hidden border border-stone-600">
-                                                <style>{`.event-editor-wrap .ql-toolbar{background:#f5f5f4!important;border-color:#d6d3d1!important;}.event-editor-wrap .ql-container{background:#fff!important;border-color:#d6d3d1!important;}.event-editor-wrap .ql-editor{background:#fff!important;color:#1c1917!important;min-height:200px;caret-color:#1c1917!important;}.event-editor-wrap .ql-editor.ql-blank::before{color:#a8a29e!important;}`}</style>
+                                                <style>{`.event-editor-wrap .ql-toolbar{background:#f5f5f4!important;border-color:#d6d3d1!important;}.event-editor-wrap .ql-container{background:#fff!important;border-color:#d6d3d1!important;}.event-editor-wrap .ql-editor{background:#fff!important;color:#1c1917!important;min-height:200px;caret-color:#1c1917!important;}.event-editor-wrap .ql-editor.ql-blank::before{color:#a8a29e!important;}.event-editor-wrap .ql-editor img{max-width:100%;height:auto;display:block;}.event-editor-wrap .ql-editor table,.event-editor-wrap .ql-editor .word-content table{table-layout:fixed!important;width:100%!important;max-width:100%;border-collapse:collapse;}.event-editor-wrap .ql-editor td,.event-editor-wrap .ql-editor th,.event-editor-wrap .ql-editor .word-content td,.event-editor-wrap .ql-editor .word-content th{word-break:break-word;overflow-wrap:break-word;border:1px solid #e7e5e4;padding:6px 10px;}`}</style>
                                                 <div ref={eventQuillRef} />
                                             </div>
                                             <p className="text-stone-500 text-xs">建議用「上傳」選擇 .docx、.pdf、.xlsx、.xls，或從 Word 貼上</p>
