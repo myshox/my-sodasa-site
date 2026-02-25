@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>充值確認後台</title>
+  <style>
+    body { font-family: sans-serif; padding: 30px; background: #f5f5f5; }
+    .card { background: #fff; padding: 24px; border-radius: 10px; max-width: 500px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    input, select { width: 100%; padding: 8px; margin: 6px 0 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    #msg { margin-top: 14px; padding: 10px; border-radius: 6px; font-size: 13px; display: none; }
+    .ok  { background: #dcfce7; color: #166534; }
+    .err { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2 style="margin-top:0">💰 確認儲值入帳</h2>
+
+  <label>SHOPLINE / LINE Pay 訂單編號</label>
+  <input id="orderNo" placeholder="例：SL-20260225-001">
+
+  <label>玩家遊戲帳號</label>
+  <input id="account" placeholder="玩家登入帳號">
+
+  <label>台幣金額 (NT$)</label>
+  <input id="twd" type="number" placeholder="例：300">
+
+  <label>給予元寶數量</label>
+  <input id="gold" type="number" placeholder="例：32000">
+
+  <button id="btn" onclick="doRecharge()">✓ 確認入帳</button>
+  <div id="msg"></div>
+</div>
+
+<script>
+  // ← 改成你自己設定的 API Key
+  const API_KEY = 'soda-recharge-2026-change-this-key';
+  // ← GM 工具伺服器位址
+  const GM_URL  = 'http://172.234.95.180:5050';
+
+  async function doRecharge() {
+    const account = document.getElementById('account').value.trim();
+    const twd     = parseInt(document.getElementById('twd').value);
+    const gold    = parseInt(document.getElementById('gold').value);
+    const orderNo = document.getElementById('orderNo').value.trim();
+
+    if (!account) return showMsg('請填寫玩家帳號', false);
+    if (!twd || twd <= 0) return showMsg('請填寫台幣金額', false);
+    if (!gold || gold < 0) return showMsg('請填寫元寶數量', false);
+
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    btn.textContent = '處理中…';
+
+    try {
+      // 先查詢玩家是否存在
+      const check = await fetch(`${GM_URL}/api/external/player/${encodeURIComponent(account)}`, {
+        headers: { 'X-Api-Key': API_KEY }
+      });
+      if (!check.ok) {
+        const e = await check.json();
+        return showMsg('⚠ ' + (e.message || '找不到此玩家帳號'), false);
+      }
+      const player = await check.json();
+
+      // 二次確認
+      if (!confirm(`確認入帳給：\n角色名稱：${player.charName}\n帳號：${player.account}\n台幣：NT$${twd}\n元寶：${gold.toLocaleString()}\n\n確定要儲值嗎？`)) {
+        return;
+      }
+
+      // 執行儲值
+      const res = await fetch(`${GM_URL}/api/external/recharge`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          account, twdAmount: twd, goldAmount: gold,
+          giveGold: true, updatePaydata: true, orderNo
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showMsg('✓ ' + data.message, true);
+        // 成功後清空欄位
+        document.getElementById('account').value = '';
+        document.getElementById('twd').value = '';
+        document.getElementById('gold').value = '';
+        document.getElementById('orderNo').value = '';
+      } else {
+        showMsg('✗ ' + (data.message || '儲值失敗'), false);
+      }
+    } catch (err) {
+      showMsg('✗ 連線失敗，請確認 GM 伺服器是否運作中', false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '✓ 確認入帳';
+    }
+  }
+
+  function showMsg(text, ok) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = ok ? 'ok' : 'err';
+    el.style.display = 'block';
+  }
+</script>
+</body>
+</html>
