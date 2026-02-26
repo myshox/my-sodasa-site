@@ -6212,6 +6212,20 @@
             const [editingId, setEditingId] = useState(null);
             const [editNotes, setEditNotes] = useState('');
             const [editGameAccount, setEditGameAccount] = useState('');
+            const [editGameAccountInfo, setEditGameAccountInfo] = useState(null);
+            const [editGameAccountLoading, setEditGameAccountLoading] = useState(false);
+            const lookupEditGameAccount = async (acc) => {
+                const name = (acc || editGameAccount).trim();
+                if (!name) return;
+                setEditGameAccountLoading(true);
+                setEditGameAccountInfo(null);
+                try {
+                    const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(name)}`);
+                    if (res.ok) setEditGameAccountInfo(await res.json());
+                    else setEditGameAccountInfo({ error: '找不到此帳號' });
+                } catch { setEditGameAccountInfo({ error: '查詢失敗' }); }
+                finally { setEditGameAccountLoading(false); }
+            };
             const [editLineName, setEditLineName] = useState('');
             const [editEmail, setEditEmail] = useState('');
             const [editAmount, setEditAmount] = useState('');
@@ -7364,7 +7378,7 @@
                     });
                     
                     setEditingId(null);
-                    setEditNotes(''); setEditGameAccount(''); setEditLineName('');
+                    setEditNotes(''); setEditGameAccount(''); setEditGameAccountInfo(null); setEditLineName('');
                     setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus('');
                     showToast('已儲存，註冊用戶累計將自動同步', 'success');
                 } catch (err) {
@@ -8508,7 +8522,7 @@
                                                                 </div>
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
-                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><div className="flex gap-1"><input type="text" value={editGameAccount} onChange={e => { setEditGameAccount(e.target.value); setEditGameAccountInfo(null); }} onKeyDown={e => e.key === 'Enter' && lookupEditGameAccount()} placeholder="遊戲帳號 (CDKEY)" className="flex-1 bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-sky-500 outline-none min-w-0" /><button type="button" onClick={() => lookupEditGameAccount()} disabled={editGameAccountLoading} className="px-2.5 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-colors shrink-0">{editGameAccountLoading ? '⏳' : '查詢'}</button></div>{editGameAccountInfo && <div className={`mt-1 px-2.5 py-1.5 rounded-lg text-xs font-medium ${editGameAccountInfo.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>{editGameAccountInfo.error ? `❌ ${editGameAccountInfo.error}` : `✅ ${editGameAccountInfo.charName || editGameAccountInfo.account} · VIP ${editGameAccountInfo.vipLevel ?? '-'} · 💰${(editGameAccountInfo.gold||0).toLocaleString()}`}</div>}</div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE / Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE / Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
@@ -8683,7 +8697,7 @@
                                                 </div>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                                                     <div><label className="block text-stone-100 text-xs font-semibold mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
-                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><div className="flex gap-1"><input type="text" value={editGameAccount} onChange={e => { setEditGameAccount(e.target.value); setEditGameAccountInfo(null); }} onKeyDown={e => e.key === 'Enter' && lookupEditGameAccount()} placeholder="遊戲帳號 (CDKEY)" className="flex-1 bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-sky-500 outline-none min-w-0" /><button type="button" onClick={() => lookupEditGameAccount()} disabled={editGameAccountLoading} className="px-2.5 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-colors shrink-0">{editGameAccountLoading ? '⏳' : '查詢'}</button></div>{editGameAccountInfo && <div className={`mt-1 px-2.5 py-1.5 rounded-lg text-xs font-medium ${editGameAccountInfo.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>{editGameAccountInfo.error ? `❌ ${editGameAccountInfo.error}` : `✅ ${editGameAccountInfo.charName || editGameAccountInfo.account} · VIP ${editGameAccountInfo.vipLevel ?? '-'} · 💰${(editGameAccountInfo.gold||0).toLocaleString()}`}</div>}</div>
                                                     <div><label className="block text-stone-100 text-xs font-semibold mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
