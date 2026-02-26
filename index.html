@@ -7088,6 +7088,20 @@
                 }
             };
             
+            // Donations 快速加成金幣（直接寫入資料庫）
+            const quickBonus = async (id, currentCoins, pct) => {
+                const newCoins = Math.round((currentCoins || 0) * (1 + pct / 100));
+                try {
+                    const { error } = await supabase.from('donations').update({ coins: newCoins, updated_at: new Date().toISOString() }).eq('id', id);
+                    if (error) throw error;
+                    setData(data.map(item => item.id === id ? { ...item, coins: newCoins } : item));
+                    showToast(`+${pct}% 已套用，金幣更新為 ${newCoins.toLocaleString()}`, 'success');
+                } catch (err) {
+                    console.error('quickBonus 失敗:', err);
+                    showToast('更新失敗', 'error');
+                }
+            };
+
             // Donations 刪除紀錄
             const handleDelete = async (id) => {
                 const donation = data.find(d => d.id === id);
@@ -8197,7 +8211,7 @@
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE / Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE / Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
-                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /><div className="flex gap-1 mt-1">{[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>setEditCoins(v=>String(Math.round(parseInt(v||0)*(1+p/100)))), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded transition-colors'}, '+'+p+'%'))}</div></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
@@ -8291,12 +8305,15 @@
                                                         <span className="text-stone-100 text-xs font-semibold">方案</span>
                                                         <span className="text-white font-medium text-sm">{item.plan_name}</span>
                                                     </div>
-                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center justify-between">
                                                         <span className="text-stone-100 font-semibold text-lg">NT$ {item.amount?.toLocaleString() || 0}</span>
                                                         <div className="flex items-center gap-1.5 text-amber-400/90 font-medium text-sm">
                                                             <Coins size={14} />
                                                             {item.coins?.toLocaleString() || (PLANS.find(p => p.total === item.amount)?.total || 0).toLocaleString()}
                                                         </div>
+                                                    </div>
+                                                    <div className="flex gap-1 mt-2">
+                                                        {[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>quickBonus(item.id, item.coins || 0, p), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg transition-colors'}, '+'+p+'%'))}
                                                     </div>
                                                 </div>
                                                 
@@ -8354,7 +8371,7 @@
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-100 text-xs font-semibold mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
-                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /><div className="flex gap-1 mt-1">{[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>setEditCoins(v=>String(Math.round(parseInt(v||0)*(1+p/100)))), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded transition-colors'}, '+'+p+'%'))}</div></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
