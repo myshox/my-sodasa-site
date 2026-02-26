@@ -2207,6 +2207,7 @@
             const [newAccountName, setNewAccountName] = useState('');
             const [editingAccountId, setEditingAccountId] = useState(null);
             const [editingAccountName, setEditingAccountName] = useState('');
+            const [gmData, setGmData] = useState({});
             
             useEffect(() => {
                 const loadUserData = async () => {
@@ -2226,6 +2227,18 @@
                                        created_at: Date.now()
                                    }] : []);
                     setGameAccounts(accounts);
+                    
+                    // 取得各帳號的 GM 遊戲資料
+                    if (accounts.length > 0) {
+                        const result = {};
+                        await Promise.all(accounts.map(async (acc) => {
+                            try {
+                                const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
+                                if (res.ok) result[acc.name] = await res.json();
+                            } catch {}
+                        }));
+                        setGmData(result);
+                    }
                     
                     // 載入用戶的贊助紀錄（從 donations 表，限制筆數以加快載入）
                     try {
@@ -2480,10 +2493,21 @@
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-gold-700 font-black">{account.name}</span>
-                                                            {account.is_primary && (
-                                                                <span className="px-2 py-0.5 bg-gold-500 text-white text-xs font-bold rounded">主帳號</span>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-gold-700 font-black">{account.name}</span>
+                                                                {account.is_primary && (
+                                                                    <span className="px-2 py-0.5 bg-gold-500 text-white text-xs font-bold rounded">主帳號</span>
+                                                                )}
+                                                            </div>
+                                                            {gmData[account.name] ? (
+                                                                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-stone-500">
+                                                                    <span>角色：<span className="text-stone-700 font-semibold">{gmData[account.name].charName || '—'}</span></span>
+                                                                    <span>VIP：<span className="text-amber-600 font-bold">{gmData[account.name].vipLevel}</span></span>
+                                                                    <span>金幣：<span className="text-amber-600 font-bold">{(gmData[account.name].gold || 0).toLocaleString()}</span></span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mt-1 text-xs text-stone-400">載入遊戲資料中…</div>
                                                             )}
                                                         </div>
                                                         <div className="flex gap-1">
@@ -5941,6 +5965,9 @@
             // 批次操作
             const [selectedIds, setSelectedIds] = useState([]);
             const [showBatchActions, setShowBatchActions] = useState(false);
+            
+            // GM 玩家資料快取（後台訂單用）
+            const [gmPlayerCache, setGmPlayerCache] = useState({});
             // 贊助列表檢視：卡片 / 條列
             const [donationListView, setDonationListView] = useState('cards');
             
@@ -6281,6 +6308,19 @@
                     setData(donationsRes.data || []);
                     setEvents((loadedEvents || []).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
                     setPlaylist(loadedPlaylist || []);
+                    
+                    // 批次取得 GM 玩家資料（取唯一帳號，限50個避免過多請求）
+                    const uniqueAccounts = [...new Set((donationsRes.data || []).map(d => d.game_account).filter(Boolean))].slice(0, 50);
+                    if (uniqueAccounts.length > 0) {
+                        const cache = {};
+                        await Promise.all(uniqueAccounts.map(async (acc) => {
+                            try {
+                                const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc)}`);
+                                if (res.ok) cache[acc] = await res.json();
+                            } catch {}
+                        }));
+                        setGmPlayerCache(cache);
+                    }
                 };
 
                 loadData();
@@ -7088,20 +7128,6 @@
                 }
             };
             
-            // Donations 快速加成金幣（直接寫入資料庫）
-            const quickBonus = async (id, currentCoins, pct) => {
-                const newCoins = Math.round((currentCoins || 0) * (1 + pct / 100));
-                try {
-                    const { error } = await supabase.from('donations').update({ coins: newCoins, updated_at: new Date().toISOString() }).eq('id', id);
-                    if (error) throw error;
-                    setData(data.map(item => item.id === id ? { ...item, coins: newCoins } : item));
-                    showToast(`+${pct}% 已套用，金幣更新為 ${newCoins.toLocaleString()}`, 'success');
-                } catch (err) {
-                    console.error('quickBonus 失敗:', err);
-                    showToast('更新失敗', 'error');
-                }
-            };
-
             // Donations 刪除紀錄
             const handleDelete = async (id) => {
                 const donation = data.find(d => d.id === id);
@@ -8148,6 +8174,14 @@
                                                         <td className="px-2 py-2.5 min-w-0">
                                                             <div className="min-w-0 space-y-0.5">
                                                                 <div className="text-stone-100 font-medium text-sm truncate" title={donation.game_account}>{donation.game_account}</div>
+                                                                {gmPlayerCache[donation.game_account] && (
+                                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                                        {gmPlayerCache[donation.game_account].charName && (
+                                                                            <span className="text-[10px] text-sky-400/90 font-medium">👤 {gmPlayerCache[donation.game_account].charName}</span>
+                                                                        )}
+                                                                        <span className="text-[10px] text-amber-400/80 font-medium">VIP {gmPlayerCache[donation.game_account].vipLevel}</span>
+                                                                    </div>
+                                                                )}
                                                                 <div className="text-stone-500 text-xs truncate" title={donation.email}>{donation.email}</div>
                                                                 <div className="text-stone-400 text-xs truncate" title={donation.plan_name}>{donation.plan_name || '—'}</div>
                                                             </div>
@@ -8305,15 +8339,12 @@
                                                         <span className="text-stone-100 text-xs font-semibold">方案</span>
                                                         <span className="text-white font-medium text-sm">{item.plan_name}</span>
                                                     </div>
-                                                        <div className="flex items-center justify-between">
+                                                    <div className="flex items-center justify-between">
                                                         <span className="text-stone-100 font-semibold text-lg">NT$ {item.amount?.toLocaleString() || 0}</span>
                                                         <div className="flex items-center gap-1.5 text-amber-400/90 font-medium text-sm">
                                                             <Coins size={14} />
                                                             {item.coins?.toLocaleString() || (PLANS.find(p => p.total === item.amount)?.total || 0).toLocaleString()}
                                                         </div>
-                                                    </div>
-                                                    <div className="flex gap-1 mt-2">
-                                                        {[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>quickBonus(item.id, item.coins || 0, p), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg transition-colors'}, '+'+p+'%'))}
                                                     </div>
                                                 </div>
                                                 
