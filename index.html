@@ -2310,13 +2310,22 @@
                     const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
                     if (!res.ok) {
                         const err = await res.json().catch(() => ({}));
-                        setMasterError(err.message || `找不到主帳號「${name}」，請確認是否正確`);
+                        const msg = err.message || `找不到主帳號「${name}」，請確認輸入是否正確`;
+                        setMasterError(msg);
+                        setMasterLookup({ error: msg });
                     } else {
                         const data = await res.json();
-                        setMasterLookup(data);
+                        if (!data.chars || data.chars.length === 0) {
+                            setMasterError(`主帳號「${name}」下沒有任何角色，請確認帳號正確`);
+                            setMasterLookup({ ...data, error: '無角色' });
+                        } else {
+                            setMasterLookup(data);
+                        }
                     }
                 } catch (e) {
-                    setMasterError('查詢失敗，請稍後再試');
+                    const msg = '查詢失敗，請確認網路或稍後再試';
+                    setMasterError(msg);
+                    setMasterLookup({ error: msg });
                 } finally {
                     setMasterLoading(false);
                 }
@@ -2326,7 +2335,15 @@
             const handleSaveMaster = async () => {
                 const name = masterInput.trim();
                 if (!name) { showToast('請輸入遊戲主帳號', 'error'); return; }
-                if (!masterLookup) { showToast('請先查詢主帳號', 'error'); return; }
+                if (!masterLookup) { showToast('請先按「查詢」確認主帳號存在', 'error'); return; }
+                if (masterLookup.error) { showToast('主帳號查詢失敗，請確認帳號正確', 'error'); return; }
+                if (masterLookup.masterName !== name && masterLookup.masterName) {
+                    // 名稱不一致，用查詢回來的正確名稱
+                }
+                if (!masterLookup.chars || masterLookup.chars.length === 0) {
+                    showToast('此主帳號下沒有任何角色，請確認帳號正確', 'error');
+                    return;
+                }
 
                 // 把 GM 查到的角色自動轉成 game_accounts（以 account/CDKEY 為主）
                 const newAccounts = masterLookup.chars.map((ch, i) => ({
@@ -2348,6 +2365,7 @@
                     setGameMaster(name);
                     setGameAccounts(newAccounts);
                     showToast(`✅ 主帳號「${name}」已綁定，同步 ${newAccounts.length} 個角色`, 'success');
+                    window.dispatchEvent(new Event('game-master-bound')); // 通知 Layout 關閉強制彈窗
                     const currentUser = await authHelpers.getCurrentUser();
                     setUser(currentUser);
                     // 刷新 gmData
@@ -2477,7 +2495,23 @@
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto">
                         <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
-                        
+
+                        {/* 未綁定主帳號警告橫幅 */}
+                        {!gameMaster && (
+                            <div className="mb-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-5 flex items-center gap-4 shadow-lg shadow-red-200">
+                                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                    <AlertCircle size={24} className="text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-white font-black text-base">⚠️ 尚未綁定遊戲主帳號</p>
+                                    <p className="text-red-100 text-sm mt-0.5">請至下方「遊戲主帳號綁定」欄位完成綁定，否則無法使用儲值功能</p>
+                                </div>
+                                <a href="#game-binding-section" className="shrink-0 px-4 py-2 bg-white text-red-600 font-black text-sm rounded-xl hover:bg-red-50 transition-colors">
+                                    立即綁定
+                                </a>
+                            </div>
+                        )}
+
                         {/* 用戶資訊卡 */}
                         <div className="stone-panel p-6 md:p-8 mb-6">
                             <div className="flex items-center justify-between mb-6">
@@ -2530,20 +2564,25 @@
                                 )}
                                 
                                 {/* 遊戲主帳號綁定 */}
-                                <div className="bg-sky-50 border-2 border-sky-200 rounded-xl p-4 mb-4">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <User size={20} className="text-sky-600" />
+                                <div id="game-binding-section" className={`rounded-xl p-4 mb-4 border-2 ${gameMaster ? 'bg-sky-50 border-sky-200' : 'bg-red-50 border-red-300'}`}>
+                                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                        <User size={20} className={gameMaster ? 'text-sky-600' : 'text-red-500'} />
                                         <span className="text-stone-700 font-bold">遊戲主帳號綁定</span>
-                                        <span className="text-xs text-stone-500">（輸入遊戲主帳號後查詢，系統自動同步角色）</span>
+                                        {gameMaster ? (
+                                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-black rounded-full border border-emerald-300">✅ 已綁定</span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-black rounded-full border border-red-300 animate-pulse">⚠️ 必填 — 儲值需要此資料</span>
+                                        )}
+                                        <span className="text-xs text-stone-500">（輸入主帳號後按查詢，系統自動同步角色）</span>
                                     </div>
                                     <div className="flex gap-2 mb-2">
                                         <input
                                             type="text"
                                             value={masterInput}
-                                            onChange={e => { setMasterInput(e.target.value); setMasterError(''); }}
+                                            onChange={e => { setMasterInput(e.target.value); setMasterError(''); setMasterLookup(null); }}
                                             onKeyDown={e => e.key === 'Enter' && handleMasterLookup()}
-                                            placeholder="輸入遊戲主帳號名稱"
-                                            className="flex-1 px-3 py-2 border-2 border-sky-300 rounded-lg focus:border-sky-500 focus:outline-none font-bold text-sm"
+                                            placeholder="輸入遊戲主帳號名稱（必填）"
+                                            className={`flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm ${!gameMaster ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-sky-300 focus:border-sky-500 bg-white'}`}
                                         />
                                         <button
                                             onClick={handleMasterLookup}
@@ -2563,7 +2602,7 @@
                                         </p>
                                     )}
                                     {/* 查詢結果 */}
-                                    {masterLookup && (
+                                    {masterLookup && !masterLookup.error && (
                                         <div className="bg-white rounded-lg border border-sky-200 p-3 mt-2">
                                             <p className="text-sky-800 font-bold text-sm mb-2">
                                                 🎮 找到主帳號「{masterLookup.masterName}」，共 {masterLookup.chars.length} 個角色：
@@ -2582,19 +2621,14 @@
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {masterLookup.chars.length === 0 && (
-                                                    <p className="text-stone-500 text-xs">此主帳號尚無角色</p>
-                                                )}
                                             </div>
-                                            {masterLookup.chars.length > 0 && (
-                                                <button
-                                                    onClick={handleSaveMaster}
-                                                    className="w-full py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
-                                                >
-                                                    <CheckCircle size={14} />
-                                                    綁定此主帳號並同步所有角色
-                                                </button>
-                                            )}
+                                            <button
+                                                onClick={handleSaveMaster}
+                                                className="w-full py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle size={14} />
+                                                綁定此主帳號並同步所有角色
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -4979,10 +5013,11 @@
             );
         };
 
-        const RechargePage = () => {
+            const RechargePage = () => {
             const navigate = useNavigate();
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(false); // 改為 false，快速顯示頁面
+            const [gameMasterBound, setGameMasterBound] = useState(null); // null=未載入, ''=未綁定, 'xxx'=已綁定
             const [gameAccounts, setGameAccounts] = useState([]);
             const [selectedAccountId, setSelectedAccountId] = useState('');
             const [selectedMethod, setSelectedMethod] = useState(null);
@@ -5024,6 +5059,10 @@
                         console.log('已登入，載入遊戲帳號...');
                         setUser(currentUser);
                         
+                        // 讀取主帳號綁定狀態
+                        const master = currentUser.user_metadata?.game_master || '';
+                        setGameMasterBound(master);
+
                         // 讀取遊戲帳號列表（支援舊格式和新格式）
                         const accounts = currentUser.user_metadata?.game_accounts || 
                                        (currentUser.user_metadata?.game_account ? [{
@@ -5132,6 +5171,13 @@
             const handlePayment = async () => {
                 const errors = { gameAccount: '', method: '', plan: '', lineName: '' };
                 
+                // 雙重防護：如果沒有主帳號綁定，直接擋
+                if (!gameMasterBound) {
+                    showToast('請先到會員中心綁定遊戲主帳號', 'error');
+                    navigate('/member');
+                    return;
+                }
+
                 // 驗證遊戲帳號
                 if (!selectedAccountId) {
                     errors.gameAccount = '請選擇遊戲帳號';
@@ -5234,6 +5280,62 @@
                 return (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="驗證登入中..." />
+                    </motion.div>
+                );
+            }
+
+            // 主帳號未綁定時擋牆
+            if (gameMasterBound !== null && (!gameMasterBound || gameAccounts.length === 0)) {
+                return (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                        <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
+                        <div className="max-w-2xl mx-auto mt-8">
+                            <div className="bg-white rounded-3xl border-2 border-red-300 shadow-xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6 flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <AlertCircle size={28} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-white">尚未綁定遊戲主帳號</h2>
+                                        <p className="text-red-100 text-sm mt-0.5">儲值前必須完成帳號綁定</p>
+                                    </div>
+                                </div>
+                                <div className="p-8 space-y-5">
+                                    <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3">
+                                        <p className="text-stone-700 font-bold text-base">📋 綁定步驟：</p>
+                                        <ol className="space-y-2 text-stone-700 text-sm font-medium list-none">
+                                            <li className="flex items-start gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
+                                                前往「會員中心」→「遊戲主帳號綁定」區塊
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
+                                                輸入你的遊戲主帳號名稱，按「查詢」確認
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
+                                                確認角色列表正確後，按「綁定並同步」
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">✓</span>
+                                                綁定完成後回到此頁即可儲值
+                                            </li>
+                                        </ol>
+                                    </div>
+                                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 text-sm text-sky-700 font-medium">
+                                        💡 遊戲主帳號是登入遊戲的主要帳號（並非角色名稱），請確認輸入正確
+                                    </div>
+                                    <Link
+                                        to="/member"
+                                        className="flex items-center justify-center gap-3 w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-lg rounded-2xl transition-all shadow-lg shadow-amber-200 hover:shadow-amber-300"
+                                    >
+                                        <User size={22} />
+                                        前往會員中心綁定主帳號
+                                        <ArrowRight size={22} />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     </motion.div>
                 );
             }
@@ -10444,6 +10546,7 @@
             const [isLoading, setIsLoading] = useState(true);
             const [user, setUser] = useState(null);
             const [largeMode, setLargeMode] = useState(() => localStorage.getItem(LARGE_MODE_KEY) === '1');
+            const [bindingModal, setBindingModal] = useState(false); // 強制綁定主帳號彈窗
             const location = useLocation();
             const [searchParams] = useSearchParams();
             const navigate = useNavigate();
@@ -10467,13 +10570,43 @@
                 return () => window.removeEventListener('scroll', handleScroll);
             }, []);
             
+            // 檢查舊有贊助者是否需要補綁定主帳號
+            const checkBindingRequired = async (u) => {
+                if (!u) return;
+                if (u.user_metadata?.game_master) return; // 已綁定，不需要
+                // 查詢此帳號是否有過往捐款紀錄
+                try {
+                    const { data, error } = await supabase
+                        .from('donations')
+                        .select('id')
+                        .eq('user_id', u.id)
+                        .limit(1);
+                    if (!error && data && data.length > 0) {
+                        setBindingModal(true); // 有捐款但沒主帳號 → 強制彈窗
+                    }
+                } catch (e) { /* 查詢失敗靜默 */ }
+            };
+
+            useEffect(() => {
+                // 監聽成功綁定事件，關閉強制彈窗
+                const onBound = () => setBindingModal(false);
+                window.addEventListener('game-master-bound', onBound);
+                return () => window.removeEventListener('game-master-bound', onBound);
+            }, []);
+
             useEffect(() => {
                 // 檢查當前用戶
-                authHelpers.getCurrentUser().then(setUser);
+                authHelpers.getCurrentUser().then(u => {
+                    setUser(u);
+                    checkBindingRequired(u);
+                });
                 
                 // 監聽認證狀態變化
                 const { data } = authHelpers.onAuthStateChange((event, session) => {
-                    setUser(session?.user ?? null);
+                    const u = session?.user ?? null;
+                    setUser(u);
+                    if (event === 'SIGNED_IN') checkBindingRequired(u);
+                    if (event === 'SIGNED_OUT') setBindingModal(false);
                 });
                 
                 return () => {
@@ -10501,6 +10634,43 @@
 
                     <ToastContainer />
                     <GlobalRealtimeSync />
+
+                    {/* 強制補綁主帳號彈窗（有過往捐款但未綁定者） */}
+                    {bindingModal && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-md">
+                            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border-2 border-red-300">
+                                <div className="bg-gradient-to-r from-red-500 to-orange-500 px-6 py-5 flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <AlertCircle size={28} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-white">帳號綁定未完成</h2>
+                                        <p className="text-red-100 text-sm mt-0.5">您有過往儲值紀錄，需補充綁定</p>
+                                    </div>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-stone-700 text-sm space-y-2 font-medium">
+                                        <p className="font-black text-stone-800 text-base">📋 為什麼需要綁定？</p>
+                                        <p>• 系統偵測到您有儲值紀錄，但尚未設定遊戲主帳號</p>
+                                        <p>• 綁定後，管理員才能正確將金幣發放到您的帳號</p>
+                                        <p>• 未綁定將導致<strong className="text-red-600">無法確認您的身份</strong>，影響後續儲值與客服處理</p>
+                                    </div>
+                                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-sky-700 text-xs font-medium">
+                                        💡 遊戲主帳號是您登入遊戲的帳號（非角色名稱），請確認輸入正確後查詢驗證
+                                    </div>
+                                    <button
+                                        onClick={() => { setBindingModal(false); navigate('/member'); }}
+                                        className="flex items-center justify-center gap-3 w-full py-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-black text-base rounded-2xl transition-all shadow-lg"
+                                    >
+                                        <User size={20} />
+                                        立即前往會員中心完成綁定
+                                        <ArrowRight size={20} />
+                                    </button>
+                                    <p className="text-center text-stone-400 text-xs">此提示在您完成綁定前將持續出現</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* 右下角活動浮動按鈕 */}
                     <FloatingActivityButton />
