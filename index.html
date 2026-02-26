@@ -2208,7 +2208,12 @@
             const [editingAccountId, setEditingAccountId] = useState(null);
             const [editingAccountName, setEditingAccountName] = useState('');
             const [gmData, setGmData] = useState({});
-            
+            const [gameMaster, setGameMaster] = useState('');         // 已儲存的主帳號
+            const [masterInput, setMasterInput] = useState('');       // 輸入中的主帳號
+            const [masterLookup, setMasterLookup] = useState(null);   // { masterName, chars: [...] }
+            const [masterLoading, setMasterLoading] = useState(false);
+            const [masterError, setMasterError] = useState('');
+
             useEffect(() => {
                 const loadUserData = async () => {
                     try {
@@ -2218,6 +2223,12 @@
                             return;
                         }
                         setUser(currentUser);
+
+                    // 讀取已儲存的主帳號
+                    const savedMaster = currentUser.user_metadata?.game_master || '';
+                    setGameMaster(savedMaster);
+                    setMasterInput(savedMaster);
+
                     // 讀取遊戲帳號列表（支援舊格式和新格式）
                     const accounts = currentUser.user_metadata?.game_accounts || 
                                    (currentUser.user_metadata?.game_account ? [{
@@ -2228,7 +2239,18 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 取得各帳號的 GM 遊戲資料
+                    // 若有主帳號，自動從 GM API 同步角色列表
+                    if (savedMaster) {
+                        try {
+                            const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster)}`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                setMasterLookup(data);
+                            }
+                        } catch {}
+                    }
+
+                    // 取得各帳號的 GM 遊戲資料（仍保留以備用）
                     if (accounts.length > 0) {
                         const result = {};
                         await Promise.all(accounts.map(async (acc) => {
@@ -2277,6 +2299,71 @@
                 }
             };
             
+            // 查詢主帳號
+            const handleMasterLookup = async () => {
+                const name = masterInput.trim();
+                if (!name) { showToast('請輸入遊戲主帳號', 'error'); return; }
+                setMasterLoading(true);
+                setMasterError('');
+                setMasterLookup(null);
+                try {
+                    const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        setMasterError(err.message || `找不到主帳號「${name}」，請確認是否正確`);
+                    } else {
+                        const data = await res.json();
+                        setMasterLookup(data);
+                    }
+                } catch (e) {
+                    setMasterError('查詢失敗，請稍後再試');
+                } finally {
+                    setMasterLoading(false);
+                }
+            };
+
+            // 儲存主帳號 + 自動同步角色為遊戲帳號
+            const handleSaveMaster = async () => {
+                const name = masterInput.trim();
+                if (!name) { showToast('請輸入遊戲主帳號', 'error'); return; }
+                if (!masterLookup) { showToast('請先查詢主帳號', 'error'); return; }
+
+                // 把 GM 查到的角色自動轉成 game_accounts（以 account/CDKEY 為主）
+                const newAccounts = masterLookup.chars.map((ch, i) => ({
+                    id: (Date.now() + i).toString(),
+                    name: ch.account,       // CDKEY，用於儲值
+                    charName: ch.charName,  // 顯示用角色名
+                    is_primary: i === 0,
+                    created_at: Date.now(),
+                }));
+
+                try {
+                    const { error } = await supabase.auth.updateUser({
+                        data: {
+                            game_master: name,
+                            game_accounts: newAccounts,
+                        }
+                    });
+                    if (error) { showToast('儲存失敗：' + error.message, 'error'); return; }
+                    setGameMaster(name);
+                    setGameAccounts(newAccounts);
+                    showToast(`✅ 主帳號「${name}」已綁定，同步 ${newAccounts.length} 個角色`, 'success');
+                    const currentUser = await authHelpers.getCurrentUser();
+                    setUser(currentUser);
+                    // 刷新 gmData
+                    const result = {};
+                    await Promise.all(newAccounts.map(async (acc) => {
+                        try {
+                            const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
+                            if (res.ok) result[acc.name] = await res.json();
+                        } catch {}
+                    }));
+                    setGmData(result);
+                } catch (e) {
+                    showToast('儲存失敗，請稍後再試', 'error');
+                }
+            };
+
             const handleAddAccount = async () => {
                 if (!newAccountName.trim()) {
                     showToast('請輸入遊戲帳號', 'error');
@@ -2442,14 +2529,83 @@
                                     </Link>
                                 )}
                                 
+                                {/* 遊戲主帳號綁定 */}
+                                <div className="bg-sky-50 border-2 border-sky-200 rounded-xl p-4 mb-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <User size={20} className="text-sky-600" />
+                                        <span className="text-stone-700 font-bold">遊戲主帳號綁定</span>
+                                        <span className="text-xs text-stone-500">（輸入遊戲主帳號後查詢，系統自動同步角色）</span>
+                                    </div>
+                                    <div className="flex gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            value={masterInput}
+                                            onChange={e => { setMasterInput(e.target.value); setMasterError(''); }}
+                                            onKeyDown={e => e.key === 'Enter' && handleMasterLookup()}
+                                            placeholder="輸入遊戲主帳號名稱"
+                                            className="flex-1 px-3 py-2 border-2 border-sky-300 rounded-lg focus:border-sky-500 focus:outline-none font-bold text-sm"
+                                        />
+                                        <button
+                                            onClick={handleMasterLookup}
+                                            disabled={masterLoading}
+                                            className="px-4 py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1"
+                                        >
+                                            {masterLoading ? <span className="animate-spin">⏳</span> : <Search size={14} />}
+                                            查詢
+                                        </button>
+                                    </div>
+                                    {masterError && (
+                                        <p className="text-fire-600 text-xs font-semibold mb-2">❌ {masterError}</p>
+                                    )}
+                                    {gameMaster && !masterError && (
+                                        <p className="text-sky-700 text-xs font-semibold mb-2">
+                                            ✅ 已綁定主帳號：<span className="font-black">{gameMaster}</span>
+                                        </p>
+                                    )}
+                                    {/* 查詢結果 */}
+                                    {masterLookup && (
+                                        <div className="bg-white rounded-lg border border-sky-200 p-3 mt-2">
+                                            <p className="text-sky-800 font-bold text-sm mb-2">
+                                                🎮 找到主帳號「{masterLookup.masterName}」，共 {masterLookup.chars.length} 個角色：
+                                            </p>
+                                            <div className="space-y-1.5 mb-3">
+                                                {masterLookup.chars.map((ch, i) => (
+                                                    <div key={i} className="flex items-center gap-3 bg-sky-50 rounded-lg px-3 py-2 text-sm">
+                                                        <span className={`w-2 h-2 rounded-full shrink-0 ${ch.isOnline ? 'bg-emerald-500' : 'bg-stone-400'}`} title={ch.isOnline ? '線上' : '離線'} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="font-black text-stone-800">{ch.charName || '(無角色名)'}</span>
+                                                            <span className="text-stone-500 text-xs ml-2 font-mono">{ch.account}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-xs shrink-0">
+                                                            <span className="text-amber-600 font-bold">💰 {(ch.gold || 0).toLocaleString()}</span>
+                                                            {ch.isBanned && <span className="text-red-500 font-bold">🔒封</span>}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {masterLookup.chars.length === 0 && (
+                                                    <p className="text-stone-500 text-xs">此主帳號尚無角色</p>
+                                                )}
+                                            </div>
+                                            {masterLookup.chars.length > 0 && (
+                                                <button
+                                                    onClick={handleSaveMaster}
+                                                    className="w-full py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                                >
+                                                    <CheckCircle size={14} />
+                                                    綁定此主帳號並同步所有角色
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* 遊戲帳號列表 */}
                                 <div className="bg-gold-50 border-2 border-gold-200 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
                                             <User size={20} className="text-gold-600" />
-                                            <span className="text-stone-700 font-bold">我的遊戲帳號</span>
-                                            <span className="text-fire-500 text-xs font-bold">(必填)</span>
-                                            <span className="text-xs text-stone-500">（注意：是遊戲帳號，並非角色ID。最多 5 個）</span>
+                                            <span className="text-stone-700 font-bold">我的遊戲角色</span>
+                                            {gameMaster && <span className="text-xs text-sky-600 font-semibold">（主帳號：{gameMaster}）</span>}
                                         </div>
                                         {gameAccounts.length < 5 && (
                                             <button
@@ -2457,130 +2613,92 @@
                                                 className="text-gold-600 hover:text-gold-700 font-bold text-sm flex items-center gap-1"
                                             >
                                                 <Plus size={14} />
-                                                新增帳號
+                                                手動新增
                                             </button>
                                         )}
                                     </div>
                                     
-                                    {/* 帳號列表 */}
+                                    {/* 專屬帳號 (CDKEY) 列表 */}
                                     <div className="space-y-2">
-                                        {gameAccounts.map((account) => (
-                                            <div key={account.id} className="bg-white rounded-lg p-3 border border-gold-200">
-                                                {editingAccountId === account.id ? (
-                                                    <div className="flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={editingAccountName}
-                                                            onChange={(e) => setEditingAccountName(e.target.value)}
-                                                            className="flex-1 px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm"
-                                                            placeholder="輸入遊戲帳號（非角色ID）"
-                                                        />
-                                                        <button
-                                                            onClick={() => handleUpdateAccount(account.id)}
-                                                            className="px-3 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg transition-colors text-sm"
-                                                        >
-                                                            儲存
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingAccountId(null);
-                                                                setEditingAccountName('');
-                                                            }}
-                                                            className="px-3 py-2 bg-stone-300 hover:bg-stone-400 text-stone-700 font-bold rounded-lg transition-colors text-sm"
-                                                        >
-                                                            取消
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-gold-700 font-black">{account.name}</span>
-                                                                {account.is_primary && (
-                                                                    <span className="px-2 py-0.5 bg-gold-500 text-white text-xs font-bold rounded">主帳號</span>
-                                                                )}
+                                        {gameAccounts.map((account, idx) => {
+                                            const gm = gmData[account.name] || null;
+                                            const displayCharName = gm?.charName || account.charName || '';
+                                            return (
+                                                <div key={account.id} className="bg-white rounded-lg border border-gold-200 overflow-hidden">
+                                                    {editingAccountId === account.id ? (
+                                                        <div className="p-3 space-y-2">
+                                                            <p className="text-xs text-stone-500 font-semibold">編輯專屬帳號 (CDKEY)</p>
+                                                            <input
+                                                                type="text"
+                                                                value={editingAccountName}
+                                                                onChange={(e) => setEditingAccountName(e.target.value)}
+                                                                onKeyDown={(e) => e.key === 'Enter' && handleUpdateAccount(account.id)}
+                                                                className="w-full px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm"
+                                                                placeholder="輸入專屬帳號 (CDKEY)"
+                                                                autoFocus
+                                                            />
+                                                            <div className="flex gap-2">
+                                                                <button onClick={() => handleUpdateAccount(account.id)} className="flex-1 px-3 py-1.5 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg text-sm">儲存</button>
+                                                                <button onClick={() => { setEditingAccountId(null); setEditingAccountName(''); }} className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-lg text-sm">取消</button>
                                                             </div>
-                                                            {gmData[account.name] ? (
-                                                                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-stone-500">
-                                                                    <span>角色：<span className="text-stone-700 font-semibold">{gmData[account.name].charName || '—'}</span></span>
-                                                                    <span>VIP：<span className="text-amber-600 font-bold">{gmData[account.name].vipLevel}</span></span>
-                                                                    <span>金幣：<span className="text-amber-600 font-bold">{(gmData[account.name].gold || 0).toLocaleString()}</span></span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-3 p-3">
+                                                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gold-100 border-2 border-gold-300 flex items-center justify-center text-gold-700 font-black text-xs">{idx + 1}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-gold-700 font-black text-sm">{account.name}</span>
+                                                                    {account.is_primary && <span className="px-1.5 py-0.5 bg-gold-500 text-white text-[10px] font-bold rounded">主要</span>}
+                                                                    {gm?.isOnline && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded">線上</span>}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="mt-1 text-xs text-stone-400">載入遊戲資料中…</div>
-                                                            )}
+                                                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                                                    {displayCharName && <span className="text-xs text-stone-600 font-semibold">👤 {displayCharName}</span>}
+                                                                    {gm && <>
+                                                                        <span className="text-xs text-amber-600 font-bold">VIP {gm.vipLevel}</span>
+                                                                        <span className="text-xs text-amber-500">💰 {(gm.gold||0).toLocaleString()}</span>
+                                                                    </>}
+                                                                    {!gm && <span className="text-xs text-stone-400">同步中…</span>}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-1 shrink-0">
+                                                                <button onClick={() => { setEditingAccountId(account.id); setEditingAccountName(account.name); }} className="p-1.5 text-stone-400 hover:text-gold-600 transition-colors" title="編輯 CDKEY"><Edit2 size={13} /></button>
+                                                                <button onClick={() => handleDeleteAccount(account.id)} className="p-1.5 text-stone-400 hover:text-fire-600 transition-colors" title="刪除"><Trash2 size={13} /></button>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex gap-1">
-                                                            <button
-                                                                onClick={() => {
-                                                                    setEditingAccountId(account.id);
-                                                                    setEditingAccountName(account.name);
-                                                                }}
-                                                                className="p-1.5 text-stone-500 hover:text-gold-600 transition-colors"
-                                                                title="編輯"
-                                                            >
-                                                                <Edit2 size={14} />
-                                                            </button>
-                                                            {!account.is_primary && (
-                                                                <button
-                                                                    onClick={() => handleDeleteAccount(account.id)}
-                                                                    className="p-1.5 text-stone-500 hover:text-fire-600 transition-colors"
-                                                                    title="刪除"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                        
-                                        {/* 新增帳號輸入框 */}
-                                        {showAddAccount && (
-                                            <motion.div 
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                className="bg-white rounded-lg p-3 border-2 border-gold-400"
-                                            >
-                                                <div className="mb-2">
-                                                    <input
-                                                        type="text"
-                                                        value={newAccountName}
-                                                        onChange={(e) => setNewAccountName(e.target.value)}
-                                                        placeholder="輸入遊戲帳號（登入用，非角色ID）"
-                                                        className="w-full px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm"
-                                                        autoFocus
-                                                    />
-                                                    <p className="text-xs text-gold-700 mt-1.5 ml-1">⚠️ 注意：是遊戲帳號，並非角色ID。請確認與遊戲內帳號完全一致</p>
+                                                    )}
                                                 </div>
+                                            );
+                                        })}
+
+                                        {/* 手動新增 CDKEY */}
+                                        {showAddAccount && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white rounded-lg p-3 border-2 border-gold-400">
+                                                <p className="text-xs text-stone-600 font-semibold mb-2">手動新增專屬帳號 (CDKEY)</p>
+                                                <input
+                                                    type="text"
+                                                    value={newAccountName}
+                                                    onChange={(e) => setNewAccountName(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleAddAccount()}
+                                                    placeholder="輸入專屬帳號 CDKEY（遊戲登入用）"
+                                                    className="w-full px-3 py-2 border-2 border-gold-300 rounded-lg focus:border-gold-500 focus:outline-none font-bold text-sm mb-2"
+                                                    autoFocus
+                                                />
+                                                <p className="text-xs text-amber-700 mb-2">⚠️ 請輸入遊戲登入用帳號（CDKEY），不是角色名稱</p>
                                                 <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handleAddAccount}
-                                                        className="flex-1 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
-                                                    >
-                                                        <Plus size={14} />
-                                                        新增
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setShowAddAccount(false);
-                                                            setNewAccountName('');
-                                                        }}
-                                                        className="px-4 py-2 bg-stone-300 hover:bg-stone-400 text-stone-700 font-bold rounded-lg transition-colors text-sm"
-                                                    >
-                                                        取消
-                                                    </button>
+                                                    <button onClick={handleAddAccount} className="flex-1 px-3 py-2 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1"><Plus size={13}/>新增</button>
+                                                    <button onClick={() => { setShowAddAccount(false); setNewAccountName(''); }} className="px-3 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 font-bold rounded-lg text-sm">取消</button>
                                                 </div>
                                             </motion.div>
                                         )}
                                     </div>
-                                    
-                                    {gameAccounts.length === 0 && (
-                                        <p className="text-center text-stone-500 text-sm py-4">尚未設定遊戲帳號</p>
+
+                                    {gameAccounts.length === 0 && !showAddAccount && (
+                                        <div className="text-center py-6 text-stone-400">
+                                            <p className="font-semibold">尚未設定專屬帳號</p>
+                                            <p className="text-xs mt-1">請先查詢主帳號並同步，或手動新增</p>
+                                        </div>
                                     )}
-                                    
-                                    <p className="text-xs text-stone-500 mt-3">💡 您最多可以新增 5 個遊戲帳號（登入用帳號，非角色ID）</p>
+                                    <p className="text-xs text-stone-400 mt-2">最多 5 個專屬帳號（CDKEY），用於指定儲值發放對象</p>
                                 </div>
                                 
                                 <div className="flex items-center gap-3">
@@ -5239,45 +5357,49 @@
                                     </div>
                                 ) : (
                                     <>
-                                        {/* 帳號選擇下拉選單 */}
+                                        {/* 帳號選擇：卡片式 */}
                                         <div className="mb-4">
-                                            <label className="block text-stone-700 font-bold mb-3 text-sm">請選擇遊戲帳號 *</label>
-                                            <select
-                                                value={selectedAccountId}
-                                                onChange={(e) => {
-                                                    setSelectedAccountId(e.target.value);
-                                                    setFormErrors(prev => ({ ...prev, gameAccount: '' }));
-                                                }}
-                                                className={`w-full text-lg font-bold p-4 rounded-2xl border-2 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-white transition-all duration-200 ${
-                                                    formErrors.gameAccount 
-                                                        ? 'border-fire-400 focus:border-fire-400 text-fire-700' 
-                                                        : 'border-stone-200 focus:border-gold-400 text-stone-700'
-                                                }`}
-                                            >
-                                                <option value="">請選擇...</option>
-                                                {gameAccounts.map((account) => (
-                                                    <option key={account.id} value={account.id}>
-                                                        {account.name} {account.is_primary ? '(主帳號)' : ''}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            
-                                            {/* 重要提醒 */}
-                                            <div className="bg-fire-50 border-2 border-fire-400 rounded-xl p-4 mt-3">
-                                                <p className="text-fire-800 font-bold text-sm flex items-start gap-2">
-                                                    <AlertCircle size={18} className="mt-0.5 shrink-0 text-fire-600" />
-                                                    <span>
-                                                        <strong className="text-base">⚠️ 請特別注意！</strong>
-                                                        <br />
-                                                        <span className="text-fire-700 mt-1.5 inline-block">
-                                                            請填寫<strong className="underline">遊戲帳號</strong>（登入用），<strong className="text-fire-800">並非角色ID</strong>！<br />
-                                                            必須與遊戲內帳號完全一致，虛寶將由管理員人工發放至此帳號。
-                                                        </span>
-                                                    </span>
-                                                </p>
-                                            </div>
+                                            <label className="block text-stone-700 font-bold mb-3 text-sm">
+                                                選擇專屬帳號 (CDKEY) <span className="text-fire-500">*</span>
+                                                <span className="text-stone-400 font-normal ml-2 text-xs">— 金幣將發放至此帳號</span>
+                                            </label>
+                                            {gameAccounts.length === 0 ? (
+                                                <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 text-amber-800 font-semibold text-sm">
+                                                    ⚠️ 尚未設定遊戲帳號，請先至 <a href="/member" className="underline font-black">會員中心</a> 綁定主帳號並同步角色
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {gameAccounts.map((account) => {
+                                                        const isSelected = selectedAccountId === account.id;
+                                                        const charLabel = account.charName || '';
+                                                        return (
+                                                            <div
+                                                                key={account.id}
+                                                                onClick={() => { setSelectedAccountId(account.id); setFormErrors(prev => ({ ...prev, gameAccount: '' })); }}
+                                                                className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                                                                    isSelected
+                                                                        ? 'border-gold-500 bg-gold-50 shadow-md shadow-gold-100'
+                                                                        : 'border-stone-200 bg-white hover:border-gold-300 hover:bg-gold-50/30'
+                                                                }`}
+                                                            >
+                                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'border-gold-500 bg-gold-500' : 'border-stone-300'}`}>
+                                                                    {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                        <span className="font-black text-stone-800 text-sm">{account.name}</span>
+                                                                        {account.is_primary && <span className="px-1.5 py-0.5 bg-gold-500 text-white text-[10px] font-bold rounded">主要</span>}
+                                                                    </div>
+                                                                    {charLabel && <span className="text-xs text-stone-500">👤 {charLabel}</span>}
+                                                                </div>
+                                                                {isSelected && <CheckCircle size={16} className="text-gold-500 shrink-0" />}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
-                                        
+
                                         {/* 錯誤訊息 */}
                                         {formErrors.gameAccount && (
                                             <div className="bg-fire-50 border-2 border-fire-300 rounded-xl p-4 mb-4">
@@ -5289,20 +5411,21 @@
                                         )}
                                         
                                         {/* 選中帳號的提示 */}
-                                        {selectedAccountId && (
-                                            <div className="bg-wind-50 border-2 border-wind-300 rounded-xl p-4 mt-4">
-                                                <p className="text-wind-700 font-bold text-sm flex items-start gap-2">
-                                                    <CheckCircle size={16} className="mt-0.5 shrink-0"/> 
-                                                    <span>
-                                                        已選擇贊助帳號：<strong className="text-wind-800">「{gameAccounts.find(acc => acc.id === selectedAccountId)?.name}」</strong>
-                                                        <br />
-                                                        <span className="text-xs text-wind-600 mt-1 inline-block">
-                                                            請確認此帳號與遊戲內完全相同，虛寶將由管理員人工審核後發放
+                                        {selectedAccountId && (() => {
+                                            const sel = gameAccounts.find(acc => acc.id === selectedAccountId);
+                                            return sel ? (
+                                                <div className="bg-wind-50 border-2 border-wind-300 rounded-xl p-4 mt-2">
+                                                    <p className="text-wind-700 font-bold text-sm flex items-start gap-2">
+                                                        <CheckCircle size={16} className="mt-0.5 shrink-0"/>
+                                                        <span>
+                                                            已選擇：<strong className="text-wind-800">「{sel.name}」</strong>
+                                                            {sel.charName && <span className="text-wind-600 font-normal">（{sel.charName}）</span>}
+                                                            <span className="text-xs text-wind-600 mt-1 inline-block block">金幣將由管理員審核後發放至此帳號</span>
                                                         </span>
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        )}
+                                                    </p>
+                                                </div>
+                                            ) : null;
+                                        })()}
                                         
                                         {/* 提示：如何新增更多帳號 */}
                                         {gameAccounts.length < 5 && (
@@ -5968,6 +6091,10 @@
             
             // GM 玩家資料快取（後台訂單用）
             const [gmPlayerCache, setGmPlayerCache] = useState({});
+            // 儲值加成確認 Modal
+            const [rechargeConfirmModal, setRechargeConfirmModal] = useState(null); // {id, donation}
+            const [rechargeBonus, setRechargeBonus] = useState(0);
+            const [rechargeUpdatePaydata, setRechargeUpdatePaydata] = useState(true);
             // 贊助列表檢視：卡片 / 條列
             const [donationListView, setDonationListView] = useState('cards');
             
@@ -6029,7 +6156,9 @@
             
             // 註冊用戶編輯（資料、角色、遊戲特殊編號）
             const [editingUser, setEditingUser] = useState(null);
-            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''] });
+            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''], game_master: '', game_accounts: ['', '', '', '', ''] });
+            const [editUserMasterLookup, setEditUserMasterLookup] = useState(null);
+            const [editUserMasterLoading, setEditUserMasterLoading] = useState(false);
             // 註冊用戶列表：哪一行的「操作」下拉選單正在開啟（方便手殘黨、版面不亂）
             const [openUserActionId, setOpenUserActionId] = useState(null);
             useEffect(() => {
@@ -6953,8 +7082,15 @@
                 setShowAddAdminModal(true);
             };
             
+            // 開啟儲值加成確認 Modal
+            const openRechargeConfirm = (donation) => {
+                setRechargeBonus(0);
+                setRechargeUpdatePaydata(true);
+                setRechargeConfirmModal({ id: donation.id, donation });
+            };
+
             // Donations 更新狀態
-            const updateStatus = async (id, newStatus) => {
+            const updateStatus = async (id, newStatus, bonusPercent = 0, updatePaydata = true) => {
                 try {
                     const donation = data.find(d => d.id === id);
                     const oldStatus = donation?.status;
@@ -6983,26 +7119,33 @@
                     // 標記為已完成時，自動呼叫 GM API 儲值
                     if (newStatus === 'completed' && oldStatus !== 'completed' && donation?.game_account) {
                         try {
+                            const baseGold = donation.coins || 0;
+                            const bonusGold = Math.round(baseGold * bonusPercent / 100);
+                            const totalGold = baseGold + bonusGold;
                             const gmRes = await fetch('https://soda-recharge.myshoxisgood.workers.dev', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     account: donation.game_account,
                                     twdAmount: donation.amount,
-                                    goldAmount: donation.coins,
+                                    goldAmount: totalGold,
                                     orderNo: String(donation.id),
-                                    remark: donation.plan_name || ''
+                                    updatePaydata: updatePaydata,
+                                    remark: bonusPercent > 0
+                                        ? `${donation.plan_name || ''} (+${bonusPercent}% 回饋)`
+                                        : (donation.plan_name || '')
                                 })
                             });
                             const gmResult = await gmRes.json();
                             if (gmRes.ok) {
-                                showToast(`✅ 已自動儲值：${donation.game_account} +${(donation.coins || 0).toLocaleString()} 金幣`, 'success');
+                                const bonusMsg = bonusPercent > 0 ? ` (含 +${bonusPercent}% 回饋 ${bonusGold.toLocaleString()})` : '';
+                                showToast(`✅ 已儲值：${donation.game_account} +${totalGold.toLocaleString()} 金幣${bonusMsg}`, 'success');
                             } else {
-                                showToast(`⚠️ 狀態已更新，但自動儲值失敗：${gmResult.message || '未知錯誤'}`, 'error');
+                                showToast(`⚠️ 狀態已更新，但儲值失敗：${gmResult.message || '未知錯誤'}`, 'error');
                             }
                         } catch (gmErr) {
                             console.error('GM 儲值失敗:', gmErr);
-                            showToast('狀態已更新，但自動儲值失敗，請手動儲值', 'error');
+                            showToast('狀態已更新，但儲值失敗，請手動儲值', 'error');
                         }
                     } else {
                         showToast('狀態已更新', 'success');
@@ -7927,6 +8070,18 @@
                                             <span>超管</span>
                                         </button>
                                     )}
+                                    {/* GMTOOL 快速連結 */}
+                                    <a
+                                        href="https://gm.sodasa.org"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap bg-emerald-900/50 text-emerald-300 hover:bg-emerald-800/60 hover:text-emerald-100 border border-emerald-700/40"
+                                        title="開啟 GM 後台管理工具"
+                                    >
+                                        <Settings size={16}/>
+                                        <span>GM後台</span>
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    </a>
                                 </div>
                             </div>
                             
@@ -8137,7 +8292,13 @@
                                                         <td className="px-2 py-2.5 sticky left-10 bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/30">
                                                             <select 
                                                                 value={donation.status} 
-                                                                onChange={(e) => updateStatus(donation.id, e.target.value)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.value === 'completed' && donation.status !== 'completed') {
+                                                                        openRechargeConfirm(donation);
+                                                                    } else {
+                                                                        updateStatus(donation.id, e.target.value);
+                                                                    }
+                                                                }}
                                                                 className={`text-xs font-medium px-2 py-1 rounded-lg outline-none cursor-pointer border transition-colors w-full max-w-[90px] ${
                                                                     donation.status === 'completed' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' : 
                                                                     donation.status === 'pending' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40' : 
@@ -8149,7 +8310,7 @@
                                                                 <option value="cancelled">已取消</option>
                                                             </select>
                                                             {donation.status === 'pending' && (
-                                                                <button onClick={() => updateStatus(donation.id, 'completed')} className="mt-1 block w-full px-2 py-1 rounded text-[10px] font-semibold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/40" title="一鍵標記完成"><CheckCircle size={10} className="inline mr-0.5" />完成</button>
+                                                                <button onClick={() => openRechargeConfirm(donation)} className="mt-1 block w-full px-2 py-1 rounded text-[10px] font-semibold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/40" title="一鍵標記完成"><CheckCircle size={10} className="inline mr-0.5" />完成</button>
                                                             )}
                                                         </td>
                                                         <td className="px-2 py-2.5 sticky left-[8.5rem] bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/30">
@@ -8173,13 +8334,16 @@
                                                         </td>
                                                         <td className="px-2 py-2.5 min-w-0">
                                                             <div className="min-w-0 space-y-0.5">
-                                                                <div className="text-stone-100 font-medium text-sm truncate" title={donation.game_account}>{donation.game_account}</div>
+                                                                <div className="text-stone-100 font-bold text-sm truncate font-mono" title={donation.game_account}>{donation.game_account}</div>
                                                                 {gmPlayerCache[donation.game_account] && (
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
                                                                         {gmPlayerCache[donation.game_account].charName && (
                                                                             <span className="text-[10px] text-sky-400/90 font-medium">👤 {gmPlayerCache[donation.game_account].charName}</span>
                                                                         )}
                                                                         <span className="text-[10px] text-amber-400/80 font-medium">VIP {gmPlayerCache[donation.game_account].vipLevel}</span>
+                                                                        {gmPlayerCache[donation.game_account].masterName && (
+                                                                            <span className="text-[10px] text-purple-400/80 font-medium">🔑 {gmPlayerCache[donation.game_account].masterName}</span>
+                                                                        )}
                                                                     </div>
                                                                 )}
                                                                 <div className="text-stone-500 text-xs truncate" title={donation.email}>{donation.email}</div>
@@ -8289,7 +8453,13 @@
                                                         <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer" />
                                                         <select 
                                                             value={item.status} 
-                                                            onChange={(e) => updateStatus(item.id, e.target.value)}
+                                                            onChange={(e) => {
+                                                                if (e.target.value === 'completed' && item.status !== 'completed') {
+                                                                    openRechargeConfirm(item);
+                                                                } else {
+                                                                    updateStatus(item.id, e.target.value);
+                                                                }
+                                                            }}
                                                             className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition-colors ${
                                                                 item.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 
                                                                 item.status === 'pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 
@@ -8302,7 +8472,7 @@
                                                             <option value="cancelled">已取消</option>
                                                         </select>
                                                         {item.status === 'pending' && (
-                                                            <button onClick={() => updateStatus(item.id, 'completed')} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/40 transition-colors flex items-center gap-1">
+                                                            <button onClick={() => openRechargeConfirm(item)} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/40 transition-colors flex items-center gap-1">
                                                                 <CheckCircle size={12} /> 確認完成
                                                             </button>
                                                         )}
@@ -8328,7 +8498,19 @@
                                                         <span className="text-xs text-stone-100 font-semibold">玩家</span>
                                                     </div>
                                                     <div className="pl-5 space-y-0.5">
-                                                        {item.game_account && <div className="text-white font-medium text-sm">{item.game_account}</div>}
+                                                        {item.game_account && <div className="text-white font-bold text-sm font-mono">{item.game_account}</div>}
+                                                        {gmPlayerCache[item.game_account] && (
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                {gmPlayerCache[item.game_account].charName && (
+                                                                    <span className="text-[11px] text-sky-400/90 font-medium">👤 {gmPlayerCache[item.game_account].charName}</span>
+                                                                )}
+                                                                <span className="text-[11px] text-amber-400/80 font-medium">VIP {gmPlayerCache[item.game_account].vipLevel}</span>
+                                                                <span className="text-[11px] text-amber-300/70 font-medium">💰 {(gmPlayerCache[item.game_account].gold || 0).toLocaleString()}</span>
+                                                                {gmPlayerCache[item.game_account].masterName && (
+                                                                    <span className="text-[11px] text-purple-400/80 font-medium">🔑 主帳號：{gmPlayerCache[item.game_account].masterName}</span>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                         <div className="text-stone-200 text-xs break-all">{item.email}</div>
                                                         {item.line_name && <div className="text-stone-200 text-xs">LINE/Discord: {item.line_name}</div>}
                                                     </div>
@@ -9217,7 +9399,7 @@
                                                                     </button>
                                                                     {openUserActionId === user.id && (
                                                                         <div className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl bg-stone-800 border border-stone-600 shadow-xl py-1">
-                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-200 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setEditingUser(user); setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [ user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '', user.game_special_id_4 || '', user.game_special_id_5 || '' ] }); setOpenUserActionId(null); }}>編輯資料／角色／編號</button>
+                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-200 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setEditingUser(user); const accs = Array.isArray(user.game_accounts) ? user.game_accounts : []; setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [ user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '', user.game_special_id_4 || '', user.game_special_id_5 || '' ], game_master: user.game_master || '', game_accounts: accs.map(a => a.name || a.cdkey || '').concat(['','','','','']).slice(0,5) }); setEditUserMasterLookup(null); setOpenUserActionId(null); }}>編輯資料／角色／遊戲綁定</button>
                                                                             <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-water-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); setOpenUserActionId(null); }}>查看贊助</button>
                                                                             {user.id === supabaseUser?.id ? (
                                                                                 <div className="py-2.5 px-4 text-stone-500 text-sm">（本人）</div>
@@ -9333,14 +9515,18 @@
                                                     <button
                                                         onClick={() => {
                                                             setEditingUser(user);
+                                                            const accs2 = Array.isArray(user.game_accounts) ? user.game_accounts : [];
                                                             setEditUserForm({
                                                                 display_name: user.display_name || user.email || '',
                                                                 role: user.role || '',
                                                                 game_special_ids: [
                                                                     user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '',
                                                                     user.game_special_id_4 || '', user.game_special_id_5 || ''
-                                                                ]
+                                                                ],
+                                                                game_master: user.game_master || '',
+                                                                game_accounts: accs2.map(a => a.name || a.cdkey || '').concat(['','','','','']).slice(0,5)
                                                             });
+                                                            setEditUserMasterLookup(null);
                                                         }}
                                                         className="w-full min-h-[48px] px-5 py-3.5 bg-stone-600 hover:bg-stone-500 text-stone-100 text-base font-bold rounded-xl transition-colors border border-stone-500/50 flex items-center justify-center gap-2"
                                                     >
@@ -9577,6 +9763,93 @@
                                                         ))}
                                                     </div>
                                                 </div>
+
+                                                {/* 遊戲帳號綁定（主帳號 + CDKEY） */}
+                                                <div className="mb-6">
+                                                    <h4 className="text-stone-300 font-bold text-sm mb-3 pb-2 border-b border-stone-600 flex items-center gap-2">
+                                                        🎮 遊戲帳號綁定（GM 系統同步）
+                                                    </h4>
+                                                    {/* 主帳號 */}
+                                                    <div className="mb-3">
+                                                        <label className="block text-stone-400 text-xs font-bold mb-1">遊戲主帳號（csaloginmaster）</label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={editUserForm.game_master}
+                                                                onChange={e => { setEditUserForm(f => ({ ...f, game_master: e.target.value })); setEditUserMasterLookup(null); }}
+                                                                onKeyDown={async e => {
+                                                                    if (e.key !== 'Enter') return;
+                                                                    const name = editUserForm.game_master.trim();
+                                                                    if (!name) return;
+                                                                    setEditUserMasterLoading(true);
+                                                                    try {
+                                                                        const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                                                                        if (res.ok) {
+                                                                            const d = await res.json();
+                                                                            setEditUserMasterLookup(d);
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: d.chars.map(c => c.account).concat(['','','','','']).slice(0,5) }));
+                                                                        } else setEditUserMasterLookup({ error: '找不到此主帳號' });
+                                                                    } catch { setEditUserMasterLookup({ error: '查詢失敗' }); }
+                                                                    finally { setEditUserMasterLoading(false); }
+                                                                }}
+                                                                className="flex-1 px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-sm placeholder-stone-500 focus:border-sky-500 outline-none"
+                                                                placeholder="輸入主帳號名稱，按 Enter 自動查詢"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                disabled={editUserMasterLoading}
+                                                                onClick={async () => {
+                                                                    const name = editUserForm.game_master.trim();
+                                                                    if (!name) return;
+                                                                    setEditUserMasterLoading(true);
+                                                                    try {
+                                                                        const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                                                                        if (res.ok) {
+                                                                            const d = await res.json();
+                                                                            setEditUserMasterLookup(d);
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: d.chars.map(c => c.account).concat(['','','','','']).slice(0,5) }));
+                                                                        } else setEditUserMasterLookup({ error: '找不到此主帳號' });
+                                                                    } catch { setEditUserMasterLookup({ error: '查詢失敗' }); }
+                                                                    finally { setEditUserMasterLoading(false); }
+                                                                }}
+                                                                className="px-3 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold rounded-lg text-sm flex items-center gap-1 transition-colors"
+                                                            >
+                                                                {editUserMasterLoading ? '⏳' : <Search size={13}/>}
+                                                                查詢
+                                                            </button>
+                                                        </div>
+                                                        {editUserMasterLookup && (
+                                                            <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-medium ${editUserMasterLookup.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>
+                                                                {editUserMasterLookup.error
+                                                                    ? `❌ ${editUserMasterLookup.error}`
+                                                                    : `✅ 找到主帳號「${editUserMasterLookup.masterName}」，共 ${editUserMasterLookup.chars?.length || 0} 個角色，CDKEY 已自動填入下方`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* CDKEYs */}
+                                                    <div>
+                                                        <label className="block text-stone-400 text-xs font-bold mb-2">專屬帳號 CDKEY（最多 5 個，用於儲值）</label>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                                                            {[0,1,2,3,4].map(i => (
+                                                                <div key={i}>
+                                                                    <label className="block text-stone-500 text-xs mb-1">CDKEY {i+1}</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={(editUserForm.game_accounts || [])[i] || ''}
+                                                                        onChange={e => {
+                                                                            const next = [...(editUserForm.game_accounts || ['','','','',''])];
+                                                                            next[i] = e.target.value;
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: next }));
+                                                                        }}
+                                                                        className="w-full px-2.5 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-xs placeholder-stone-600 focus:border-gold-500 outline-none"
+                                                                        placeholder={`CDKEY ${i+1}`}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                 <div className="flex gap-3">
                                                     <button
                                                         type="button"
@@ -9589,6 +9862,7 @@
                                                         type="button"
                                                         onClick={async () => {
                                                             try {
+                                                                // 1. 更新基本資料（顯示名稱、角色、特殊編號）
                                                                 const { error } = await supabase.rpc('update_user_profile', {
                                                                     target_user_id: editingUser.id,
                                                                     display_name: (editUserForm.display_name == null) ? null : String(editUserForm.display_name),
@@ -9596,11 +9870,31 @@
                                                                     game_special_ids: (editUserForm.game_special_ids || ['', '', '', '', '']).map(s => s == null ? '' : String(s))
                                                                 });
                                                                 if (error) throw error;
-                                                                showToast('已儲存用戶資料', 'success');
+
+                                                                // 2. 更新遊戲帳號綁定（game_master + game_accounts）
+                                                                const cdkeys = (editUserForm.game_accounts || []).filter(s => s.trim() !== '');
+                                                                const newGameAccounts = cdkeys.map((cdkey, i) => ({
+                                                                    id: String(Date.now() + i),
+                                                                    name: cdkey.trim(),
+                                                                    is_primary: i === 0,
+                                                                    created_at: Date.now()
+                                                                }));
+                                                                const { error: e2 } = await supabase.rpc('update_user_game_binding', {
+                                                                    target_user_id: editingUser.id,
+                                                                    new_game_master: editUserForm.game_master.trim() || null,
+                                                                    new_game_accounts: newGameAccounts
+                                                                });
+                                                                if (e2) {
+                                                                    console.warn('game_binding RPC 失敗（可能未建立）：', e2.message);
+                                                                    showToast('基本資料已儲存，但遊戲綁定更新失敗（請確認 Supabase RPC 是否已建立）', 'error');
+                                                                } else {
+                                                                    showToast('已儲存用戶資料及遊戲綁定', 'success');
+                                                                }
+
                                                                 const { data } = await supabase.rpc('get_all_users');
                                                                 setAllUsers(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
                                                                 setEditingUser(null);
-                                                                await logAction('update', 'user', editingUser.id, `編輯用戶 ${editingUser.email}：顯示名稱、角色、五個角色特殊編號`);
+                                                                await logAction('update', 'user', editingUser.id, `編輯用戶 ${editingUser.email}：顯示名稱、角色、遊戲綁定`);
                                                             } catch (err) {
                                                                 console.error('更新用戶失敗:', err);
                                                                 showToast(err?.message || '更新失敗', 'error');
@@ -9764,6 +10058,140 @@
                             </div>
                         )}
                         
+                        {/* 儲值加成確認 Modal */}
+                        {rechargeConfirmModal && (() => {
+                            const d = rechargeConfirmModal.donation;
+                            const baseGold = d.coins || 0;
+                            const bonusGold = Math.round(baseGold * rechargeBonus / 100);
+                            const totalGold = baseGold + bonusGold;
+                            const gmInfo = gmPlayerCache[d.game_account];
+                            return (
+                                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="bg-stone-800 rounded-3xl border border-stone-600 shadow-2xl w-full max-w-sm overflow-hidden"
+                                    >
+                                        {/* Header */}
+                                        <div className="px-6 py-4 border-b border-stone-700 bg-emerald-900/20">
+                                            <h3 className="text-lg font-black text-white flex items-center gap-2">
+                                                <CheckCircle size={20} className="text-emerald-400" />
+                                                確認儲值
+                                            </h3>
+                                        </div>
+
+                                        {/* Body */}
+                                        <div className="p-6 space-y-4">
+                                            {/* 玩家資訊 */}
+                                            <div className="bg-stone-900/50 rounded-xl p-3 space-y-1 border border-stone-700/50">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-stone-400 text-sm">帳號</span>
+                                                    <span className="text-white font-bold text-sm font-mono">{d.game_account}</span>
+                                                </div>
+                                                {gmInfo?.charName && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-stone-400 text-sm">角色</span>
+                                                        <span className="text-sky-400 text-sm">👤 {gmInfo.charName}</span>
+                                                    </div>
+                                                )}
+                                                {gmInfo?.vipLevel !== undefined && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-stone-400 text-sm">VIP</span>
+                                                        <span className="text-amber-400 text-sm">Lv.{gmInfo.vipLevel}</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-stone-400 text-sm">方案</span>
+                                                    <span className="text-stone-200 text-sm">{d.plan_name || '—'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-stone-400 text-sm">金額</span>
+                                                    <span className="text-stone-200 text-sm">NT$ {(d.amount || 0).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* 回饋加成選擇 */}
+                                            <div>
+                                                <p className="text-stone-300 text-sm font-semibold mb-2">回饋加成</p>
+                                                <div className="flex gap-2 flex-wrap">
+                                                    {[0, 5, 10, 15, 20].map(pct => (
+                                                        <button
+                                                            key={pct}
+                                                            onClick={() => setRechargeBonus(pct)}
+                                                            className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${
+                                                                rechargeBonus === pct
+                                                                    ? 'bg-amber-500 text-stone-900 border-amber-400 shadow-lg shadow-amber-500/30'
+                                                                    : 'bg-stone-700/60 text-stone-300 border-stone-600 hover:bg-stone-600/60'
+                                                            }`}
+                                                        >
+                                                            {pct === 0 ? '無' : `+${pct}%`}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* 金幣預覽 */}
+                                            <div className="bg-emerald-950/40 rounded-xl p-3 border border-emerald-700/30">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-stone-400 text-sm">基本金幣</span>
+                                                    <span className="text-stone-200 text-sm font-mono">💰 {baseGold.toLocaleString()}</span>
+                                                </div>
+                                                {rechargeBonus > 0 && (
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="text-amber-400 text-sm">回饋 +{rechargeBonus}%</span>
+                                                        <span className="text-amber-400 text-sm font-mono">+{bonusGold.toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between border-t border-emerald-700/30 pt-1 mt-1">
+                                                    <span className="text-emerald-300 text-sm font-bold">實際發放</span>
+                                                    <span className="text-emerald-300 text-lg font-black font-mono">💰 {totalGold.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 累積儲值同步開關 */}
+                                        <div className="px-6 pb-2">
+                                            <label className="flex items-center gap-3 cursor-pointer select-none bg-stone-900/40 rounded-xl px-4 py-3 border border-stone-700/50">
+                                                <div
+                                                    onClick={() => setRechargeUpdatePaydata(v => !v)}
+                                                    className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${rechargeUpdatePaydata ? 'bg-sky-500' : 'bg-stone-600'}`}
+                                                >
+                                                    <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${rechargeUpdatePaydata ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-stone-200 text-sm font-bold">同步累積儲值進度</p>
+                                                    <p className="text-stone-500 text-xs">{rechargeUpdatePaydata ? '✅ 將累加至回饋循環進度（paydata）' : '⏭ 僅發放金幣，不計入回饋循環'}</p>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        {/* Footer */}
+                                        <div className="px-6 pb-5 pt-3 flex gap-3">
+                                            <button
+                                                onClick={() => setRechargeConfirmModal(null)}
+                                                className="flex-1 py-3 bg-stone-700 hover:bg-stone-600 text-stone-300 font-bold rounded-xl transition-colors"
+                                            >
+                                                取消
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const bonus = rechargeBonus;
+                                                    const syncPaydata = rechargeUpdatePaydata;
+                                                    const id = rechargeConfirmModal.id;
+                                                    setRechargeConfirmModal(null);
+                                                    updateStatus(id, 'completed', bonus, syncPaydata);
+                                                }}
+                                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle size={16} />
+                                                確認儲值
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            );
+                        })()}
+
                         {/* 確認對話框 Modal */}
                         {confirmModal.show && (
                             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
