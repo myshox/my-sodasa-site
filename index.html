@@ -1599,7 +1599,7 @@
                                     <div className={`p-2.5 rounded-2xl ${isActive ? 'neu-item-active' : 'neu-item'}`}>
                                         <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                                     </div>
-                                    <span className={`text-[11px] font-bold tracking-wide mt-0.5 truncate max-w-full ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                                    <span className={`text-[12px] font-bold tracking-wide mt-0.5 truncate max-w-full ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -2514,9 +2514,9 @@
 
                         {/* 用戶資訊卡 */}
                         <div className="stone-panel p-6 md:p-8 mb-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-stone-800">個人資料</h2>
-                                <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+                                <h2 className="text-xl sm:text-2xl font-black text-stone-800">個人資料</h2>
+                                <div className="flex gap-2 flex-wrap">
                                     {/* 管理員才顯示後台按鈕 */}
                                     {(user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'super_admin') && (
                                         <Link to="/admin">
@@ -2974,7 +2974,7 @@
                                     <div className="flex flex-col items-center gap-5">
                                         <Button 
                                             variant="gold" 
-                                            className="w-full min-w-[260px] text-xl md:text-2xl py-5 px-8 rounded-2xl font-black shadow-xl shadow-black/20 hover:opacity-95 transition-opacity duration-200 text-white" 
+                                            className="w-full text-xl md:text-2xl py-5 px-8 rounded-2xl font-black shadow-xl shadow-black/20 hover:opacity-95 transition-opacity duration-200 text-white" 
                                             icon={Download} 
                                             onClick={handleDownload}
                                         >
@@ -2983,8 +2983,8 @@
                                         <p className="text-white/95 text-base font-semibold drop-shadow-md">Windows / Android / iOS</p>
                                     </div>
                                     <div className="flex flex-wrap justify-center gap-3 mt-6 pt-5 border-t border-white/30">
-                                        <Button variant="line" className="min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
-                                        <Button variant="discord" className="min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
+                                        <Button variant="line" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
+                                        <Button variant="discord" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
                                     </div>
                                 </div>
 
@@ -5439,7 +5439,7 @@
                                 <div className="flex items-center gap-4 mb-6 border-b border-stone-100 pb-6">
                                     <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
                                     <div className="flex-1">
-                                        <h3 className="text-2xl font-bold text-stone-700">選擇贊助帳號</h3>
+                                        <h3 className="text-xl md:text-2xl font-bold text-stone-700">選擇贊助帳號</h3>
                                         <p className="text-stone-500 text-sm font-medium mt-1">選擇要接收虛寶獎勵的遊戲帳號 <span className="text-fire-500 font-bold">(必填)</span> <span className="text-fire-600 text-xs">注意：是遊戲帳號，並非角色ID</span></p>
                                     </div>
                                 </div>
@@ -5575,7 +5575,7 @@
                             <div ref={methodRef} className="stone-panel p-8 md:p-10 border-gold-300/50 shadow-sm">
                                 <div className="flex items-center gap-4 mb-8 pb-6 border-b border-stone-100">
                                     <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><CreditCard size={28} /></div>
-                                    <h3 className="text-2xl font-bold text-stone-700">1. 選擇支付方式</h3>
+                                        <h3 className="text-xl md:text-2xl font-bold text-stone-700">1. 選擇支付方式</h3>
                                 </div>
                                 {formErrors.method && <p className="text-fire-500 font-bold mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.method}</p>}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
@@ -5627,7 +5627,7 @@
                                 <div ref={planRef}>
                                     <div className="flex items-center gap-6 mb-8 mt-12 pb-6 border-b border-stone-100">
                                         <div className="p-3 bg-gold-50 rounded-2xl text-gold-600"><Coins size={28} /></div>
-                                        <h3 className="text-2xl font-bold text-stone-700">2. 選擇贊助方案</h3>
+                                        <h3 className="text-xl md:text-2xl font-bold text-stone-700">2. 選擇贊助方案</h3>
                                     </div>
                                     {formErrors.plan && <p className="text-fire-500 font-bold mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.plan}</p>}
                                     <div className="grid sm:grid-cols-2 gap-5 md:gap-6">
@@ -5849,7 +5849,7 @@
                             </div>
 
                             <div className="flex justify-center">
-                                <Button variant="line" className="w-full md:w-auto min-w-[280px] py-4 text-xl rounded-2xl shadow-lg shadow-green-100" icon={LineIcon} onClick={handleLine}>
+                                <Button variant="line" className="w-full md:w-auto md:min-w-[280px] py-4 text-xl rounded-2xl shadow-lg shadow-green-100" icon={LineIcon} onClick={handleLine}>
                                     立即加入好友
                                 </Button>
                             </div>
@@ -8136,7 +8136,7 @@
                         
                         {/* 分頁切換 - 手機版橫向滾動 */}
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4">
-                            <div className="w-full lg:w-auto overflow-x-auto pb-2 -mx-3 px-3 md:mx-0 md:px-0">
+                            <div className="w-full lg:w-auto overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
                                 <div className="flex gap-2 min-w-max">
                                     <button onClick={() => setCurrentTab('donations')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'donations' ? 'bg-amber-500 text-amber-950 shadow-lg shadow-amber-900/30' : 'bg-amber-950/50 text-amber-200/90 hover:bg-amber-900/50 hover:text-amber-100 border border-amber-800/40'}`}>
                                         贊助管理
