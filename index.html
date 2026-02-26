@@ -10237,6 +10237,19 @@
 
                                         {/* Body */}
                                         <div className="p-6 space-y-4">
+                                            {/* ⚠️ 已儲值警告 */}
+                                            {d.status === 'completed' && (
+                                                <div className="bg-red-900/40 border-2 border-red-500/70 rounded-xl p-3 flex items-start gap-3">
+                                                    <span className="text-2xl shrink-0">⚠️</span>
+                                                    <div>
+                                                        <p className="text-red-300 font-black text-sm">此訂單已儲值過！</p>
+                                                        <p className="text-red-400/80 text-xs mt-0.5">
+                                                            完成時間：{d.processed_at ? new Date(d.processed_at).toLocaleString('zh-TW') : '已標記完成'}
+                                                        </p>
+                                                        <p className="text-red-400/80 text-xs">再次確認將重複發放金幣，請確認是否要繼續。</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                             {/* 玩家資訊 */}
                                             <div className="bg-stone-900/50 rounded-xl p-3 space-y-1 border border-stone-700/50">
                                                 <div className="flex items-center justify-between">
@@ -10330,16 +10343,17 @@
                                             </button>
                                             <button
                                                 onClick={() => {
+                                                    if (d.status === 'completed' && !window.confirm('⚠️ 此訂單已儲值過！\n確定要再次發放金幣嗎？\n（重複操作可能造成重複發放）')) return;
                                                     const bonus = rechargeBonus;
                                                     const syncPaydata = rechargeUpdatePaydata;
                                                     const id = rechargeConfirmModal.id;
                                                     setRechargeConfirmModal(null);
                                                     updateStatus(id, 'completed', bonus, syncPaydata);
                                                 }}
-                                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                                                className={`flex-1 py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-white ${d.status === 'completed' ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}
                                             >
                                                 <CheckCircle size={16} />
-                                                確認儲值
+                                                {d.status === 'completed' ? '⚠️ 再次儲值' : '確認儲值'}
                                             </button>
                                         </div>
                                     </motion.div>
