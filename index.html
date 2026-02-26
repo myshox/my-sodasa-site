@@ -6940,6 +6940,34 @@
                         return;
                     }
                     
+                    // 標記為已完成時，自動呼叫 GM API 儲值
+                    if (newStatus === 'completed' && oldStatus !== 'completed' && donation?.game_account) {
+                        try {
+                            const gmRes = await fetch('https://soda-recharge.myshoxisgood.workers.dev', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    account: donation.game_account,
+                                    twdAmount: donation.amount,
+                                    goldAmount: donation.coins,
+                                    orderNo: String(donation.id),
+                                    remark: donation.plan_name || ''
+                                })
+                            });
+                            const gmResult = await gmRes.json();
+                            if (gmRes.ok) {
+                                showToast(`✅ 已自動儲值：${donation.game_account} +${(donation.coins || 0).toLocaleString()} 金幣`, 'success');
+                            } else {
+                                showToast(`⚠️ 狀態已更新，但自動儲值失敗：${gmResult.message || '未知錯誤'}`, 'error');
+                            }
+                        } catch (gmErr) {
+                            console.error('GM 儲值失敗:', gmErr);
+                            showToast('狀態已更新，但自動儲值失敗，請手動儲值', 'error');
+                        }
+                    } else {
+                        showToast('狀態已更新', 'success');
+                    }
+                    
                     setData(data.map(item => 
                         item.id === id ? { ...item, ...updateData } : item
                     ));
@@ -6949,7 +6977,6 @@
                         old: { status: oldStatus },
                         new: { status: newStatus }
                     });
-                    showToast('狀態已更新', 'success');
                 } catch (err) {
                     console.error('更新狀態異常:', err);
                     showToast('發生錯誤', 'error');
@@ -8170,7 +8197,7 @@
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE / Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE / Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
-                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /><div className="flex gap-1 mt-1">{[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>setEditCoins(v=>String(Math.round(parseInt(v||0)*(1+p/100)))), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded transition-colors'}, '+'+p+'%'))}</div></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
                                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
@@ -8327,7 +8354,7 @@
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號</label><input type="text" value={editGameAccount} onChange={(e) => setEditGameAccount(e.target.value)} placeholder="遊戲帳號" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-100 text-xs font-semibold mb-1">LINE/Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE/Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
-                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /><div className="flex gap-1 mt-1">{[5,10,15,20].map(p => React.createElement('button', {key:p, type:'button', onClick:()=>setEditCoins(v=>String(Math.round(parseInt(v||0)*(1+p/100)))), className:'flex-1 py-1 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded transition-colors'}, '+'+p+'%'))}</div></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
                                                     <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
