@@ -2288,7 +2288,17 @@
                 
                 loadUserData();
                 window.addEventListener('storage-update', loadUserData);
-                return () => window.removeEventListener('storage-update', loadUserData);
+
+                // 管理員修改資料後，會員切換回來即可看到最新資料
+                const onFocusMember = () => loadUserData();
+                window.addEventListener('focus', onFocusMember);
+                document.addEventListener('visibilitychange', onFocusMember);
+
+                return () => {
+                    window.removeEventListener('storage-update', loadUserData);
+                    window.removeEventListener('focus', onFocusMember);
+                    document.removeEventListener('visibilitychange', onFocusMember);
+                };
             }, []);
             
             const handleLogout = async () => {
@@ -6441,6 +6451,11 @@
                 };
                 
                 loadAllUsers();
+
+                // 視窗重新取得焦點時重新整理用戶列表（會員端改資料後管理員即時看到）
+                const onFocusUsers = () => { if (currentTab === 'registered_users') loadAllUsers(); };
+                window.addEventListener('focus', onFocusUsers);
+                return () => window.removeEventListener('focus', onFocusUsers);
             }, [supabaseUser, currentTab]);
             
             // 登入處理
@@ -6570,7 +6585,31 @@
 
                 loadData();
                 window.addEventListener('storage-update', loadData);
-                return () => window.removeEventListener('storage-update', loadData);
+
+                // Supabase Realtime：donations 有任何變更立即同步到管理員畫面
+                const channel = supabase
+                    .channel('admin-donations-sync')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'donations' }, payload => {
+                        setData(prev => [payload.new, ...prev].slice(0, DONATIONS_INITIAL_LIMIT));
+                        showToast('🔔 新增一筆贊助紀錄', 'info');
+                    })
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'donations' }, payload => {
+                        setData(prev => prev.map(d => d.id === payload.new.id ? { ...d, ...payload.new } : d));
+                    })
+                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'donations' }, payload => {
+                        setData(prev => prev.filter(d => d.id !== payload.old.id));
+                    })
+                    .subscribe();
+
+                // 視窗重新取得焦點時重新整理 donations（GM平台操作後切回官網即更新）
+                const onFocusDonations = () => refreshDonations(false);
+                window.addEventListener('focus', onFocusDonations);
+
+                return () => {
+                    window.removeEventListener('storage-update', loadData);
+                    window.removeEventListener('focus', onFocusDonations);
+                    supabase.removeChannel(channel);
+                };
             }, [isLoggedIn]);
 
             // 手動重新載入 donations（供手機版「重新整理」按鈕使用；可載入全部）
