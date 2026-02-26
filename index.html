@@ -6503,6 +6503,7 @@
             const [editingUser, setEditingUser] = useState(null);
             const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''], game_master: '', game_accounts: ['', '', '', '', ''] });
             const [editUserMasterLookup, setEditUserMasterLookup] = useState(null);
+            const [editUserCharNames, setEditUserCharNames] = useState({});
             // GM 直接操作（設定金幣、封號、站內信）
             const [gmOpGold, setGmOpGold] = useState('');
             const [gmOpBanLoading, setGmOpBanLoading] = useState(false);
@@ -6672,27 +6673,57 @@
                         );
                         setAllUsers(sortedUsers);
 
-                        // 批量查詢 GM 玩家資料（取每人第一個 game_account）
-                        const toFetch = sortedUsers
-                            .map(u => {
-                                const accounts = u.game_accounts || (u.game_account ? [{name: u.game_account}] : []);
-                                return accounts[0]?.name || '';
-                            })
-                            .filter(Boolean);
-                        const unique = [...new Set(toFetch)];
-                        // 分批查詢，每批 5 筆，間隔 200ms，避免一次打爆
-                        const cache = {};
-                        for (let i = 0; i < unique.length; i += 5) {
-                            const batch = unique.slice(i, i + 5);
-                            await Promise.all(batch.map(async (cdkey) => {
-                                try {
-                                    const res = await fetch(`${GM_WORKER}/player/${encodeURIComponent(cdkey)}`);
-                                    if (res.ok) cache[cdkey] = await res.json();
-                                } catch {}
-                            }));
-                            if (i + 5 < unique.length) await new Promise(r => setTimeout(r, 200));
+                        // 批量查詢 GM 玩家資料（每人所有 game_accounts，含 localStorage 快取）
+                        const parseAccs = (raw) => {
+                            if (Array.isArray(raw)) return raw;
+                            if (typeof raw === 'string') { try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; } catch { return []; } }
+                            return [];
+                        };
+                        // DEBUG: 印出第一筆用戶的 game_accounts 格式
+                        if (sortedUsers.length > 0) {
+                            const u0 = sortedUsers.find(u => u.game_accounts);
+                            console.log('[DEBUG] game_accounts raw:', JSON.stringify(u0?.game_accounts), 'type:', typeof u0?.game_accounts);
+                            console.log('[DEBUG] game_master raw:', u0?.game_master);
                         }
-                        setUserGmCache(prev => ({ ...prev, ...cache }));
+                        const toFetch = sortedUsers.flatMap(u => {
+                            const accounts = parseAccs(u.game_accounts);
+                            return accounts.map(a => (typeof a === 'string' ? a : (a?.name || a?.cdkey || ''))).filter(Boolean);
+                        });
+                        const unique = [...new Set(toFetch)];
+                        console.log('[DEBUG] unique CDKEYs to fetch:', unique);
+
+                        // 讀 localStorage 快取（5 分鐘有效）
+                        const LS_KEY = 'gmPlayerCache_v1';
+                        const CACHE_TTL = 5 * 60 * 1000;
+                        let lsCache = {};
+                        try { const raw = localStorage.getItem(LS_KEY); if (raw) { const parsed = JSON.parse(raw); const now = Date.now(); lsCache = Object.fromEntries(Object.entries(parsed).filter(([,v]) => now - (v._ts||0) < CACHE_TTL)); } } catch {}
+
+                        // 只查還沒快取的 CDKEY
+                        const needFetch = unique.filter(k => !lsCache[k]);
+                        const cache = { ...lsCache };
+
+                        // 先把快取資料立即塞入 state，頁面馬上顯示
+                        if (Object.keys(lsCache).length > 0) setUserGmCache(prev => ({ ...prev, ...lsCache }));
+
+                        // 分批 20 並發（不加延遲），背景抓剩餘資料
+                        if (needFetch.length > 0) {
+                            (async () => {
+                                const newData = {};
+                                for (let i = 0; i < needFetch.length; i += 20) {
+                                    const batch = needFetch.slice(i, i + 20);
+                                    await Promise.all(batch.map(async (cdkey) => {
+                                        try {
+                                            const res = await fetch(`${GM_WORKER}/player/${encodeURIComponent(cdkey)}`);
+                                            if (res.ok) { const d = await res.json(); newData[cdkey] = { ...d, _ts: Date.now() }; }
+                                        } catch {}
+                                    }));
+                                    // 每批結果即時更新畫面
+                                    setUserGmCache(prev => ({ ...prev, ...newData }));
+                                }
+                                // 寫回 localStorage
+                                try { localStorage.setItem(LS_KEY, JSON.stringify({ ...lsCache, ...newData })); } catch {}
+                            })();
+                        }
                     } catch (err) {
                         console.error('載入用戶異常:', err);
                     }
@@ -10050,29 +10081,60 @@
                                                             {/* GM 即時資料欄 */}
                                                             <td className="px-4 py-5">
                                                                 {(() => {
-                                                                    const accs = Array.isArray(user.game_accounts) ? user.game_accounts : [];
-                                                                    const firstCdkey = accs[0]?.name || accs[0]?.cdkey || (user.game_account) || '';
-                                                                    const gm = firstCdkey ? userGmCache[firstCdkey] : null;
-                                                                    if (!user.game_master && !firstCdkey) return <span className="text-red-400 text-xs font-semibold">⚠️ 未綁定</span>;
-                                                                    if (!gm) return <span className="text-stone-600 text-xs">{user.game_master ? `主帳號: ${user.game_master}` : '查詢中...'}</span>;
+                                                                    const parseA = (r) => { if (Array.isArray(r)) return r; if (typeof r==='string') { try { const p=JSON.parse(r); return Array.isArray(p)?p:[]; } catch{return[];} } return []; };
+                                                                    const accs = parseA(user.game_accounts);
+                                                                    const hasBinding = user.game_master || accs.length > 0;
+                                                                    if (!hasBinding) return <span className="text-red-400 text-xs font-semibold">⚠️ 未綁定</span>;
+                                                                    const getCdkey = a => typeof a==='string' ? a : (a?.name||a?.cdkey||'');
+                                                                    const gmList = accs.map(a => { const k=getCdkey(a); return k?(userGmCache[k]||null):null; }).filter(Boolean);
+                                                                    if (accs.length > 0 && gmList.length === 0) return <span className="text-stone-600 text-xs">{user.game_master ? `主: ${user.game_master}` : '查詢中...'}</span>;
+                                                                    const anyOnline = gmList.some(g => g.isOnline);
+                                                                    const maxVip = Math.max(0, ...gmList.map(g => g.vipLevel || 0));
+                                                                    const totalGold = gmList.reduce((s, g) => s + (g.gold || 0), 0);
                                                                     return (
-                                                                        <div className="space-y-1 min-w-[120px]">
-                                                                            {gm.charName && <div className="text-white text-sm font-bold">{gm.charName}</div>}
+                                                                        <div className="space-y-1 min-w-[130px]">
+                                                                            {user.game_master && <div className="text-sky-300 text-xs font-bold truncate">🏠 {user.game_master}</div>}
                                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                                <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${gm.isOnline ? 'bg-emerald-900/60 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}>{gm.isOnline ? '🟢 在線' : '⚫ 離線'}</span>
-                                                                                {gm.vipLevel > 0 && <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${gm.vipLevel >= 2 ? 'bg-sky-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'}`}>VIP {gm.vipLevel}</span>}
+                                                                                <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${anyOnline ? 'bg-emerald-900/60 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}>{anyOnline ? '🟢 在線' : '⚫ 離線'}</span>
+                                                                                {maxVip > 0 && <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${maxVip >= 2 ? 'bg-sky-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'}`}>VIP {maxVip}</span>}
                                                                             </div>
-                                                                            <div className="text-yellow-400 text-xs font-semibold">💰 {(gm.gold||0).toLocaleString()}</div>
+                                                                            {totalGold > 0 && <div className="text-yellow-400 text-xs font-semibold">💰 {totalGold.toLocaleString()}</div>}
                                                                         </div>
                                                                     );
                                                                 })()}
                                                             </td>
-                                                            <td className="px-4 py-5 max-w-[240px]">
-                                                                <div className="text-stone-200 text-sm font-mono leading-relaxed space-y-0.5">
-                                                                    {[1,2,3,4,5].map(n => (
-                                                                        <div key={n} className="flex gap-2"><span className="text-stone-500 shrink-0">角色{n}</span><span>{user['game_special_id_'+n] || '—'}</span></div>
-                                                                    ))}
-                                                                </div>
+                                                            <td className="px-4 py-5 max-w-[280px]">
+                                                                {(() => {
+                                                                    const parseA = (r) => { if (Array.isArray(r)) return r; if (typeof r==='string') { try { const p=JSON.parse(r); return Array.isArray(p)?p:[]; } catch{return[];} } return []; };
+                                                                    const accs = parseA(user.game_accounts);
+                                                                    const getCdkey = a => typeof a==='string' ? a : (a?.name||a?.cdkey||'');
+                                                                    return (
+                                                                        <div className="space-y-1 text-xs font-mono">
+                                                                            {[0,1,2,3,4].map(i => {
+                                                                                const cdkey = getCdkey(accs[i] || '');
+                                                                                const gm = cdkey ? userGmCache[cdkey] : null;
+                                                                                const charName = gm?.charName || '';
+                                                                                if (!cdkey) return (
+                                                                                    <div key={i} className="flex gap-1.5 items-center text-stone-700">
+                                                                                        <span className="text-stone-600 shrink-0">角色{i+1}</span>
+                                                                                        <span>—</span>
+                                                                                    </div>
+                                                                                );
+                                                                                return (
+                                                                                    <div key={i} className="flex gap-1.5 items-start">
+                                                                                        <span className="text-stone-500 shrink-0 pt-0.5">角色{i+1}</span>
+                                                                                        <div className="min-w-0">
+                                                                                            {charName
+                                                                                                ? <><div className="text-white font-bold truncate">{charName}</div><div className="text-stone-500 truncate text-[10px]">{cdkey}</div></>
+                                                                                                : <div className="text-emerald-300 truncate">{cdkey}</div>
+                                                                                            }
+                                                                                        </div>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                    );
+                                                                })()}
                                                             </td>
                                                             <td className="px-5 py-5 text-stone-200 text-sm whitespace-nowrap">
                                                                 {new Date(user.created_at).toLocaleString('zh-TW', {
@@ -10100,7 +10162,23 @@
                                                                     </button>
                                                                     {openUserActionId === user.id && (
                                                                         <div className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl bg-stone-800 border border-stone-600 shadow-xl py-1">
-                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-200 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setEditingUser(user); const accs = Array.isArray(user.game_accounts) ? user.game_accounts : []; setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [ user.game_special_id_1 || '', user.game_special_id_2 || '', user.game_special_id_3 || '', user.game_special_id_4 || '', user.game_special_id_5 || '' ], game_master: user.game_master || '', game_accounts: accs.map(a => a.name || a.cdkey || '').concat(['','','','','']).slice(0,5) }); setEditUserMasterLookup(null); setOpenUserActionId(null); }}>編輯資料／角色／遊戲綁定</button>
+                                                                            <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-stone-200 hover:bg-stone-700 rounded-lg transition-colors" onClick={async () => {
+  setEditingUser(user);
+  const parseA = (r) => { if (Array.isArray(r)) return r; if (typeof r==='string'){try{const p=JSON.parse(r);return Array.isArray(p)?p:[];}catch{return[];}} return []; };
+  const accs = parseA(user.game_accounts);
+  const cdkeys = accs.map(a => typeof a==='string' ? a : (a?.name||a?.cdkey||'')).concat(['','','','','']).slice(0,5);
+  setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [user.game_special_id_1||'',user.game_special_id_2||'',user.game_special_id_3||'',user.game_special_id_4||'',user.game_special_id_5||''], game_master: user.game_master || '', game_accounts: cdkeys });
+  setEditUserMasterLookup(null);
+  setEditUserCharNames({});
+  setOpenUserActionId(null);
+  // 自動查詢現有 CDKEY 的角色名
+  const names = {};
+  await Promise.all(cdkeys.map(async (k, i) => {
+    if (!k.trim()) return;
+    try { const r = await fetch(`${GM_WORKER}/player/${encodeURIComponent(k)}`); if (r.ok) { const d = await r.json(); if (d.charName) names[i] = d.charName; } } catch {}
+  }));
+  setEditUserCharNames(names);
+}}>編輯資料／角色／遊戲綁定</button>
                                                                             <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-water-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); setOpenUserActionId(null); }}>查看贊助</button>
                                                                             {user.id === supabaseUser?.id ? (
                                                                                 <div className="py-2.5 px-4 text-stone-500 text-sm">（本人）</div>
@@ -10403,7 +10481,7 @@
                                                 <div className="flex items-start justify-between gap-4 mb-6">
                                                     <div>
                                                         <h3 className="text-2xl font-black text-white mb-1">編輯用戶資料</h3>
-                                                        <p className="text-stone-400 text-sm">修改顯示名稱、後台權限與五個遊戲角色的特殊編號</p>
+                                                        <p className="text-stone-400 text-sm">修改顯示名稱、後台權限與遊戲帳號綁定</p>
                                                     </div>
                                                     <button type="button" onClick={() => setEditingUser(null)} className="p-2 rounded-lg text-stone-400 hover:text-white hover:bg-stone-700 transition-colors" aria-label="關閉">×</button>
                                                 </div>
@@ -10441,37 +10519,13 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {/* 五個角色特殊編號 */}
-                                                <div className="mb-6">
-                                                    <h4 className="text-stone-300 font-bold text-sm mb-2 pb-2 border-b border-stone-600">五個遊戲角色 · 各自特殊編號</h4>
-                                                    <p className="text-stone-500 text-xs mb-3">每位用戶可擁有最多 5 個遊戲角色，請依序填寫各角色在遊戲內的特殊編號（選填）。</p>
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                                                        {[0, 1, 2, 3, 4].map(i => (
-                                                            <div key={i}>
-                                                                <label className="block text-stone-400 text-xs font-bold mb-1">角色{i + 1}</label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={editUserForm.game_special_ids[i] || ''}
-                                                                    onChange={e => {
-                                                                        const next = [...(editUserForm.game_special_ids || ['', '', '', '', ''])];
-                                                                        next[i] = e.target.value;
-                                                                        setEditUserForm(f => ({ ...f, game_special_ids: next }));
-                                                                    }}
-                                                                    className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-sm placeholder-stone-500 focus:border-water-500 outline-none"
-                                                                    placeholder={`編號 ${i + 1}`}
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* 遊戲帳號綁定（主帳號 + CDKEY） */}
+                                                {/* 遊戲帳號綁定（主帳號 + 5 個角色CDKEY，合併顯示） */}
                                                 <div className="mb-6">
                                                     <h4 className="text-stone-300 font-bold text-sm mb-3 pb-2 border-b border-stone-600 flex items-center gap-2">
                                                         🎮 遊戲帳號綁定（GM 系統同步）
                                                     </h4>
                                                     {/* 主帳號 */}
-                                                    <div className="mb-3">
+                                                    <div className="mb-4">
                                                         <label className="block text-stone-400 text-xs font-bold mb-1">遊戲主帳號（csaloginmaster）</label>
                                                         <div className="flex gap-2">
                                                             <input
@@ -10484,11 +10538,15 @@
                                                                     if (!name) return;
                                                                     setEditUserMasterLoading(true);
                                                                     try {
-                                                                        const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                                                                        const res = await fetch(`${GM_WORKER}/master/${encodeURIComponent(name)}`);
                                                                         if (res.ok) {
                                                                             const d = await res.json();
                                                                             setEditUserMasterLookup(d);
-                                                                            setEditUserForm(f => ({ ...f, game_accounts: d.chars.map(c => c.account).concat(['','','','','']).slice(0,5) }));
+                                                                            const newCdkeys = d.chars.map(c => c.account).concat(['','','','','']).slice(0,5);
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: newCdkeys, game_special_ids: newCdkeys }));
+                                                                            const names = {};
+                                                                            d.chars.slice(0,5).forEach((c,i) => { if (c.charName) names[i] = c.charName; });
+                                                                            setEditUserCharNames(names);
                                                                         } else setEditUserMasterLookup({ error: '找不到此主帳號' });
                                                                     } catch { setEditUserMasterLookup({ error: '查詢失敗' }); }
                                                                     finally { setEditUserMasterLoading(false); }
@@ -10504,11 +10562,15 @@
                                                                     if (!name) return;
                                                                     setEditUserMasterLoading(true);
                                                                     try {
-                                                                        const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                                                                        const res = await fetch(`${GM_WORKER}/master/${encodeURIComponent(name)}`);
                                                                         if (res.ok) {
                                                                             const d = await res.json();
                                                                             setEditUserMasterLookup(d);
-                                                                            setEditUserForm(f => ({ ...f, game_accounts: d.chars.map(c => c.account).concat(['','','','','']).slice(0,5) }));
+                                                                            const newCdkeys = d.chars.map(c => c.account).concat(['','','','','']).slice(0,5);
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: newCdkeys, game_special_ids: newCdkeys }));
+                                                                            const names = {};
+                                                                            d.chars.slice(0,5).forEach((c,i) => { if (c.charName) names[i] = c.charName; });
+                                                                            setEditUserCharNames(names);
                                                                         } else setEditUserMasterLookup({ error: '找不到此主帳號' });
                                                                     } catch { setEditUserMasterLookup({ error: '查詢失敗' }); }
                                                                     finally { setEditUserMasterLoading(false); }
@@ -10523,31 +10585,45 @@
                                                             <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-medium ${editUserMasterLookup.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>
                                                                 {editUserMasterLookup.error
                                                                     ? `❌ ${editUserMasterLookup.error}`
-                                                                    : `✅ 找到主帳號「${editUserMasterLookup.masterName}」，共 ${editUserMasterLookup.chars?.length || 0} 個角色，CDKEY 已自動填入下方`}
+                                                                    : `✅ 找到「${editUserMasterLookup.masterName}」，共 ${editUserMasterLookup.chars?.length || 0} 個角色，已自動填入`}
                                                             </div>
                                                         )}
                                                     </div>
-                                                    {/* CDKEYs */}
-                                                    <div>
-                                                        <label className="block text-stone-400 text-xs font-bold mb-2">專屬帳號 CDKEY（最多 5 個，用於儲值）</label>
-                                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-                                                            {[0,1,2,3,4].map(i => (
-                                                                <div key={i}>
-                                                                    <label className="block text-stone-500 text-xs mb-1">CDKEY {i+1}</label>
+                                                    {/* 5 個角色：CDKEY + 角色名 合併顯示 */}
+                                                    <label className="block text-stone-400 text-xs font-bold mb-2">遊戲角色 · CDKEY（最多 5 個）</label>
+                                                    <div className="space-y-2">
+                                                        {[0,1,2,3,4].map(i => {
+                                                            const cdkeyVal = (editUserForm.game_accounts || [])[i] || '';
+                                                            const charName = editUserCharNames[i] || '';
+                                                            return (
+                                                                <div key={i} className="flex items-center gap-2">
+                                                                    <span className="text-stone-500 text-xs w-10 shrink-0 text-right">角色{i+1}</span>
                                                                     <input
                                                                         type="text"
-                                                                        value={(editUserForm.game_accounts || [])[i] || ''}
+                                                                        value={cdkeyVal}
                                                                         onChange={e => {
                                                                             const next = [...(editUserForm.game_accounts || ['','','','',''])];
                                                                             next[i] = e.target.value;
-                                                                            setEditUserForm(f => ({ ...f, game_accounts: next }));
+                                                                            const ids = [...(editUserForm.game_special_ids || ['','','','',''])];
+                                                                            ids[i] = e.target.value;
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: next, game_special_ids: ids }));
+                                                                            setEditUserCharNames(n => ({ ...n, [i]: '' }));
                                                                         }}
-                                                                        className="w-full px-2.5 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-xs placeholder-stone-600 focus:border-gold-500 outline-none"
+                                                                        onBlur={async e => {
+                                                                            const k = e.target.value.trim();
+                                                                            if (!k) return;
+                                                                            try { const r = await fetch(`${GM_WORKER}/player/${encodeURIComponent(k)}`); if (r.ok) { const d = await r.json(); setEditUserCharNames(n => ({ ...n, [i]: d.charName || '' })); } } catch {}
+                                                                        }}
+                                                                        className="flex-1 px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-sm placeholder-stone-600 focus:border-emerald-500 outline-none"
                                                                         placeholder={`CDKEY ${i+1}`}
                                                                     />
+                                                                    {charName
+                                                                        ? <span className="bg-emerald-900/50 text-emerald-300 border border-emerald-600/30 text-xs px-2 py-1 rounded-lg font-bold whitespace-nowrap">{charName}</span>
+                                                                        : cdkeyVal && <span className="text-stone-600 text-xs whitespace-nowrap">查詢中...</span>
+                                                                    }
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
 
