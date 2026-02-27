@@ -2835,60 +2835,70 @@
                                                     <p><span className="font-bold">備註：</span>{item.notes}</p>
                                                 )}
                                             </div>
-                                            {item.status === 'pending' && (
-                                                <div className="mt-3 pt-3 border-t border-stone-200">
-                                                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded space-y-2">
-                                                        <p className="text-sm text-stone-700 font-bold">
-                                                            ⏳ 待處理：請依照以下步驟完成
-                                                        </p>
-                                                        
-                                                        {/* 根據支付方式顯示不同說明 */}
-                                                        {item.payment_method === 'linepay' && (
-                                                            <div className="text-sm text-stone-700 space-y-1">
-                                                                <p className="font-bold text-stone-800">📱 LINE Pay 付款流程：</p>
-                                                                <ol className="list-decimal ml-5 space-y-0.5">
-                                                                    <li>掃描 QR Code 完成 LINE Pay 支付</li>
-                                                                    <li>截圖支付成功畫面</li>
-                                                                    <li>將截圖與訂單編號傳送給客服核對</li>
-                                                                </ol>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {item.payment_method === 'shopline' && (
-                                                            <div className="text-sm text-stone-700 space-y-1">
-                                                                <p className="font-bold text-stone-800">💳 SHOPLINE 付款流程：</p>
-                                                                <ol className="list-decimal ml-5 space-y-0.5">
-                                                                    <li>前往外部支付頁面完成付款</li>
-                                                                    <li>截圖支付成功畫面</li>
-                                                                    <li>將截圖與訂單編號傳送給客服核對</li>
-                                                                </ol>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {!item.payment_method || (item.payment_method !== 'linepay' && item.payment_method !== 'shopline') && (
-                                                            <div className="text-sm text-stone-700 space-y-1">
-                                                                <p className="font-bold text-stone-800">💬 此方式需聯繫客服索取付款資訊：</p>
-                                                                <ol className="list-decimal ml-5 space-y-0.5">
-                                                                    <li>加入官方 LINE 帳號（ID: @939yjtdj）</li>
-                                                                    <li>告知客服您欲使用 {item.payment_method || '其他'} 支付</li>
-                                                                    <li>提供您的贊助金額 NT$ {item.amount?.toLocaleString()}</li>
-                                                                    <li>完成轉帳後回傳截圖與訂單編號</li>
-                                                                </ol>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        <div className="flex items-center gap-2 pt-2 border-t border-yellow-200">
-                                                            <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
-                                                               className="inline-flex items-center gap-2 px-3 py-2 bg-line-500 text-white rounded-lg text-sm font-bold hover:bg-line-600 transition-colors">
-                                                                <MessageSquare size={16} />
-                                                                立即聯繫 LINE 客服
-                                                                <ExternalLink size={12} />
+                                            {item.status === 'pending' && (() => {
+                                                const shoplineUrl = item.payment_method === 'shopline' ? (PLANS.find(p => p.amount === item.amount)?.url || null) : null;
+                                                const linepayQr  = item.payment_method === 'linepay'  ? getAssetUrl(ASSETS.LINE_QRS[item.amount] || '') : null;
+                                                return (
+                                                <div className="mt-4 pt-4 border-t border-stone-200 space-y-4">
+
+                                                    {/* SHOPLINE 付款按鈕 */}
+                                                    {shoplineUrl && (
+                                                        <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
+                                                            <p className="font-black text-stone-800 text-base mb-1">💳 SHOPLINE 付款</p>
+                                                            <p className="text-stone-600 text-sm mb-3">點擊下方按鈕前往付款頁面，完成後截圖回傳客服。</p>
+                                                            <a
+                                                                href={shoplineUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-base transition-colors shadow-md"
+                                                            >
+                                                                前往 SHOPLINE 付款
+                                                                <ExternalLink size={16} />
                                                             </a>
-                                                            <span className="text-xs text-stone-500">⏰ 人工客服時間：10:00 - 22:00</span>
+                                                            <p className="text-xs text-stone-400 mt-2">🔗 連結：<span className="font-mono break-all">{shoplineUrl}</span></p>
                                                         </div>
+                                                    )}
+
+                                                    {/* LINE Pay QR Code */}
+                                                    {linepayQr && ASSETS.LINE_QRS[item.amount] && (
+                                                        <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4">
+                                                            <p className="font-black text-stone-800 text-base mb-1">📱 LINE Pay QR Code</p>
+                                                            <p className="text-stone-600 text-sm mb-3">使用 LINE Pay 掃描以下 QR Code 完成付款，完成後截圖回傳客服。</p>
+                                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                                                <img
+                                                                    src={linepayQr}
+                                                                    alt={`LINE Pay NT$${item.amount} QR Code`}
+                                                                    className="w-40 h-40 object-contain rounded-xl border-2 border-green-300 bg-white p-2 shadow"
+                                                                />
+                                                                <div className="text-sm text-stone-600 space-y-1.5">
+                                                                    <p>① 開啟 LINE App</p>
+                                                                    <p>② 進入 LINE Pay → 掃描 QR Code</p>
+                                                                    <p>③ 確認金額為 <strong className="text-green-700">NT$ {item.amount?.toLocaleString()}</strong></p>
+                                                                    <p>④ 完成付款後截圖，傳給客服核對</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 找不到連結 → 聯繫客服 */}
+                                                    {!shoplineUrl && !linepayQr && (
+                                                        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4">
+                                                            <p className="font-black text-stone-800 text-base mb-1">⚠️ 找不到對應的付款連結</p>
+                                                            <p className="text-stone-600 text-sm">請聯繫客服，提供訂單編號，客服將為您補發付款連結。</p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 客服按鈕 */}
+                                                    <div className="flex items-center gap-3 flex-wrap">
+                                                        <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-line-500 hover:bg-line-600 text-white rounded-xl font-bold text-sm transition-colors">
+                                                            <MessageSquare size={16} /> 聯繫 LINE 客服
+                                                        </a>
+                                                        <span className="text-xs text-stone-500">⏰ 客服時間：10:00–22:00</span>
                                                     </div>
                                                 </div>
-                                            )}
+                                                );
+                                            })()}
                                         </div>
                                     ))}
                                 </div>
@@ -9123,6 +9133,43 @@
                                                     </div>
                                                     {item.ip_address && <span className="text-stone-200 font-mono text-xs">{item.ip_address}</span>}
                                                 </div>
+
+                                                {/* 付款連結／QR（待處理訂單，方便管理員查詢） */}
+                                                {item.status === 'pending' && (() => {
+                                                    const slUrl = item.payment_method === 'shopline' ? (PLANS.find(p => p.amount === item.amount)?.url || null) : null;
+                                                    const lpQr  = item.payment_method === 'linepay'  ? getAssetUrl(ASSETS.LINE_QRS[item.amount] || '') : null;
+                                                    if (!slUrl && !lpQr) return null;
+                                                    return (
+                                                        <div className="rounded-xl bg-stone-900/60 border border-stone-600/50 p-3 space-y-2">
+                                                            <p className="text-stone-300 text-xs font-bold">🔗 付款連結／QR</p>
+                                                            {slUrl && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <a href={slUrl} target="_blank" rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600/80 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-colors">
+                                                                        前往 SHOPLINE 付款 <ExternalLink size={11} />
+                                                                    </a>
+                                                                    <button onClick={() => { navigator.clipboard.writeText(slUrl); showToast('付款連結已複製', 'success'); }}
+                                                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-lg text-xs font-bold transition-colors">
+                                                                        <Copy size={11} /> 複製連結
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                            {lpQr && ASSETS.LINE_QRS[item.amount] && (
+                                                                <div className="flex items-center gap-3">
+                                                                    <img src={lpQr} alt="LINE Pay QR" className="w-20 h-20 object-contain bg-white rounded-lg border border-stone-600 p-1" loading="lazy" />
+                                                                    <div className="text-xs text-stone-400">
+                                                                        <p className="font-bold text-stone-300 mb-1">LINE Pay QR Code</p>
+                                                                        <p>NT$ {item.amount?.toLocaleString()}</p>
+                                                                        <button onClick={() => { navigator.clipboard.writeText(lpQr); showToast('QR 連結已複製', 'success'); }}
+                                                                            className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-lg text-xs font-bold transition-colors">
+                                                                            <Copy size={10} /> 複製圖片連結
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                                 
                                                 <div className="text-xs">
                                                     <span className="text-stone-100 font-semibold">備註 </span>
