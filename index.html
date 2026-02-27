@@ -3371,44 +3371,41 @@
 
             return (
                 <motion.div
-                    whileHover={{ y: -4, boxShadow: '0 16px 32px -8px rgba(0,0,0,0.12)' }}
+                    whileHover={{ y: -6 }}
+                    transition={{ duration: 0.2 }}
                     onClick={onClick}
-                    className="bg-white rounded-2xl overflow-hidden border border-stone-200 cursor-pointer group transition-all duration-300 shadow-sm hover:border-amber-300 flex flex-col"
+                    className="stone-panel cursor-pointer group overflow-hidden bg-white flex flex-col"
                 >
                     {/* 縮圖 */}
                     {guide.thumbnail ? (
-                        <div className="h-44 bg-stone-100 overflow-hidden relative">
+                        <div className="h-48 overflow-hidden relative">
                             <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
                             {guide.is_pinned && (
-                                <span className="absolute top-2.5 left-2.5 bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg shadow">📌 置頂</span>
+                                <span className="absolute top-3 left-3 bg-amber-500 text-white text-sm font-black px-3 py-1 rounded-xl shadow-lg">📌 置頂</span>
                             )}
                         </div>
                     ) : (
-                        <div className="h-44 bg-gradient-to-br from-stone-100 to-amber-50 flex items-center justify-center relative">
-                            <span className="text-5xl opacity-25">{catInfo.icon}</span>
+                        <div className="h-48 bg-amber-50 flex items-center justify-center relative">
+                            <span className="text-7xl opacity-20">{catInfo.icon}</span>
                             {guide.is_pinned && (
-                                <span className="absolute top-2.5 left-2.5 bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg shadow">📌 置頂</span>
+                                <span className="absolute top-3 left-3 bg-amber-500 text-white text-sm font-black px-3 py-1 rounded-xl shadow-lg">📌 置頂</span>
                             )}
                         </div>
                     )}
 
-                    <div className="p-4 flex-1 flex flex-col gap-2">
-                        {/* 分類標籤 */}
-                        <span className="inline-flex items-center gap-1 self-start bg-stone-100 text-stone-600 text-xs font-bold px-2.5 py-1 rounded-lg">
+                    <div className="p-6 flex flex-col gap-3 flex-1">
+                        <span className="self-start bg-stone-100 text-stone-700 text-sm font-bold px-3 py-1.5 rounded-xl">
                             {catInfo.icon} {catInfo.label}
                         </span>
-                        {/* 標題 */}
-                        <h3 className="font-bold text-stone-800 text-base leading-snug line-clamp-2 group-hover:text-amber-600 transition-colors flex-1">
+                        <h3 className="text-xl font-bold text-stone-800 line-clamp-2 group-hover:text-amber-700 transition-colors leading-snug flex-1">
                             {guide.title}
                         </h3>
-                        {/* 底部資訊 */}
-                        <div className="flex items-center justify-between text-xs text-stone-400 pt-2 border-t border-stone-100 mt-auto">
+                        <div className="flex items-center justify-between text-sm text-stone-500 pt-3 border-t border-stone-100 mt-auto">
+                            <span className="flex items-center gap-2"><User size={15} />{guide.author_name || '管理員'}</span>
                             <div className="flex items-center gap-3">
-                                <span className="flex items-center gap-1"><User size={12} /><span className="truncate max-w-[70px]">{guide.author_name || '管理員'}</span></span>
-                                <span className="flex items-center gap-1"><Eye size={12} />{guide.views || 0}</span>
-                                <span className="flex items-center gap-1"><Heart size={12} />{guide.likes || 0}</span>
+                                <span className="flex items-center gap-1.5"><Eye size={15} />{guide.views || 0}</span>
+                                <span className="tabular-nums">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
                             </div>
-                            <span className="tabular-nums">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -3707,37 +3704,35 @@
 
             return (
                 <motion.div
-                    whileHover={{ x: 3 }}
+                    whileHover={{ y: -3 }}
+                    transition={{ duration: 0.2 }}
                     onClick={onClick}
-                    className="bg-white rounded-2xl border border-stone-200 cursor-pointer hover:border-amber-300 hover:shadow-md transition-all duration-200 flex items-center gap-4 p-4 group"
+                    className="stone-panel cursor-pointer group bg-white flex items-center gap-5 p-5"
                 >
                     {/* 縮圖 */}
-                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-stone-100 to-amber-50">
+                    <div className="w-28 h-28 shrink-0 rounded-2xl overflow-hidden bg-amber-50 flex items-center justify-center">
                         {guide.thumbnail ? (
                             <img src={guide.thumbnail} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" decoding="async" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-2xl opacity-30">{catInfo.icon}</span>
-                            </div>
+                            <span className="text-4xl opacity-25">{catInfo.icon}</span>
                         )}
                     </div>
                     {/* 內容 */}
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            {guide.is_pinned && <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded">📌 置頂</span>}
-                            <span className="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-0.5 rounded">{catInfo.icon} {catInfo.label}</span>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            {guide.is_pinned && <span className="bg-amber-500 text-white text-sm font-bold px-2.5 py-1 rounded-lg">📌 置頂</span>}
+                            <span className="bg-stone-100 text-stone-700 text-sm font-bold px-2.5 py-1 rounded-lg">{catInfo.icon} {catInfo.label}</span>
                         </div>
-                        <h3 className="font-bold text-stone-800 text-base line-clamp-2 group-hover:text-amber-600 transition-colors leading-snug">
+                        <h3 className="text-xl font-bold text-stone-800 line-clamp-2 group-hover:text-amber-700 transition-colors leading-snug mb-2">
                             {guide.title}
                         </h3>
-                        <div className="flex items-center gap-4 text-xs text-stone-400 mt-1.5">
-                            <span className="flex items-center gap-1"><User size={12} />{guide.author_name || '管理員'}</span>
-                            <span className="flex items-center gap-1"><Eye size={12} />{guide.views || 0}</span>
-                            <span className="flex items-center gap-1"><Heart size={12} />{guide.likes || 0}</span>
-                            <span className="ml-auto tabular-nums">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
+                        <div className="flex items-center gap-4 text-sm text-stone-500">
+                            <span className="flex items-center gap-1.5"><User size={15} />{guide.author_name || '管理員'}</span>
+                            <span className="flex items-center gap-1.5"><Eye size={15} />{guide.views || 0}</span>
+                            <span className="ml-auto tabular-nums text-stone-400">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })}</span>
                         </div>
                     </div>
-                    <ChevronRight size={18} className="text-stone-300 group-hover:text-amber-400 shrink-0 transition-colors" />
+                    <ChevronRight size={22} className="text-stone-300 group-hover:text-amber-500 shrink-0 transition-colors" />
                 </motion.div>
             );
         };
@@ -3905,42 +3900,46 @@
                 >
                     <div className="max-w-7xl mx-auto">
                         {/* 標題 */}
-                        <div className="text-center mb-10">
-                            <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-3 tracking-tight">活動攻略</h1>
-                            <p className="text-stone-500 font-medium max-w-xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 tracking-tight">
+                                活動攻略
+                                <span className="block absolute -bottom-2 left-0 w-full h-3 bg-yellow-200/50 -z-10 rounded-full" style={{display:'none'}} />
+                            </h1>
+                            <p className="text-stone-500 font-medium text-lg max-w-xl mx-auto">
                                 限時活動、新手教學、副本攻略—一次掌握
                             </p>
                         </div>
 
                         {/* 搜尋 + 切換列 */}
-                        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
                             <div className="relative flex-1">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
                                 <input
                                     type="text"
-                                    placeholder="搜尋攻略..."
+                                    placeholder="搜尋攻略標題、作者..."
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-stone-200 bg-white text-stone-800 placeholder-stone-400 focus:border-amber-400 outline-none transition-all text-sm"
+                                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-stone-200 bg-white text-stone-800 placeholder-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-base"
                                 />
                             </div>
-                            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl shrink-0">
+                            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl shrink-0">
                                 {[{ m: 'grid', icon: LayoutGrid, t: '卡片' }, { m: 'list', icon: List, t: '條列' }].map(({ m, icon: Icon, t }) => (
                                     <button key={m} onClick={() => handleViewModeChange(m)}
-                                        className={`px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-all ${viewMode === m ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>
-                                        <Icon size={15} />{t}
+                                        className={`px-5 py-3 rounded-xl font-bold text-base flex items-center gap-2 transition-all min-h-[48px] ${viewMode === m ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700'}`}>
+                                        <Icon size={18} />{t}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         {/* 分類篩選 */}
-                        <div className="flex flex-wrap gap-2 mb-8">
+                        <div className="flex flex-wrap gap-2.5 mb-10">
                             <button
                                 onClick={() => setCategory('all')}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${category === 'all' ? 'bg-stone-800 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                                className={`px-5 py-2.5 rounded-2xl text-base font-bold transition-all min-h-[48px] ${category === 'all' ? 'bg-stone-800 text-white shadow-md' : 'bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'}`}
                             >
-                                📚 全部 {!loading && <span className="ml-1 opacity-60 font-normal">({guides.length})</span>}
+                                📚 全部
+                                {!loading && guides.length > 0 && <span className="ml-2 text-sm opacity-60">({guides.length})</span>}
                             </button>
                             {Object.entries(GUIDE_CATEGORIES).map(([id, c]) => {
                                 const count = guides.filter(g => g.category === id).length;
@@ -3949,9 +3948,10 @@
                                     <button
                                         key={id}
                                         onClick={() => setCategory(id)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${category === id ? 'bg-stone-800 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                                        className={`px-5 py-2.5 rounded-2xl text-base font-bold transition-all min-h-[48px] ${category === id ? 'bg-stone-800 text-white shadow-md' : 'bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'}`}
                                     >
-                                        {c.icon} {c.label} {!loading && <span className="ml-1 opacity-60 font-normal">({count})</span>}
+                                        {c.icon} {c.label}
+                                        {!loading && <span className="ml-2 text-sm opacity-60">({count})</span>}
                                     </button>
                                 );
                             })}
@@ -3961,31 +3961,31 @@
                         {loading ? (
                             <LoadingSpinner message="載入攻略中..." />
                         ) : guides.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-2xl border-2 border-stone-200 shadow-sm">
-                                <BookOpen size={40} className="mx-auto text-stone-300 mb-4" />
-                                <p className="text-stone-600 font-bold text-xl mb-2">目前沒有攻略</p>
-                                <p className="text-stone-400 text-sm">敬請期待精彩內容！</p>
+                            <div className="stone-panel text-center py-20 bg-white">
+                                <BookOpen size={56} className="mx-auto text-stone-300 mb-5" />
+                                <p className="text-stone-700 font-black text-2xl mb-2">目前沒有攻略</p>
+                                <p className="text-stone-500 text-base">敬請期待精彩內容！</p>
                             </div>
                         ) : filteredGuides.length === 0 ? (
-                            <div className="text-center py-16 bg-white rounded-2xl border border-stone-200">
-                                <Search size={36} className="mx-auto text-stone-300 mb-3" />
-                                <p className="text-stone-600 font-bold mb-1">查無符合「{searchTerm}」的攻略</p>
-                                <p className="text-stone-400 text-sm">請嘗試其他關鍵字</p>
+                            <div className="stone-panel text-center py-16 bg-white">
+                                <Search size={48} className="mx-auto text-stone-300 mb-4" />
+                                <p className="text-stone-700 font-bold text-xl mb-2">查無符合「{searchTerm}」的攻略</p>
+                                <p className="text-stone-500">請嘗試其他關鍵字</p>
                             </div>
                         ) : (
-                            <div className="space-y-8">
+                            <div className="space-y-10">
                                 {/* 置頂精選 */}
                                 {showPinSection && (
                                     <div>
-                                        <h2 className="flex items-center gap-2 text-base font-black text-stone-700 mb-3">
-                                            <Star size={16} fill="currentColor" className="text-amber-500" /> 精選置頂
+                                        <h2 className="flex items-center gap-2.5 text-2xl font-black text-stone-800 mb-5">
+                                            <Star size={22} fill="currentColor" className="text-amber-500" /> 精選置頂
                                         </h2>
                                         {viewMode === 'grid' ? (
-                                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                                 {pinnedGuides.map(g => <GuideCard key={g.id} guide={g} onClick={() => handleGuideClick(g)} />)}
                                             </div>
                                         ) : (
-                                            <div className="space-y-3">
+                                            <div className="space-y-4">
                                                 {pinnedGuides.map(g => <GuideListItem key={g.id} guide={g} onClick={() => handleGuideClick(g)} />)}
                                             </div>
                                         )}
@@ -3995,16 +3995,16 @@
                                 {(showPinSection ? normalGuides : filteredGuides).length > 0 && (
                                     <div>
                                         {showPinSection && normalGuides.length > 0 && (
-                                            <h2 className="flex items-center gap-2 text-base font-black text-stone-700 mb-3">
-                                                <BookOpen size={16} /> 所有攻略
+                                            <h2 className="flex items-center gap-2.5 text-2xl font-black text-stone-800 mb-5">
+                                                <BookOpen size={22} className="text-stone-600" /> 所有攻略
                                             </h2>
                                         )}
                                         {viewMode === 'grid' ? (
-                                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                                 {(showPinSection ? normalGuides : filteredGuides).map(g => <GuideCard key={g.id} guide={g} onClick={() => handleGuideClick(g)} />)}
                                             </div>
                                         ) : (
-                                            <div className="space-y-3">
+                                            <div className="space-y-4">
                                                 {(showPinSection ? normalGuides : filteredGuides).map(g => <GuideListItem key={g.id} guide={g} onClick={() => handleGuideClick(g)} />)}
                                             </div>
                                         )}
@@ -4713,14 +4713,14 @@
                     {!loading && guides.length > 0 && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {[
-                                { label: '攻略總數', value: guides.length, icon: '📚', color: 'text-blue-400', bg: 'bg-blue-900/30 border-blue-800/40' },
-                                { label: '已發布', value: publishedCount, icon: '✅', color: 'text-green-400', bg: 'bg-green-900/30 border-green-800/40' },
-                                { label: '草稿', value: draftCount, icon: '📝', color: 'text-amber-400', bg: 'bg-amber-900/30 border-amber-800/40' },
-                                { label: '置頂', value: pinnedCount, icon: '📌', color: 'text-orange-400', bg: 'bg-orange-900/30 border-orange-800/40' },
+                                { label: '攻略總數', value: guides.length, icon: '📚' },
+                                { label: '已發布',   value: publishedCount, icon: '✅' },
+                                { label: '草稿',     value: draftCount,     icon: '📝' },
+                                { label: '置頂',     value: pinnedCount,    icon: '📌' },
                             ].map(s => (
-                                <div key={s.label} className={`rounded-2xl border px-4 py-3 ${s.bg}`}>
-                                    <p className="text-stone-400 text-xs mb-1">{s.icon} {s.label}</p>
-                                    <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                                <div key={s.label} className="rounded-2xl bg-stone-800 border border-stone-700 px-5 py-4">
+                                    <p className="text-stone-400 text-sm font-bold mb-1">{s.icon} {s.label}</p>
+                                    <p className="text-3xl font-black text-white">{s.value}</p>
                                 </div>
                             ))}
                         </div>
@@ -4779,34 +4779,34 @@
                             <p className="text-stone-400 font-bold">沒有符合條件的攻略</p>
                         </div>
                     ) : (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {filteredAdminGuides.map(guide => {
                                 const catInfo = getGuideCategory(guide.category);
-                                const statusLabel = guide.status === 'published' ? '已發布' : guide.status === 'draft' ? '草稿' : '封存';
+                                const statusLabel = guide.status === 'published' ? '✅ 已發布' : guide.status === 'draft' ? '📝 草稿' : '🗃️ 封存';
                                 const statusCls = guide.status === 'published' ? 'bg-green-500/20 text-green-300' : guide.status === 'draft' ? 'bg-amber-500/20 text-amber-300' : 'bg-stone-600/40 text-stone-400';
                                 return (
-                                    <div key={guide.id} className="bg-stone-800/80 rounded-xl border border-stone-700 hover:border-stone-500 transition-colors flex items-center gap-3 px-4 py-3">
+                                    <div key={guide.id} className="bg-stone-800 rounded-2xl border border-stone-700 hover:border-stone-500 transition-colors flex items-center gap-4 p-4">
                                         {/* 縮圖 */}
-                                        <div className="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-stone-700 flex items-center justify-center">
+                                        <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-stone-700 flex items-center justify-center">
                                             {guide.thumbnail
                                                 ? <img src={guide.thumbnail} alt="" className="w-full h-full object-cover" loading="lazy" />
-                                                : <span className="text-lg">{catInfo.icon}</span>
+                                                : <span className="text-2xl">{catInfo.icon}</span>
                                             }
                                         </div>
                                         {/* 內容 */}
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                                                <span className="text-xs text-stone-400 font-medium">{catInfo.icon} {catInfo.label}</span>
-                                                <span className={`text-xs px-2 py-0.5 rounded font-bold ${statusCls}`}>{statusLabel}</span>
-                                                {guide.is_pinned && <span className="text-xs text-amber-400 font-bold">📌</span>}
+                                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                                <span className="text-sm text-stone-300 font-bold">{catInfo.icon} {catInfo.label}</span>
+                                                <span className={`text-sm px-2.5 py-0.5 rounded-lg font-bold ${statusCls}`}>{statusLabel}</span>
+                                                {guide.is_pinned && <span className="text-sm text-amber-400 font-bold">📌 置頂</span>}
                                             </div>
-                                            <p className="text-white font-semibold text-sm line-clamp-1">{guide.title}</p>
-                                            <p className="text-stone-500 text-xs mt-0.5">{guide.author_name || '管理員'} · 👁 {guide.views || 0} · {new Date(guide.created_at).toLocaleDateString('zh-TW')}</p>
+                                            <p className="text-white font-bold text-base line-clamp-1 mb-1">{guide.title}</p>
+                                            <p className="text-stone-500 text-sm">{guide.author_name || '管理員'} · 👁 {guide.views || 0} · {new Date(guide.created_at).toLocaleDateString('zh-TW')}</p>
                                         </div>
                                         {/* 按鈕 */}
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <button onClick={() => handleEdit(guide)} className="px-3 py-1.5 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-lg text-sm font-bold transition-colors">編輯</button>
-                                            <button onClick={() => handleDelete(guide.id)} className="px-3 py-1.5 bg-stone-700 hover:bg-red-800 text-stone-400 hover:text-red-300 rounded-lg text-sm font-bold transition-colors">刪除</button>
+                                            <button onClick={() => handleEdit(guide)} className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded-xl text-sm font-bold transition-colors">編輯</button>
+                                            <button onClick={() => handleDelete(guide.id)} className="px-4 py-2 bg-stone-700 hover:bg-red-900 text-stone-400 hover:text-red-300 rounded-xl text-sm font-bold transition-colors">刪除</button>
                                         </div>
                                     </div>
                                 );
