@@ -3628,15 +3628,16 @@
                                 .guide-content table,
                                 .guide-content .word-content table,
                                 .guide-content .md-content table {
-                                    width: auto;
-                                    min-width: 100%;
+                                    display: block;
+                                    width: max-content;
+                                    max-width: 100%;
+                                    overflow-x: auto;
+                                    -webkit-overflow-scrolling: touch;
                                     table-layout: auto;
                                     border-collapse: collapse;
-                                    margin: 0;
-                                    font-size: 0.95em;
+                                    margin: 1.75em 0;
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                     border-radius: 12px;
-                                    overflow: hidden;
                                 }
                                 .guide-content .table-wrap {
                                     overflow-x: auto;
@@ -3649,22 +3650,17 @@
                                 .guide-content .word-content th, .guide-content .word-content td,
                                 .guide-content .md-content th, .guide-content .md-content td {
                                     border: 1px solid #e7e5e4;
-                                    padding: 0.75em 1em;
+                                    padding: 0.85em 1.25em;
                                     text-align: left;
                                     color: #44403c;
                                     white-space: nowrap;
-                                }
-                                .guide-content td,
-                                .guide-content .word-content td,
-                                .guide-content .md-content td {
-                                    white-space: normal;
-                                    min-width: 80px;
+                                    font-size: 1rem;
+                                    line-height: 1.6;
                                 }
                                 .guide-content th {
                                     background: #fef3c7;
                                     font-weight: 700;
                                     color: #1a1614;
-                                    white-space: nowrap;
                                 }
                                 .guide-content tr:nth-child(even) { background: #fafaf9; }
                                 .guide-content blockquote {
@@ -3692,7 +3688,10 @@
                                     .guide-content ul, .guide-content ol { padding-left: 1.5em; margin: 1.25em 0; }
                                     .guide-content table,
                                     .guide-content .word-content table,
-                                    .guide-content .md-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; width: max-content; max-width: 100%; }
+                                    .guide-content .md-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                                    .guide-content th, .guide-content td,
+                                    .guide-content .word-content th, .guide-content .word-content td,
+                                    .guide-content .md-content th, .guide-content .md-content td { white-space: nowrap; }
                                 }
                                 @media (min-width: 768px) and (max-width: 1023px) {
                                     .guide-content {
