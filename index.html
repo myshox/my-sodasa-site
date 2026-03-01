@@ -3549,7 +3549,7 @@
                                             <div
                                                 ref={contentRef}
                                                 className="bg-white rounded-2xl px-4 sm:px-6 md:px-10 py-8 md:py-14 shadow-sm border border-stone-100 guide-content"
-                                                style={{ overflowWrap: 'break-word', minHeight: '120px' }}
+                                                style={{ overflowWrap: 'break-word', minHeight: '120px', overflowX: 'auto' }}
                                                 dangerouslySetInnerHTML={{ __html: guide.content }}
                                             />
                                         );
@@ -3626,10 +3626,11 @@
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                 }
                                 .guide-content table,
-                                .guide-content .word-content table {
-                                    width: 100%;
-                                    max-width: 100%;
-                                    table-layout: fixed;
+                                .guide-content .word-content table,
+                                .guide-content .md-content table {
+                                    width: auto;
+                                    min-width: 100%;
+                                    table-layout: auto;
                                     border-collapse: collapse;
                                     margin: 0;
                                     font-size: 0.95em;
@@ -3637,19 +3638,33 @@
                                     border-radius: 12px;
                                     overflow: hidden;
                                 }
+                                .guide-content .table-wrap {
+                                    overflow-x: auto;
+                                    -webkit-overflow-scrolling: touch;
+                                    margin: 1.75em 0;
+                                    border-radius: 12px;
+                                    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+                                }
                                 .guide-content th, .guide-content td,
-                                .guide-content .word-content th, .guide-content .word-content td {
+                                .guide-content .word-content th, .guide-content .word-content td,
+                                .guide-content .md-content th, .guide-content .md-content td {
                                     border: 1px solid #e7e5e4;
                                     padding: 0.75em 1em;
                                     text-align: left;
                                     color: #44403c;
-                                    word-break: break-word;
-                                    overflow-wrap: break-word;
+                                    white-space: nowrap;
+                                }
+                                .guide-content td,
+                                .guide-content .word-content td,
+                                .guide-content .md-content td {
+                                    white-space: normal;
+                                    min-width: 80px;
                                 }
                                 .guide-content th {
                                     background: #fef3c7;
                                     font-weight: 700;
                                     color: #1a1614;
+                                    white-space: nowrap;
                                 }
                                 .guide-content tr:nth-child(even) { background: #fafaf9; }
                                 .guide-content blockquote {
@@ -3676,7 +3691,8 @@
                                     .guide-content img { margin: 1.5em auto; max-width: 100%; height: auto; }
                                     .guide-content ul, .guide-content ol { padding-left: 1.5em; margin: 1.25em 0; }
                                     .guide-content table,
-                                    .guide-content .word-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                                    .guide-content .word-content table,
+                                    .guide-content .md-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; width: max-content; max-width: 100%; }
                                 }
                                 @media (min-width: 768px) and (max-width: 1023px) {
                                     .guide-content {
