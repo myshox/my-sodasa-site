@@ -3440,10 +3440,18 @@
                     items.push({ id, text: el.textContent?.slice(0, 40) || '', level });
                 });
                 root.querySelectorAll('img').forEach((img) => {
-                    img.loading = 'lazy';
-                    img.decoding = 'async';
-                });
-                setTocItems(items);
+                                    img.loading = 'lazy';
+                                    img.decoding = 'async';
+                                });
+                                // 把每個表格用可橫向捲動的 wrapper 包起來
+                                root.querySelectorAll('table').forEach((table) => {
+                                    if (table.parentElement?.classList.contains('guide-content-table-wrap')) return;
+                                    const wrap = document.createElement('div');
+                                    wrap.className = 'guide-content-table-wrap';
+                                    table.parentNode.insertBefore(wrap, table);
+                                    wrap.appendChild(table);
+                                });
+                                setTocItems(items);
             }, [guide.content]);
 
             const catInfo = getGuideCategory(guide.category);
@@ -3455,7 +3463,7 @@
                     exit={{ opacity: 0 }}
                     className="pt-28 md:pt-32 pb-32 md:pb-32 px-5 md:px-6 lg:px-8 min-h-screen bg-stone-50"
                 >
-                    <div className="max-w-6xl mx-auto">
+                    <div className="max-w-5xl mx-auto">
                         {/* 麵包屑 */}
                         <nav className="flex items-center gap-2 text-sm text-stone-500 mb-6">
                             <button onClick={onBack} className="hover:text-amber-600 font-medium transition-colors">活動攻略</button>
@@ -3625,19 +3633,31 @@
                                     border-radius: 12px;
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                 }
+                                .guide-content-table-wrap {
+                                    overflow-x: auto;
+                                    -webkit-overflow-scrolling: touch;
+                                    margin: 1.75em -1rem;
+                                    padding: 0 1rem;
+                                }
+                                @media (min-width: 768px) {
+                                    .guide-content-table-wrap {
+                                        margin-left: -2.5rem;
+                                        margin-right: -2.5rem;
+                                        padding: 0 2.5rem;
+                                    }
+                                }
                                 .guide-content table,
                                 .guide-content .word-content table,
                                 .guide-content .md-content table {
-                                    display: block;
+                                    display: table;
                                     width: max-content;
-                                    max-width: 100%;
-                                    overflow-x: auto;
-                                    -webkit-overflow-scrolling: touch;
+                                    min-width: 100%;
                                     table-layout: auto;
                                     border-collapse: collapse;
-                                    margin: 1.75em 0;
+                                    margin: 0;
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                     border-radius: 12px;
+                                    overflow: hidden;
                                 }
                                 .guide-content .table-wrap {
                                     overflow-x: auto;
@@ -3686,9 +3706,7 @@
                                     .guide-content h3 { font-size: 1.2em; margin-top: 1.35em; }
                                     .guide-content img { margin: 1.5em auto; max-width: 100%; height: auto; }
                                     .guide-content ul, .guide-content ol { padding-left: 1.5em; margin: 1.25em 0; }
-                                    .guide-content table,
-                                    .guide-content .word-content table,
-                                    .guide-content .md-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                                    .guide-content-table-wrap { margin-left: -1rem; margin-right: -1rem; padding: 0 1rem; }
                                     .guide-content th, .guide-content td,
                                     .guide-content .word-content th, .guide-content .word-content td,
                                     .guide-content .md-content th, .guide-content .md-content td { white-space: nowrap; }
