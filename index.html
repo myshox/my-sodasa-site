@@ -3461,9 +3461,9 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pt-28 md:pt-32 pb-32 md:pb-32 px-5 md:px-6 lg:px-8 min-h-screen bg-stone-50"
+                    className="pt-28 md:pt-32 pb-32 md:pb-32 px-5 md:px-6 lg:px-10 min-h-screen bg-stone-50"
                 >
-                    <div className="max-w-5xl mx-auto">
+                    <div className="max-w-screen-xl mx-auto">
                         {/* 麵包屑 */}
                         <nav className="flex items-center gap-2 text-sm text-stone-500 mb-6">
                             <button onClick={onBack} className="hover:text-amber-600 font-medium transition-colors">活動攻略</button>
@@ -3634,24 +3634,22 @@
                                     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
                                 }
                                 .guide-content-table-wrap {
-                                    overflow-x: auto;
-                                    -webkit-overflow-scrolling: touch;
-                                    margin: 1.75em -1rem;
-                                    padding: 0 1rem;
+                                    margin: 1.75em 0;
                                 }
-                                @media (min-width: 768px) {
+                                @media (max-width: 767px) {
                                     .guide-content-table-wrap {
-                                        margin-left: -2.5rem;
-                                        margin-right: -2.5rem;
-                                        padding: 0 2.5rem;
+                                        overflow-x: auto;
+                                        -webkit-overflow-scrolling: touch;
+                                        margin-left: -1rem;
+                                        margin-right: -1rem;
+                                        padding: 0 1rem;
                                     }
                                 }
                                 .guide-content table,
                                 .guide-content .word-content table,
                                 .guide-content .md-content table {
                                     display: table;
-                                    width: max-content;
-                                    min-width: 100%;
+                                    width: 100%;
                                     table-layout: auto;
                                     border-collapse: collapse;
                                     margin: 0;
