@@ -5154,6 +5154,8 @@
             const [selectedAccountId, setSelectedAccountId] = useState('');
             const [selectedMethod, setSelectedMethod] = useState(null);
             const [selectedPlan, setSelectedPlan] = useState(null);
+            const [isCustomPlan, setIsCustomPlan] = useState(false);
+            const [customAmountInput, setCustomAmountInput] = useState('');
             const [showModal, setShowModal] = useState(false);
             const [orderNumber, setOrderNumber] = useState(''); // 新增：訂單編號
             const [lineName, setLineName] = useState(''); // 新增：LINE 名稱
@@ -5251,7 +5253,7 @@
                         line_name: (lineName || '').trim() || null,
                         amount: selectedPlan.amount,
                         coins: selectedPlan.total,
-                        plan_name: `金幣 ${selectedPlan.total.toLocaleString()} 方案`,
+                        plan_name: selectedPlan.isCustom ? `自填金額 NT$${selectedPlan.amount} 方案` : `金幣 ${selectedPlan.total.toLocaleString()} 方案`,
                         payment_method: selectedMethod,
                         status: 'pending',
                         ip_address: ipData?.ip || null
@@ -5722,10 +5724,17 @@
                                         return (
                                             <div 
                                                 key={i} 
-                                                onClick={() => { setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); }}
+                                                onClick={() => {
+                                                    if (method.id === 'linepay' && isCustomPlan) {
+                                                        showToast('自填金額僅支援 SHOPLINE 支付', 'warning');
+                                                        return;
+                                                    }
+                                                    setSelectedMethod(method.id);
+                                                    setFormErrors(prev => ({ ...prev, method: '' }));
+                                                }}
                                                 role="button"
                                                 tabIndex={0}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (method.id === 'linepay' && isCustomPlan) { showToast('自填金額僅支援 SHOPLINE 支付', 'warning'); return; } setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
                                                 className={`relative flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl border-2 cursor-pointer transition-all duration-300 min-h-[140px]
                                                 ${isSelected ? 'border-gold-400 bg-gradient-to-br from-gold-50 to-amber-50 shadow-xl shadow-gold-200/40 ring-2 ring-gold-300/50 scale-[1.02]' : 'border-stone-200 bg-white hover:border-gold-300 hover:bg-stone-50/80 hover:shadow-lg active:scale-[0.98]'}`}
                                             >
@@ -5768,10 +5777,10 @@
                                         return (
                                             <div 
                                                 key={i} 
-                                                onClick={() => { setSelectedPlan(plan); setFormErrors(prev => ({ ...prev, plan: '' })); }}
+                                                onClick={() => { setSelectedPlan(plan); setIsCustomPlan(false); setFormErrors(prev => ({ ...prev, plan: '' })); }}
                                                 role="button"
                                                 tabIndex={0}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlan(plan); setFormErrors(prev => ({ ...prev, plan: '' })); } }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlan(plan); setIsCustomPlan(false); setFormErrors(prev => ({ ...prev, plan: '' })); } }}
                                                 className={`relative p-5 md:p-6 rounded-2xl bg-white border-2 cursor-pointer group transition-all duration-300
                                                 ${isSelected ? 'border-gold-400 ring-2 ring-gold-200/50 bg-gradient-to-br from-gold-50/80 to-amber-50/60 shadow-lg' : 'border-stone-200 hover:border-gold-300 hover:shadow-md hover:bg-stone-50/50'}`}
                                             >
@@ -5800,6 +5809,73 @@
                                             </div>
                                         );
                                     })}
+
+                                    {/* 自填金額卡片 */}
+                                    {(() => {
+                                        const customAmt = parseInt(customAmountInput) || 0;
+                                        const customCoins = customAmt * 100;
+                                        const customPlanObj = { amount: customAmt, base: customCoins, bonus: 0, total: customCoins, rate: '0%', popular: false, url: 'https://pl.sl-pay.com/pTlaiLOe', isCustom: true };
+                                        return (
+                                            <div
+                                                className={`relative p-5 md:p-6 rounded-2xl bg-white border-2 cursor-pointer transition-all duration-300 sm:col-span-2
+                                                ${isCustomPlan ? 'border-sky-400 ring-2 ring-sky-200/50 bg-gradient-to-br from-sky-50/80 to-blue-50/60 shadow-lg' : 'border-stone-200 hover:border-sky-300 hover:shadow-md hover:bg-stone-50/50'}`}
+                                                onClick={() => {
+                                                    setIsCustomPlan(true);
+                                                    if (customAmt >= 100) {
+                                                        setSelectedPlan(customPlanObj);
+                                                        setFormErrors(prev => ({ ...prev, plan: '' }));
+                                                    } else {
+                                                        setSelectedPlan(null);
+                                                    }
+                                                }}
+                                                role="button"
+                                                tabIndex={0}
+                                            >
+                                                <div className="absolute top-0 left-0 bg-sky-400 text-white text-[10px] font-bold px-3 py-1 rounded-br-xl z-10 tracking-wider">自填</div>
+                                                {isCustomPlan && customAmt >= 100 && <div className="absolute top-4 right-4 text-sky-500"><CheckCircle size={24} fill="currentColor" className="text-white"/></div>}
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
+                                                    <div className="flex-1">
+                                                        <p className="text-stone-500 font-bold text-sm mb-2">自訂贊助金額（SHOPLINE 支付）</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-stone-500 font-bold text-lg">NT$</span>
+                                                            <input
+                                                                type="number"
+                                                                min="100"
+                                                                step="100"
+                                                                value={customAmountInput}
+                                                                onClick={e => e.stopPropagation()}
+                                                                onChange={e => {
+                                                                    const val = e.target.value;
+                                                                    setCustomAmountInput(val);
+                                                                    setIsCustomPlan(true);
+                                                                    const amt = parseInt(val) || 0;
+                                                                    if (amt >= 100) {
+                                                                        setSelectedPlan({ amount: amt, base: amt * 100, bonus: 0, total: amt * 100, rate: '0%', popular: false, url: 'https://pl.sl-pay.com/pTlaiLOe', isCustom: true });
+                                                                        setFormErrors(prev => ({ ...prev, plan: '' }));
+                                                                    } else {
+                                                                        setSelectedPlan(null);
+                                                                    }
+                                                                }}
+                                                                placeholder="請輸入金額"
+                                                                className="w-40 text-2xl font-black text-stone-700 border-b-2 border-sky-300 focus:border-sky-500 focus:outline-none bg-transparent py-1"
+                                                            />
+                                                        </div>
+                                                        {isCustomPlan && customAmountInput && customAmt < 100 && (
+                                                            <p className="text-red-500 text-xs font-bold mt-1">最低贊助金額為 NT$ 100</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-right sm:text-left shrink-0">
+                                                        <p className="text-stone-400 text-xs font-bold mb-1">預估獲得金幣</p>
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-xl md:text-2xl font-bold text-gold-600">{customAmt >= 100 ? customCoins.toLocaleString() : '—'}</span>
+                                                            <span className="text-gold-600 text-xs font-bold uppercase">Gold</span>
+                                                        </div>
+                                                        <p className="text-stone-400 text-xs mt-1">實際金幣由管理員確認</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                     </div>
                                 </div>
                             </div>
