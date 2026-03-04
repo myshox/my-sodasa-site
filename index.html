@@ -8985,76 +8985,76 @@
             if (!isLoggedIn) {
                 return (
                     <div className="pt-20 md:pt-32 pb-20 px-4 min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 flex items-center justify-center">
-                        <div className="bg-stone-800/50 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-stone-700/50">
-                            <div className="text-center mb-8">
-                                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-gold-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-gold-900/30">
-                                    <Shield size={40} className="text-white" />
+                        <div className="bg-slate-900/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-slate-700/50">
+                            {/* Logo + Title */}
+                            <div className="text-center mb-7">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-xl shadow-amber-900/40">
+                                    <Shield size={32} className="text-white" />
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-black text-white mb-2">後台管理系統</h2>
-                                <p className="text-stone-200 text-sm font-medium">請使用管理員帳號登入</p>
+                                <h2 className="text-xl md:text-2xl font-black text-white mb-1 tracking-tight">後台管理系統</h2>
+                                <p className="text-slate-500 text-xs font-medium">蘇打石器 · Admin Console</p>
                             </div>
                             
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div>
-                                    <label className="block text-stone-300 font-bold mb-2 text-sm flex items-center gap-2">
-                                        <Mail size={16} />
+                                    <label className="block text-slate-400 font-semibold mb-1.5 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                        <Mail size={12} />
                                         Email
                                     </label>
                                     <input 
                                         type="email" 
                                         value={username} 
                                         onChange={e => setUsername(e.target.value)} 
-                                        className="w-full p-3 md:p-4 bg-stone-900/80 border border-stone-600 rounded-xl text-white font-bold focus:border-gold-500 outline-none transition-all" 
-                                        placeholder="輸入管理員 Email"
+                                        className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700/60 rounded-xl text-white text-sm font-medium focus:border-amber-500/70 focus:bg-slate-800 outline-none transition-all placeholder-slate-600" 
+                                        placeholder="管理員 Email"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-stone-300 font-bold mb-2 text-sm flex items-center gap-2">
-                                        <Lock size={16} />
+                                    <label className="block text-slate-400 font-semibold mb-1.5 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                        <Lock size={12} />
                                         密碼
                                     </label>
                                     <input 
                                         type="password" 
                                         value={password} 
                                         onChange={e => setPassword(e.target.value)} 
-                                        className="w-full p-3 bg-stone-900 border border-stone-600 rounded-xl text-white font-bold focus:border-gold-500 outline-none transition-colors" 
-                                        placeholder="輸入密碼"
+                                        className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700/60 rounded-xl text-white text-sm font-medium focus:border-amber-500/70 focus:bg-slate-800 outline-none transition-all placeholder-slate-600" 
+                                        placeholder="密碼"
                                         required
                                     />
                                 </div>
                                 
-                                {/* 記住管理員帳號密碼 */}
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         id="rememberAdminMe"
                                         checked={rememberAdminMe}
                                         onChange={(e) => setRememberAdminMe(e.target.checked)}
-                                        className="w-4 h-4 text-gold-600 bg-stone-900 border-stone-600 rounded focus:ring-gold-500 focus:ring-2"
+                                        className="w-4 h-4 accent-amber-500 bg-slate-800 border-slate-700 rounded"
                                     />
-                                    <label htmlFor="rememberAdminMe" className="text-stone-200 text-sm font-medium cursor-pointer select-none">
+                                    <label htmlFor="rememberAdminMe" className="text-slate-400 text-sm cursor-pointer select-none">
                                         記住帳號密碼
                                     </label>
                                 </div>
                                 
                                 {error && (
                                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-center gap-2">
-                                        <AlertCircle size={18} className="text-red-400 flex-shrink-0" />
-                                        <p className="text-red-400 font-bold text-sm">{error}</p>
+                                        <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
+                                        <p className="text-red-400 font-semibold text-sm">{error}</p>
                                     </div>
                                 )}
                                 
-                                <button type="submit" className="w-full bg-gradient-to-r from-gold-600 to-orange-600 hover:from-gold-500 hover:to-orange-500 text-white font-black py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-gold-900/30 flex items-center justify-center gap-2 text-base">
-                                    <Lock size={20} />
+                                <button type="submit" className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black py-3 rounded-xl transition-all shadow-lg shadow-amber-900/30 flex items-center justify-center gap-2 text-sm mt-2">
+                                    <Lock size={16} />
                                     登入後台
                                 </button>
                             </form>
                             
-                            <div className="mt-6 pt-6 border-t border-stone-700/50">
-                                <div className="flex items-center justify-center gap-2 text-stone-300 text-xs font-medium">
-                                    <Shield size={14} />
-                                    <p>已升級至 Supabase Auth 安全認證系統</p>
+                            <div className="mt-5 pt-5 border-t border-slate-800">
+                                <div className="flex items-center justify-center gap-1.5 text-slate-600 text-xs">
+                                    <Shield size={12} />
+                                    <span>Supabase Auth 安全認證</span>
                                 </div>
                             </div>
                         </div>
@@ -9071,141 +9071,184 @@
             }
             
             return (
-                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-gradient-to-br from-amber-950/30 via-stone-900 to-slate-900 text-white">
+                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
                     <div className="max-w-7xl mx-auto">
-                        {/* 頁面標題 - 手機版優化 */}
+                        {/* 頁面標題 - 管理後台 Header */}
                         <div className="mb-6 md:mb-8">
-                            <h1 className="text-2xl md:text-3xl font-black text-white mb-2">後台管理系統</h1>
-                            <p className="text-stone-300 text-sm">
-                                歡迎回來，
-                                <span className="text-white font-bold">{currentUser?.username || supabaseUser?.email}</span>
-                                {(currentUser?.role === 'super_admin' || isSuperAdmin) && <span className="ml-2 px-2 py-0.5 bg-gold-500/20 text-gold-400 text-xs font-bold rounded border border-gold-500/30">超管</span>}
-                                {currentUser?.role === 'admin' && !isSuperAdmin && <span className="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-bold rounded border border-blue-500/30">管理員</span>}
-                            </p>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                                {/* 左：Logo + 標題 */}
+                                <div className="flex items-center gap-3">
+                                    <div className="w-11 h-11 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-900/40 flex-shrink-0">
+                                        <Shield size={22} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-lg md:text-xl font-black text-white leading-tight tracking-tight">後台管理系統</h1>
+                                        <p className="text-slate-500 text-xs mt-0.5 font-medium">蘇打石器 · Admin Console</p>
+                                    </div>
+                                </div>
+                                {/* 右：使用者資訊 */}
+                                <div className="flex items-center gap-2.5">
+                                    {(currentUser?.role === 'super_admin' || isSuperAdmin) && (
+                                        <span className="px-2.5 py-1 bg-amber-500/15 text-amber-400 text-[11px] font-bold rounded-lg border border-amber-500/25 tracking-wide">⚡ 超管</span>
+                                    )}
+                                    {currentUser?.role === 'admin' && !isSuperAdmin && (
+                                        <span className="px-2.5 py-1 bg-blue-500/15 text-blue-400 text-[11px] font-bold rounded-lg border border-blue-500/25 tracking-wide">🛡 管理員</span>
+                                    )}
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-700/60 rounded-xl border border-slate-600/40">
+                                        <div className="w-7 h-7 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <span className="text-white text-xs font-black">{((currentUser?.username || supabaseUser?.email || '?')[0]).toUpperCase()}</span>
+                                        </div>
+                                        <span className="text-slate-200 text-sm font-semibold truncate max-w-[120px] md:max-w-[180px]">{currentUser?.username || supabaseUser?.email}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* 分隔線 */}
+                            <div className="h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mt-4"></div>
                         </div>
                         
-                        {/* 統計卡片 - 手機版優化 */}
+                        {/* 統計卡片 */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-                            <div className="bg-gradient-to-br from-gold-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-gold-700/30 shadow-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Coins size={16} className="text-gold-400" />
-                                    <p className="text-white/95 text-xs font-bold">本月總營收</p>
+                            <div className="relative bg-slate-800/60 p-4 md:p-5 rounded-2xl border border-slate-700/50 shadow-lg overflow-hidden hover:border-amber-700/40 transition-all group">
+                                <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-amber-400 to-orange-500 rounded-l-2xl"></div>
+                                <div className="pl-2">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-7 h-7 bg-amber-500/15 rounded-lg flex items-center justify-center border border-amber-500/20">
+                                            <Coins size={14} className="text-amber-400" />
+                                        </div>
+                                        <p className="text-slate-400 text-xs font-semibold">本月總營收</p>
+                                    </div>
+                                    <p className="text-xl md:text-2xl font-black text-white">NT$ {totalAmount.toLocaleString()}</p>
                                 </div>
-                                <p className="text-xl md:text-2xl font-black text-gold-400">NT$ {totalAmount.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-fire-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-fire-700/30 shadow-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <AlertCircle size={16} className="text-fire-400" />
-                                    <p className="text-white/95 text-xs font-bold">待處理</p>
+                            <div className="relative bg-slate-800/60 p-4 md:p-5 rounded-2xl border border-slate-700/50 shadow-lg overflow-hidden hover:border-orange-700/40 transition-all group">
+                                <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-orange-400 to-red-500 rounded-l-2xl"></div>
+                                <div className="pl-2">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-7 h-7 bg-orange-500/15 rounded-lg flex items-center justify-center border border-orange-500/20">
+                                            <AlertCircle size={14} className="text-orange-400" />
+                                        </div>
+                                        <p className="text-slate-400 text-xs font-semibold">待處理</p>
+                                    </div>
+                                    <p className="text-xl md:text-2xl font-black text-white">{pendingCount}</p>
                                 </div>
-                                <p className="text-xl md:text-2xl font-black text-fire-400">{pendingCount}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-green-700/30 shadow-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <CheckCircle size={16} className="text-green-400" />
-                                    <p className="text-white/95 text-xs font-bold">已完成</p>
+                            <div className="relative bg-slate-800/60 p-4 md:p-5 rounded-2xl border border-slate-700/50 shadow-lg overflow-hidden hover:border-emerald-700/40 transition-all group">
+                                <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl"></div>
+                                <div className="pl-2">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-7 h-7 bg-emerald-500/15 rounded-lg flex items-center justify-center border border-emerald-500/20">
+                                            <CheckCircle size={14} className="text-emerald-400" />
+                                        </div>
+                                        <p className="text-slate-400 text-xs font-semibold">已完成</p>
+                                    </div>
+                                    <p className="text-xl md:text-2xl font-black text-white">{completedCount}</p>
                                 </div>
-                                <p className="text-xl md:text-2xl font-black text-green-400">{completedCount}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-blue-900/40 to-stone-800 p-4 md:p-5 rounded-2xl border border-blue-700/30 shadow-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Heart size={16} className="text-blue-400" />
-                                    <p className="text-white/95 text-xs font-bold">總贊助數</p>
+                            <div className="relative bg-slate-800/60 p-4 md:p-5 rounded-2xl border border-slate-700/50 shadow-lg overflow-hidden hover:border-sky-700/40 transition-all group">
+                                <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-sky-400 to-blue-500 rounded-l-2xl"></div>
+                                <div className="pl-2">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-7 h-7 bg-sky-500/15 rounded-lg flex items-center justify-center border border-sky-500/20">
+                                            <Heart size={14} className="text-sky-400" />
+                                        </div>
+                                        <p className="text-slate-400 text-xs font-semibold">總贊助數</p>
+                                    </div>
+                                    <p className="text-xl md:text-2xl font-black text-white">{data.length}</p>
                                 </div>
-                                <p className="text-xl md:text-2xl font-black text-blue-400">{data.length}</p>
                             </div>
                         </div>
                         
-                        {/* 分頁切換 - 手機版橫向滾動 */}
-                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4">
-                            <div className="w-full lg:w-auto overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-                                <div className="flex gap-2 min-w-max">
-                                    <button onClick={() => setCurrentTab('donations')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'donations' ? 'bg-amber-500 text-amber-950 shadow-lg shadow-amber-900/30' : 'bg-amber-950/50 text-amber-200/90 hover:bg-amber-900/50 hover:text-amber-100 border border-amber-800/40'}`}>
+                        {/* 分頁切換 - 統一設計語言 */}
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-3">
+                            <div className="w-full lg:w-auto overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0">
+                                <div className="flex gap-1.5 min-w-max p-1.5 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+                                    <button onClick={() => setCurrentTab('donations')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'donations' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <Coins size={14}/>
                                         贊助管理
                                     </button>
-                                    <button onClick={() => setCurrentTab('guides')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'guides' ? 'bg-purple-500 text-white shadow-lg shadow-purple-900/20' : 'bg-purple-950/50 text-purple-200/90 hover:bg-purple-900/50 hover:text-purple-100 border border-purple-800/40'}`}>
-                                        <BookOpen size={16}/>
-                                        <span>活動攻略</span>
+                                    <button onClick={() => setCurrentTab('guides')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'guides' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <BookOpen size={14}/>
+                                        活動攻略
                                     </button>
-                                    <button onClick={() => setCurrentTab('stats')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'stats' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-900/20' : 'bg-cyan-950/50 text-cyan-200/90 hover:bg-cyan-900/50 hover:text-cyan-100 border border-cyan-800/40'}`}>
-                                        <Coins size={16}/>
-                                        <span>報表統計</span>
+                                    <button onClick={() => setCurrentTab('stats')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'stats' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                                        報表統計
                                     </button>
-                                    <button onClick={() => setCurrentTab('gm_give')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'gm_give' ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-900/20' : 'bg-yellow-950/50 text-yellow-200/90 hover:bg-yellow-900/50 hover:text-yellow-100 border border-yellow-800/40'}`}>
-                                        <span>💰</span>
-                                        <span>GM 發放</span>
+                                    <button onClick={() => setCurrentTab('gm_give')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'gm_give' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <span className="text-[13px]">💰</span>
+                                        GM 發放
                                     </button>
-                                    <button onClick={() => setCurrentTab('events')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors whitespace-nowrap ${currentTab === 'events' ? 'bg-sky-500 text-white shadow-lg shadow-sky-900/20' : 'bg-sky-950/50 text-sky-200/90 hover:bg-sky-900/50 hover:text-sky-100 border border-sky-800/40'}`}>
+                                    <button onClick={() => setCurrentTab('events')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'events' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                         活動管理
                                     </button>
-                                    <button onClick={() => setCurrentTab('music')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'music' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/20' : 'bg-rose-950/50 text-rose-200/90 hover:bg-rose-900/50 hover:text-rose-100 border border-rose-800/40'}`}>
-                                        <Music size={16}/>
-                                        <span>音樂</span>
+                                    <button onClick={() => setCurrentTab('music')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'music' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <Music size={14}/>
+                                        音樂
                                     </button>
-                                    <button onClick={() => setCurrentTab('settings')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'settings' ? 'bg-stone-600 text-white shadow-lg' : 'bg-stone-800/80 text-stone-300 hover:bg-stone-700 hover:text-white border border-stone-600/50'}`}>
-                                        <Settings size={16}/>
-                                        <span>設定</span>
+                                    <button onClick={() => setCurrentTab('settings')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'settings' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <Settings size={14}/>
+                                        設定
                                     </button>
                                     {(isSuperAdmin || supabaseUser?.user_metadata?.role === 'admin') && (
-                                        <button onClick={() => setCurrentTab('registered_users')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'registered_users' ? 'bg-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-blue-950/50 text-blue-200/90 hover:bg-blue-900/50 hover:text-blue-100 border border-blue-800/40'}`}>
-                                            <Users size={16}/>
-                                            <span>註冊用戶</span>
+                                        <button onClick={() => setCurrentTab('registered_users')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'registered_users' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                            <Users size={14}/>
+                                            註冊用戶
                                         </button>
                                     )}
                                     {isSuperAdmin && (
-                                        <button onClick={() => setCurrentTab('super_admins')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'super_admins' ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/20' : 'bg-violet-950/50 text-violet-200/90 hover:bg-violet-900/50 hover:text-violet-100 border border-violet-800/40'}`}>
-                                            <UserPlus size={16}/>
-                                            <span>超管</span>
+                                        <button onClick={() => setCurrentTab('super_admins')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'super_admins' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                            <UserPlus size={14}/>
+                                            超管
                                         </button>
                                     )}
-                                    {/* 遊戲玩家查詢 tab */}
-                                    <button onClick={() => setCurrentTab('game_players')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'game_players' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-900/20' : 'bg-emerald-950/50 text-emerald-200/90 hover:bg-emerald-900/50 hover:text-emerald-100 border border-emerald-800/40'}`}>
-                                        <span>🎮</span>
-                                        <span>遊戲玩家</span>
+                                    <button onClick={() => setCurrentTab('game_players')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'game_players' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
+                                        <span className="text-[13px]">🎮</span>
+                                        遊戲玩家
                                     </button>
-                                    {/* GMTOOL 快速連結 */}
+                                    {/* 分隔線 */}
+                                    <div className="w-px bg-slate-700/60 mx-1 self-stretch"></div>
+                                    {/* GMTOOL 外部連結 */}
                                     <a
                                         href="https://gm.sodasa.org"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap bg-emerald-900/50 text-emerald-300 hover:bg-emerald-800/60 hover:text-emerald-100 border border-emerald-700/40"
+                                        className="px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 text-slate-500 hover:bg-slate-700/60 hover:text-slate-200"
                                         title="開啟 GM 後台管理工具"
                                     >
-                                        <Settings size={16}/>
-                                        <span>GM後台</span>
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        <Settings size={14}/>
+                                        GM後台
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                     </a>
                                 </div>
                             </div>
                             
-                            {currentTab === 'donations' && (
-                                <div className="flex gap-2 w-full lg:w-auto flex-wrap">
-                                    <button onClick={() => refreshDonations(false)} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-amber-600/40 hover:bg-amber-500/50 text-amber-100 border-amber-500/40" title="重新載入最近 800 筆">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                        <span className="md:inline">重新整理</span>
+                            <div className="flex gap-2 w-full lg:w-auto flex-wrap items-center">
+                                    {currentTab === 'donations' && (<>
+                                    <button onClick={() => refreshDonations(false)} className="px-3.5 py-2 rounded-xl font-semibold text-sm transition-all flex items-center gap-1.5 bg-slate-700/60 hover:bg-slate-600/80 text-slate-300 hover:text-white border border-slate-600/40" title="重新載入最近 800 筆">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                        <span className="hidden sm:inline">重新整理</span>
                                     </button>
-                                    <button onClick={() => refreshDonations(true)} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/40 hover:bg-stone-500/50 text-stone-100 border-stone-500/40" title="載入全部贊助紀錄（筆數多時較慢）">
-                                        <span className="md:inline">載入全部</span>
+                                    <button onClick={() => refreshDonations(true)} className="px-3.5 py-2 rounded-xl font-semibold text-sm transition-all flex items-center gap-1.5 bg-slate-700/60 hover:bg-slate-600/80 text-slate-300 hover:text-white border border-slate-600/40" title="載入全部贊助紀錄">
+                                        <span className="hidden sm:inline">全部載入</span>
+                                        <span className="sm:hidden">全部</span>
                                     </button>
                                     {selectedIds.length > 0 && (
-                                        <button 
-                                            onClick={() => setShowBatchActions(!showBatchActions)} 
-                                            className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-stone-500/60 text-white border-stone-500/50"
-                                        >
-                                            <Check size={16}/>
-                                            批次操作 ({selectedIds.length})
+                                        <button onClick={() => setShowBatchActions(!showBatchActions)} className="px-3.5 py-2 rounded-xl font-semibold text-sm transition-all flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30">
+                                            <Check size={14}/>
+                                            批次 ({selectedIds.length})
                                         </button>
                                     )}
-                                    <button onClick={exportToCSV} className="px-4 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-stone-500/60 text-white border-stone-500/50" title="匯出 CSV">
-                                        <Download size={16}/>
-                                        <span className="hidden md:inline">匯出 CSV</span>
+                                    <button onClick={exportToCSV} className="px-3.5 py-2 rounded-xl font-semibold text-sm transition-all flex items-center gap-1.5 bg-slate-700/60 hover:bg-slate-600/80 text-slate-300 hover:text-white border border-slate-600/40" title="匯出 CSV">
+                                        <Download size={14}/>
+                                        <span className="hidden sm:inline">匯出</span>
                                     </button>
-                                    <button onClick={handleLogout} className="px-3 py-2 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 border bg-stone-600/60 hover:bg-red-500/30 text-stone-100 hover:text-red-300 border-stone-500/50"><LogOut size={16}/></button>
-                                </div>
-                            )}
-                             {currentTab !== 'donations' && (
-                                 <button onClick={handleLogout} className="px-3 py-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl font-bold transition-colors flex items-center gap-2 border border-red-500/30 self-end lg:self-auto"><LogOut size={18}/></button>
-                             )}
+                                    </>)}
+                                    <button onClick={handleLogout} className="px-3.5 py-2 rounded-xl font-semibold text-sm transition-all flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20">
+                                        <LogOut size={14}/>
+                                        <span className="hidden sm:inline">登出</span>
+                                    </button>
+                            </div>
                         </div>
                         
                         
@@ -9216,14 +9259,14 @@
                                 <div className="md:hidden mb-3 px-3 py-2 rounded-xl bg-amber-900/30 border border-amber-700/30 text-amber-200/90 text-xs">
                                     💡 手機版若資料未同步，請點上方「重新整理」
                                 </div>
-                                {/* 搜尋與篩選（舒適間距與對比） */}
-                                <div className="space-y-4 mb-6">
-                                    <div className="flex flex-col md:flex-row gap-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/25 via-stone-800/60 to-stone-800/60 border border-amber-800/30">
+                                {/* 搜尋與篩選 */}
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex flex-col md:flex-row gap-2.5 p-3.5 rounded-2xl bg-slate-800/50 border border-slate-700/50">
                                         <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400/80" size={16}/>
-                                            <input type="text" placeholder="搜尋遊戲帳號或 Email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-stone-800/80 border border-stone-600/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-stone-400 focus:border-amber-500/50 outline-none transition-colors"/>
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={15}/>
+                                            <input type="text" placeholder="搜尋遊戲帳號或 Email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-amber-500/50 outline-none transition-colors"/>
                                         </div>
-                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-stone-800/80 border border-stone-600/50 rounded-xl px-4 py-2.5 text-sm text-stone-100 outline-none cursor-pointer focus:border-amber-500/50 transition-colors">
+                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-slate-900/60 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-200 outline-none cursor-pointer focus:border-amber-500/50 transition-colors">
                                             <option value="all">全部狀態</option>
                                             <option value="pending">待處理</option>
                                             <option value="completed">已完成</option>
@@ -9231,46 +9274,46 @@
                                         </select>
                                         <button
                                             onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                                            className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-colors flex items-center gap-2 border ${showAdvancedSearch ? 'bg-stone-600 text-white border-stone-500/50' : 'bg-stone-800/60 text-stone-100 hover:text-white border-stone-600/50 hover:border-stone-500/50'}`}
+                                            className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center gap-2 ${showAdvancedSearch ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-700/50'}`}
                                         >
-                                            <Settings size={16} />
+                                            <Settings size={14} />
                                             進階搜尋
                                         </button>
                                     </div>
                                     
                                     {/* 進階搜尋選項 */}
                                     {showAdvancedSearch && (
-                                        <div className="bg-slate-900/50 border border-sky-800/40 rounded-2xl p-4 space-y-3">
+                                        <div className="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-4 space-y-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">開始日期</label>
-                                                    <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">開始日期</label>
+                                                    <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-amber-500/50 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">結束日期</label>
-                                                    <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none" />
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">結束日期</label>
+                                                    <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-amber-500/50 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">最低金額</label>
-                                                    <input type="number" placeholder="NT$ 0" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">最低金額</label>
+                                                    <input type="number" placeholder="NT$ 0" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:border-amber-500/50 outline-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">最高金額</label>
-                                                    <input type="number" placeholder="無上限" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:border-stone-500 outline-none" />
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">最高金額</label>
+                                                    <input type="number" placeholder="無上限" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-600 focus:border-amber-500/50 outline-none" />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">支付方式</label>
-                                                    <select value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">支付方式</label>
+                                                    <select value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-amber-500/50 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         <option value="shopline">SHOPLINE</option>
                                                         <option value="linepay">LINE Pay</option>
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-stone-100 text-xs font-semibold mb-1.5">標籤</label>
-                                                    <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-sm text-stone-100 focus:border-stone-500 outline-none cursor-pointer">
+                                                    <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">標籤</label>
+                                                    <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-amber-500/50 outline-none cursor-pointer">
                                                         <option value="all">全部</option>
                                                         {TAG_OPTIONS.map(tag => (
                                                             <option key={tag.value} value={tag.value}>{tag.label}</option>
@@ -9278,8 +9321,8 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div className="flex justify-end gap-2 pt-2">
-                                                <button onClick={clearAdvancedSearch} className="px-4 py-2 bg-stone-600/50 hover:bg-stone-600 text-stone-200 font-medium rounded-lg text-sm transition-colors border border-stone-600/50">
+                                            <div className="flex justify-end gap-2 pt-1">
+                                                <button onClick={clearAdvancedSearch} className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-slate-300 font-medium rounded-lg text-sm transition-all border border-slate-600/40">
                                                     清除篩選
                                                 </button>
                                             </div>
@@ -9288,7 +9331,7 @@
                                     
                                     {/* 批次操作面板 */}
                                     {showBatchActions && selectedIds.length > 0 && (
-                                        <div className="bg-amber-950/30 border border-amber-700/40 rounded-2xl p-4">
+                                        <div className="bg-slate-800/50 border border-amber-500/20 rounded-2xl p-4">
                                             <div className="flex flex-col md:flex-row gap-4">
                                                 <div className="flex-1">
                                                     <p className="text-stone-100 text-sm font-semibold mb-2">批次更新狀態</p>
@@ -9317,72 +9360,72 @@
                         
                         {/* 贊助紀錄列表 */}
                         {filteredData.length === 0 ? (
-                            <div className="rounded-2xl border border-amber-800/30 bg-gradient-to-br from-amber-950/20 to-stone-800/50 p-16 md:p-20">
-                                <div className="text-stone-100 text-center flex flex-col items-center">
-                                    <Clipboard size={40} className="mb-3 text-amber-400/70"/>
-                                    <p className="text-lg font-semibold text-white">暫無贊助紀錄</p>
-                                    <p className="text-sm mt-1 text-stone-200">等待玩家進行贊助</p>
+                            <div className="rounded-2xl border border-slate-700/40 bg-slate-800/40 p-16 md:p-20">
+                                <div className="text-center flex flex-col items-center">
+                                    <Clipboard size={36} className="mb-3 text-slate-600"/>
+                                    <p className="text-base font-semibold text-slate-300">暫無贊助紀錄</p>
+                                    <p className="text-sm mt-1 text-slate-500">等待玩家進行贊助</p>
                                 </div>
                             </div>
                         ) : (
                             <>
-                                {/* 工具列：全選 + 檢視切換（舒適間距與視覺） */}
-                                <div className="px-4 py-3 mb-1 flex flex-wrap items-center gap-5 rounded-2xl bg-amber-950/25 border border-amber-700/30">
-                                    <label className="flex items-center gap-2.5 cursor-pointer text-stone-100 hover:text-white text-sm font-semibold transition-colors">
-                                        <input type="checkbox" checked={selectedIds.length === paginatedData.length && paginatedData.length > 0} onChange={toggleSelectAll} className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 focus:ring-2 cursor-pointer" />
+                                {/* 工具列：全選 + 檢視切換 */}
+                                <div className="px-4 py-3 mb-2 flex flex-wrap items-center gap-4 rounded-xl bg-slate-800/40 border border-slate-700/40">
+                                    <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white text-sm font-medium transition-colors">
+                                        <input type="checkbox" checked={selectedIds.length === paginatedData.length && paginatedData.length > 0} onChange={toggleSelectAll} className="w-4 h-4 rounded accent-amber-500 cursor-pointer" />
                                         全選本頁
                                     </label>
-                                    {selectedIds.length > 0 && <span className="text-amber-200 text-sm font-semibold">已選 {selectedIds.length} 筆</span>}
-                                    <div className="flex rounded-xl overflow-hidden border border-stone-600/50 bg-stone-900/50 p-0.5">
-                                        <button type="button" onClick={() => setDonationListView('cards')} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${donationListView === 'cards' ? 'bg-stone-600 text-white shadow-sm' : 'text-stone-200 hover:text-white hover:bg-stone-800/50'}`}>
-                                            <LayoutGrid size={16} strokeWidth={2} />
+                                    {selectedIds.length > 0 && <span className="text-amber-400 text-sm font-semibold">已選 {selectedIds.length} 筆</span>}
+                                    <div className="ml-auto flex rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/50 p-0.5">
+                                        <button type="button" onClick={() => setDonationListView('cards')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${donationListView === 'cards' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+                                            <LayoutGrid size={14} strokeWidth={2} />
                                             卡片
                                         </button>
-                                        <button type="button" onClick={() => setDonationListView('list')} className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${donationListView === 'list' ? 'bg-stone-600 text-white shadow-sm' : 'text-stone-200 hover:text-white hover:bg-stone-800/50'}`}>
-                                            <List size={16} strokeWidth={2} />
+                                        <button type="button" onClick={() => setDonationListView('list')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${donationListView === 'list' ? 'bg-slate-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+                                            <List size={14} strokeWidth={2} />
                                             條列式
                                         </button>
                                     </div>
                                 </div>
-                                {/* 條列式：表格（精簡欄位、手機版可橫向滑動） */}
+                                {/* 條列式：表格 */}
                                 {donationListView === 'list' && (
-                                <div className="rounded-2xl border border-amber-800/30 bg-gradient-to-b from-amber-950/15 to-stone-800/50 overflow-hidden shadow-inner">
+                                <div className="rounded-2xl border border-slate-700/40 bg-slate-800/30 overflow-hidden">
                                     <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
                                     <table className="w-full min-w-[720px]">
-                                        <thead className="bg-stone-800/60 border-b border-stone-600/40">
+                                        <thead className="bg-slate-800/80 border-b border-slate-700/50">
                                             <tr>
-                                                <th className="w-10 px-2 py-3 text-center sticky left-0 bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/40">
+                                                <th className="w-10 px-2 py-3 text-center sticky left-0 bg-slate-800/95 backdrop-blur-sm z-10 border-r border-slate-700/40">
                                                     <input 
                                                         type="checkbox" 
                                                         checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
                                                         onChange={toggleSelectAll}
-                                                        className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer"
+                                                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
                                                     />
                                                 </th>
-                                                <th className="w-24 px-2 py-3 text-left text-xs font-semibold text-stone-100 sticky left-10 bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/40">狀態</th>
-                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-stone-100 sticky left-[8.5rem] bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/40">操作</th>
-                                                <th className="min-w-[110px] px-2 py-3 text-left text-xs font-semibold text-stone-100">訂單</th>
-                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-stone-100">時間</th>
-                                                <th className="min-w-[140px] px-2 py-3 text-left text-xs font-semibold text-stone-100 truncate">玩家</th>
-                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-stone-100">金額</th>
-                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-stone-100">金幣</th>
-                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-stone-100 hidden lg:table-cell">支付</th>
-                                                <th className="min-w-[90px] px-2 py-3 text-left text-xs font-semibold text-stone-100 max-w-[100px] truncate hidden xl:table-cell" title="備註">備註</th>
+                                                <th className="w-24 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide sticky left-10 bg-slate-800/95 backdrop-blur-sm z-10 border-r border-slate-700/40">狀態</th>
+                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide sticky left-[8.5rem] bg-slate-800/95 backdrop-blur-sm z-10 border-r border-slate-700/40">操作</th>
+                                                <th className="min-w-[110px] px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">訂單</th>
+                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">時間</th>
+                                                <th className="min-w-[140px] px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide truncate">玩家</th>
+                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">金額</th>
+                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">金幣</th>
+                                                <th className="w-20 px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide hidden lg:table-cell">支付</th>
+                                                <th className="min-w-[90px] px-2 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide max-w-[100px] truncate hidden xl:table-cell" title="備註">備註</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-stone-700/30">
+                                        <tbody className="divide-y divide-slate-700/30">
                                             {paginatedData.map(donation => (
                                                 <React.Fragment key={donation.id}>
-                                                    <tr className="hover:bg-stone-700/20 transition-colors">
-                                                        <td className="px-2 py-2.5 text-center sticky left-0 bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/30">
+                                                    <tr className="hover:bg-slate-700/20 transition-colors">
+                                                        <td className="px-2 py-2.5 text-center sticky left-0 bg-slate-800/95 backdrop-blur-sm z-10 border-r border-slate-700/30">
                                                             <input 
                                                                 type="checkbox" 
                                                                 checked={selectedIds.includes(donation.id)}
                                                                 onChange={() => toggleSelect(donation.id)}
-                                                                className="w-4 h-4 rounded border-stone-500 text-water-500 focus:ring-water-500/50 cursor-pointer"
+                                                                className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
                                                             />
                                                         </td>
-                                                        <td className="px-2 py-2.5 sticky left-10 bg-stone-800/95 backdrop-blur-sm z-10 border-r border-stone-600/30">
+                                                        <td className="px-2 py-2.5 sticky left-10 bg-slate-800/95 backdrop-blur-sm z-10 border-r border-slate-700/30">
                                                             <select 
                                                                 value={donation.status} 
                                                                 onChange={(e) => {
@@ -9732,41 +9775,41 @@
                         
                         {/* 分頁控制 */}
                         {filteredData.length > 0 && (
-                            <div className="mt-5 flex flex-col md:flex-row items-center justify-between gap-4 py-3 px-4 rounded-2xl bg-amber-950/20 border border-amber-700/25">
-                                <div className="text-stone-100 text-sm font-semibold">
-                                    顯示 {startIndex + 1}–{Math.min(endIndex, filteredData.length)} / 共 {filteredData.length} 筆
-                                    {filteredData.length !== data.length && <span className="text-stone-200"> (篩選自 {data.length} 筆)</span>}
+                            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-4 rounded-xl bg-slate-800/40 border border-slate-700/40">
+                                <div className="text-slate-400 text-sm">
+                                    顯示 <span className="text-white font-semibold">{startIndex + 1}–{Math.min(endIndex, filteredData.length)}</span> / 共 <span className="text-white font-semibold">{filteredData.length}</span> 筆
+                                    {filteredData.length !== data.length && <span className="text-slate-500"> (篩選自 {data.length} 筆)</span>}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-stone-100 text-sm font-medium">每頁</span>
-                                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="bg-stone-700/50 border border-stone-600/50 rounded-lg px-2.5 py-1.5 text-sm text-white font-medium outline-none cursor-pointer focus:border-stone-500 transition-colors">
+                                        <span className="text-slate-500 text-sm">每頁</span>
+                                        <select value={itemsPerPage} onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="bg-slate-700/60 border border-slate-600/50 rounded-lg px-2.5 py-1.5 text-sm text-white font-medium outline-none cursor-pointer focus:border-amber-500/50 transition-colors">
                                             <option value={10}>10</option>
                                             <option value={20}>20</option>
                                             <option value={50}>50</option>
                                             <option value={100}>100</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="第一頁"><ChevronsLeft size={16} /></button>
-                                        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="上一頁"><ChevronLeft size={16} /></button>
-                                        <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1">
+                                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="第一頁"><ChevronsLeft size={15} /></button>
+                                        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="上一頁"><ChevronLeft size={15} /></button>
+                                        <div className="flex items-center gap-0.5">
                                             {[...Array(totalPages)].map((_, i) => {
                                                 const pageNum = i + 1;
                                                 if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
                                                     return (
-                                                        <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`min-w-[2rem] px-2.5 py-1.5 rounded-lg font-semibold text-sm transition-colors ${currentPage === pageNum ? 'bg-stone-600 text-white' : 'bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50'}`}>
+                                                        <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`min-w-[2rem] px-2 py-1.5 rounded-lg font-semibold text-sm transition-all ${currentPage === pageNum ? 'bg-amber-500 text-white shadow-sm' : 'bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/60'}`}>
                                                             {pageNum}
                                                         </button>
                                                     );
                                                 } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                                                    return <span key={pageNum} className="text-stone-300 px-0.5">…</span>;
+                                                    return <span key={pageNum} className="text-slate-600 px-0.5 text-sm">…</span>;
                                                 }
                                                 return null;
                                             })}
                                         </div>
-                                        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="下一頁"><ChevronRight size={16} /></button>
-                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 rounded-lg bg-stone-700/50 text-stone-200 hover:text-white hover:bg-stone-600/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="最後一頁"><ChevronsRight size={16} /></button>
+                                        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="下一頁"><ChevronRight size={15} /></button>
+                                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-600/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="最後一頁"><ChevronsRight size={15} /></button>
                                     </div>
                                 </div>
                             </div>
@@ -9819,12 +9862,12 @@
                             return (
                                 <div className="space-y-0">
                                     {/* 子分頁導覽列 */}
-                                    <div className="flex gap-1.5 overflow-x-auto pb-1 mb-6 scrollbar-none">
+                                    <div className="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-none p-1 bg-slate-800/50 rounded-2xl border border-slate-700/40 w-fit">
                                         {subTabs.map(t => (
                                             <button key={t.id} onClick={() => setStatsSubTab(t.id)}
-                                                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shrink-0 ${statsSubTab===t.id
-                                                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-900/30'
-                                                    : 'bg-stone-800/60 text-stone-400 hover:bg-stone-700/60 hover:text-stone-200 border border-stone-700/40'}`}>
+                                                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all shrink-0 ${statsSubTab===t.id
+                                                    ? 'bg-amber-500 text-white shadow-md shadow-amber-900/30'
+                                                    : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
                                                 <span>{t.icon}</span><span>{t.label}</span>
                                             </button>
                                         ))}
@@ -9846,9 +9889,9 @@
                                                 ))}
                                             </div>
                                             {data.length === 0 && (
-                                                <div className="rounded-2xl bg-stone-800/60 border border-stone-700/40 p-12 text-center">
-                                                    <BarChart3 size={48} className="mx-auto mb-3 text-stone-600" />
-                                                    <p className="text-stone-400 font-bold">尚無贊助數據</p>
+                                                <div className="rounded-2xl bg-slate-800/50 border border-slate-700/40 p-12 text-center">
+                                                    <BarChart3 size={40} className="mx-auto mb-3 text-slate-600" />
+                                                    <p className="text-slate-400 font-semibold">尚無贊助數據</p>
                                                 </div>
                                             )}
                                         </div>
@@ -10113,61 +10156,64 @@
                         {/* GM 發放 分頁 */}
                         {currentTab === 'gm_give' && (
                             <div className="space-y-6">
-                                <div className="bg-gradient-to-br from-yellow-950/40 to-stone-800 rounded-3xl p-6 md:p-8 border border-yellow-700/30 shadow-xl">
-                                    <h2 className="text-2xl font-black text-white mb-1 flex items-center gap-3">
-                                        💰💎 批量發放金幣 / 水晶
-                                    </h2>
-                                    <p className="text-stone-400 text-sm mb-6">輸入多個遊戲帳號，一次發放金幣或水晶（任一填 0 則跳過不發放）</p>
+                                <div className="bg-slate-800/50 rounded-3xl p-6 md:p-8 border border-slate-700/50">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <div className="w-9 h-9 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/25">
+                                            <span className="text-lg">💰</span>
+                                        </div>
+                                        <h2 className="text-xl font-black text-white">批量發放金幣 / 水晶</h2>
+                                    </div>
+                                    <p className="text-slate-500 text-sm mb-6 ml-12">輸入多個遊戲帳號，一次發放金幣或水晶（任一填 0 則跳過不發放）</p>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {/* 左欄：帳號輸入 */}
                                         <div className="space-y-3">
-                                            <label className="block text-stone-300 font-bold">遊戲帳號（每行一個）</label>
+                                            <label className="block text-slate-300 font-semibold text-sm">遊戲帳號（每行一個）</label>
                                             <textarea
                                                 value={batchGiveAccounts}
                                                 onChange={e => setBatchGiveAccounts(e.target.value)}
                                                 placeholder={'player001\nplayer002\nplayer003'}
                                                 rows={8}
-                                                className="w-full bg-stone-900/70 border border-stone-600 rounded-xl px-4 py-3 text-white text-sm font-mono focus:outline-none focus:border-yellow-500 resize-y"
+                                                className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white text-sm font-mono focus:outline-none focus:border-amber-500/60 resize-y placeholder-slate-600"
                                                 disabled={batchGiveLoading}
                                             />
-                                            <p className="text-stone-500 text-sm">共 <span className="text-white font-bold">{batchGiveAccounts.split('\n').map(s=>s.trim()).filter(Boolean).length}</span> 個帳號</p>
+                                            <p className="text-slate-500 text-sm">共 <span className="text-amber-400 font-bold">{batchGiveAccounts.split('\n').map(s=>s.trim()).filter(Boolean).length}</span> 個帳號</p>
                                         </div>
 
                                         {/* 右欄：數量 + 備註 + 發送 */}
                                         <div className="space-y-4">
                                             <div>
-                                                <label className="block text-stone-300 font-bold mb-2">💰 金幣數量</label>
+                                                <label className="block text-slate-300 font-semibold text-sm mb-2">💰 金幣數量</label>
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     value={batchGiveGold}
                                                     onChange={e => setBatchGiveGold(e.target.value)}
                                                     placeholder="0（留空代表不發放）"
-                                                    className="w-full bg-stone-900/70 border border-stone-600 rounded-xl px-4 py-3 text-yellow-300 font-bold text-base focus:outline-none focus:border-yellow-500"
+                                                    className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-yellow-300 font-bold text-base focus:outline-none focus:border-amber-500/60 placeholder-slate-600"
                                                     disabled={batchGiveLoading}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-stone-300 font-bold mb-2">💎 水晶數量</label>
+                                                <label className="block text-slate-300 font-semibold text-sm mb-2">💎 水晶數量</label>
                                                 <input
                                                     type="number"
                                                     min="0"
                                                     value={batchGiveCrystal}
                                                     onChange={e => setBatchGiveCrystal(e.target.value)}
                                                     placeholder="0（留空代表不發放）"
-                                                    className="w-full bg-stone-900/70 border border-stone-600 rounded-xl px-4 py-3 text-cyan-300 font-bold text-base focus:outline-none focus:border-cyan-500"
+                                                    className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-cyan-300 font-bold text-base focus:outline-none focus:border-cyan-500/60 placeholder-slate-600"
                                                     disabled={batchGiveLoading}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-stone-300 font-bold mb-2">備註</label>
+                                                <label className="block text-slate-300 font-semibold text-sm mb-2">備註</label>
                                                 <input
                                                     type="text"
                                                     value={batchGiveRemark}
                                                     onChange={e => setBatchGiveRemark(e.target.value)}
                                                     placeholder="活動獎勵 / 補償 / 節慶禮包..."
-                                                    className="w-full bg-stone-900/70 border border-stone-600 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-stone-400"
+                                                    className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:border-slate-500/60 placeholder-slate-600"
                                                     disabled={batchGiveLoading}
                                                 />
                                             </div>
@@ -10224,14 +10270,18 @@
                         )}
 
                         {currentTab === 'events' && (
-                            <div className="space-y-8">
+                            <div className="space-y-6">
                                 {/* 首頁公告橫幅管理 */}
-                                <div className="bg-gradient-to-br from-orange-950/30 to-stone-800 rounded-3xl p-6 border border-orange-700/30 shadow-xl">
-                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                        <Megaphone size={20} className="text-orange-400" />
-                                        首頁公告橫幅
-                                        <span className="text-stone-400 text-sm font-normal ml-2">（顯示於首頁頂部）</span>
-                                    </h3>
+                                <div className="bg-slate-800/50 rounded-3xl p-6 border border-slate-700/50">
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <div className="w-9 h-9 bg-orange-500/15 rounded-xl flex items-center justify-center border border-orange-500/20">
+                                            <Megaphone size={16} className="text-orange-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-white leading-tight">首頁公告橫幅</h3>
+                                            <p className="text-slate-500 text-xs">顯示於首頁頂部</p>
+                                        </div>
+                                    </div>
 
                                     {/* 現有公告列表 */}
                                     {adminBanners.length > 0 && (
@@ -10394,25 +10444,27 @@
                                     )}
                                 </div>
 
-                                <div className="bg-gradient-to-br from-sky-950/30 to-stone-800 rounded-3xl p-6 border border-sky-700/30 shadow-xl">
-                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                                        {editingEventId ? <Edit2 size={20} className="text-sky-400"/> : <Plus size={20} className="text-rose-400"/>} 
-                                        {editingEventId ? '編輯活動' : '發布新活動'}
-                                    </h3>
+                                <div className="bg-slate-800/50 rounded-3xl p-6 border border-slate-700/50">
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${editingEventId ? 'bg-sky-500/15 border-sky-500/20' : 'bg-emerald-500/15 border-emerald-500/20'}`}>
+                                            {editingEventId ? <Edit2 size={16} className="text-sky-400"/> : <Plus size={16} className="text-emerald-400"/>}
+                                        </div>
+                                        <h3 className="text-base font-bold text-white">{editingEventId ? '編輯活動' : '發布新活動'}</h3>
+                                    </div>
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                             <div className="md:col-span-3">
-                                                <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} placeholder="活動標題 (可輸入 Emoji)" className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-3 text-white placeholder-stone-500 focus:border-water-500 outline-none text-base"/>
+                                                <input type="text" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} placeholder="活動標題 (可輸入 Emoji)" className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-amber-500/60 outline-none text-sm"/>
                                             </div>
                                             <div>
-                                                <select value={eventTag} onChange={(e) => setEventTag(e.target.value)} className="w-full h-full bg-stone-900 border border-stone-600 rounded-xl px-4 text-white focus:border-water-500 outline-none text-base">
+                                                <select value={eventTag} onChange={(e) => setEventTag(e.target.value)} className="w-full h-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 text-white focus:border-amber-500/60 outline-none text-sm">
                                                     {EVENT_TAGS.map(tag => <option key={tag.id} value={tag.id}>{tag.label.replace(' ','')}</option>)}
                                                 </select>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-stone-300 font-bold mb-1">彈窗圖片比例</label>
-                                            <select value={eventPopupAspect} onChange={(e) => setEventPopupAspect(e.target.value)} className="w-full max-w-xs bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-water-500 outline-none text-base">
+                                            <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">彈窗圖片比例</label>
+                                            <select value={eventPopupAspect} onChange={(e) => setEventPopupAspect(e.target.value)} className="w-full max-w-xs bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-2.5 text-white focus:border-amber-500/60 outline-none text-sm">
                                                 <option value="1:1">1:1 正方</option>
                                                 <option value="16:9">16:9 橫幅</option>
                                                 <option value="9:16">9:16 直幅</option>
@@ -10539,68 +10591,71 @@
                         {/* Settings 分頁 */}
                         {currentTab === 'settings' && (
                             <div className="max-w-2xl mx-auto">
-                                <div className="bg-stone-800 rounded-3xl p-8 border border-stone-700 shadow-xl">
-                                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4">
-                                        <Edit size={20} className="text-gold-500"/> 修改我的密碼
-                                    </h3>
+                                <div className="bg-slate-800/60 rounded-3xl p-6 md:p-8 border border-slate-700/50">
+                                    <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-700/50">
+                                        <div className="w-9 h-9 bg-amber-500/15 rounded-xl flex items-center justify-center border border-amber-500/20">
+                                            <Edit size={16} className="text-amber-400"/>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-white">修改我的密碼</h3>
+                                    </div>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-stone-400 text-sm font-bold mb-1">目前密碼</label>
+                                            <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">目前密碼</label>
                                             <input 
                                                 type="password" 
                                                 value={oldPassword} 
                                                 onChange={e => setOldPassword(e.target.value)} 
-                                                className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"
+                                                className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white focus:border-amber-500/60 outline-none transition-colors placeholder-slate-600 text-sm"
                                                 placeholder="輸入目前密碼"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-stone-400 text-sm font-bold mb-1">新密碼</label>
+                                            <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">新密碼</label>
                                             <input 
                                                 type="password" 
                                                 value={newPassword} 
                                                 onChange={e => setNewPassword(e.target.value)} 
-                                                className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"
+                                                className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white focus:border-amber-500/60 outline-none transition-colors placeholder-slate-600 text-sm"
                                                 placeholder="輸入新密碼（至少 6 個字元）"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-stone-400 text-sm font-bold mb-1">確認新密碼</label>
+                                            <label className="block text-slate-400 text-xs font-semibold mb-1.5 uppercase tracking-wide">確認新密碼</label>
                                             <input 
                                                 type="password" 
                                                 value={confirmPassword} 
                                                 onChange={e => setConfirmPassword(e.target.value)} 
-                                                className="w-full bg-stone-900 border border-stone-600 rounded-xl px-4 py-2.5 text-white focus:border-gold-500 outline-none transition-colors"
+                                                className="w-full bg-slate-900/70 border border-slate-700/60 rounded-xl px-4 py-3 text-white focus:border-amber-500/60 outline-none transition-colors placeholder-slate-600 text-sm"
                                                 placeholder="再次輸入新密碼"
                                             />
                                         </div>
                                         <button 
                                             onClick={handleChangePassword} 
-                                            className="w-full bg-gold-600 hover:bg-gold-500 text-white font-bold py-3 rounded-xl transition-colors mt-4 flex items-center justify-center gap-2"
+                                            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3 rounded-xl transition-all mt-2 flex items-center justify-center gap-2 shadow-lg shadow-amber-900/25 text-sm"
                                         >
-                                            <Edit size={18} />
+                                            <Edit size={16} />
                                             確認修改
                                         </button>
                                     </div>
                                     
-                                    <div className="mt-6 pt-6 border-t border-stone-700">
-                                        <p className="text-stone-400 text-sm mb-2">
-                                            ⚠️ <span className="font-bold">注意事項：</span>
+                                    <div className="mt-6 pt-5 border-t border-slate-700/50">
+                                        <p className="text-slate-500 text-xs mb-1.5 flex items-center gap-1.5">
+                                            <span>⚠️</span> <span className="font-semibold text-slate-400">注意事項</span>
                                         </p>
-                                        <ul className="text-stone-500 text-xs space-y-1 list-disc list-inside">
+                                        <ul className="text-slate-600 text-xs space-y-1 list-disc list-inside">
                                             <li>新密碼至少需要 6 個字元</li>
                                             <li>建議使用大小寫字母、數字和符號的組合</li>
                                             <li>修改密碼後需要重新登入</li>
                                         </ul>
                                     </div>
                                     
-                                    <div className="mt-6 p-4 bg-stone-900 rounded-xl border border-stone-700">
-                                        <p className="text-stone-400 text-sm mb-2 flex items-center gap-2">
-                                            <Shield size={16} className="text-gold-500" />
-                                            <span className="font-bold">管理員管理</span>
+                                    <div className="mt-5 p-4 bg-slate-900/50 rounded-xl border border-slate-700/40">
+                                        <p className="text-slate-400 text-sm mb-1.5 flex items-center gap-2">
+                                            <Shield size={14} className="text-amber-500" />
+                                            <span className="font-semibold">管理員管理</span>
                                         </p>
-                                        <p className="text-stone-500 text-xs">
-                                            若需要新增或管理其他管理員，請前往「<span className="text-purple-400 font-bold">超管</span>」分頁（僅超級管理員可見）
+                                        <p className="text-slate-600 text-xs">
+                                            若需要新增或管理其他管理員，請前往「<span className="text-amber-400 font-bold">超管</span>」分頁（僅超級管理員可見）
                                         </p>
                                     </div>
                                 </div>
