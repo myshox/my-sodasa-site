@@ -6629,6 +6629,13 @@
             const trendChartInstance = useRef(null);
             const paymentChartInstance = useRef(null);
             const planChartInstance = useRef(null);
+            // 業績圖表 refs
+            const revenueMonthlyChartRef = useRef(null);
+            const revenueMonthlyChartInstance = useRef(null);
+            const revenueDailyChartRef = useRef(null);
+            const revenueDailyChartInstance = useRef(null);
+            const revenueHourlyChartRef = useRef(null);
+            const revenueHourlyChartInstance = useRef(null);
             
             // Donations 相關（管理員可編輯訂單任何資訊）
             const [editingId, setEditingId] = useState(null);
@@ -8603,7 +8610,139 @@
                     }
                 };
             }, [data, currentTab]);
-            
+
+            // ── 業績圖表：近 12 個月月度業績 ──
+            useEffect(() => {
+                if (currentTab !== 'revenue' || !revenueMonthlyChartRef.current || data.length === 0) return;
+                const now = new Date();
+                const months = [];
+                const monthRevenue = {};
+                for (let i = 11; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    months.push(key);
+                    monthRevenue[key] = 0;
+                }
+                data.filter(d => d.status === 'completed').forEach(item => {
+                    const key = new Date(item.created_at).toISOString().slice(0, 7);
+                    if (monthRevenue[key] !== undefined) monthRevenue[key] += item.amount || 0;
+                });
+                if (revenueMonthlyChartInstance.current) revenueMonthlyChartInstance.current.destroy();
+                const ctx = revenueMonthlyChartRef.current.getContext('2d');
+                revenueMonthlyChartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months.map(m => m.slice(5) + '月'),
+                        datasets: [{
+                            label: '月度業績 (NT$)',
+                            data: months.map(m => monthRevenue[m]),
+                            backgroundColor: months.map((m, i) => i === 11 ? 'rgba(34,197,94,0.85)' : 'rgba(34,197,94,0.4)'),
+                            borderColor: months.map((m, i) => i === 11 ? '#16a34a' : '#22c55e'),
+                            borderWidth: 2,
+                            borderRadius: 8,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, callbacks: { label: c => `NT$ ${c.parsed.y.toLocaleString()}` } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#86efac', callback: v => `$${(v/1000).toFixed(0)}k` }, grid: { color: 'rgba(134,239,172,0.1)' } },
+                            x: { ticks: { color: '#86efac' }, grid: { display: false } }
+                        }
+                    }
+                });
+                return () => { if (revenueMonthlyChartInstance.current) revenueMonthlyChartInstance.current.destroy(); };
+            }, [data, currentTab]);
+
+            // ── 業績圖表：本月每日業績 ──
+            useEffect(() => {
+                if (currentTab !== 'revenue' || !revenueDailyChartRef.current || data.length === 0) return;
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const dailyRevenue = Array(daysInMonth).fill(0);
+                data.filter(d => d.status === 'completed').forEach(item => {
+                    const d = new Date(item.created_at);
+                    if (d.getFullYear() === year && d.getMonth() === month) {
+                        dailyRevenue[d.getDate() - 1] += item.amount || 0;
+                    }
+                });
+                if (revenueDailyChartInstance.current) revenueDailyChartInstance.current.destroy();
+                const ctx = revenueDailyChartRef.current.getContext('2d');
+                revenueDailyChartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from({ length: daysInMonth }, (_, i) => `${i + 1}日`),
+                        datasets: [{
+                            label: '每日業績 (NT$)',
+                            data: dailyRevenue,
+                            backgroundColor: dailyRevenue.map(v => v > 0 ? 'rgba(251,191,36,0.8)' : 'rgba(251,191,36,0.2)'),
+                            borderColor: '#f59e0b',
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, callbacks: { label: c => `NT$ ${c.parsed.y.toLocaleString()}` } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#fcd34d', callback: v => `$${v}` }, grid: { color: 'rgba(252,211,77,0.1)' } },
+                            x: { ticks: { color: '#fcd34d', maxRotation: 0 }, grid: { display: false } }
+                        }
+                    }
+                });
+                return () => { if (revenueDailyChartInstance.current) revenueDailyChartInstance.current.destroy(); };
+            }, [data, currentTab]);
+
+            // ── 業績圖表：時段分析 ──
+            useEffect(() => {
+                if (currentTab !== 'revenue' || !revenueHourlyChartRef.current || data.length === 0) return;
+                const hourly = Array(24).fill(0);
+                data.filter(d => d.status === 'completed').forEach(item => {
+                    const h = new Date(item.created_at).getHours();
+                    hourly[h] += item.amount || 0;
+                });
+                if (revenueHourlyChartInstance.current) revenueHourlyChartInstance.current.destroy();
+                const ctx = revenueHourlyChartRef.current.getContext('2d');
+                revenueHourlyChartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                        datasets: [{
+                            label: '時段業績 (NT$)',
+                            data: hourly,
+                            backgroundColor: hourly.map(v => {
+                                const max = Math.max(...hourly, 1);
+                                const ratio = v / max;
+                                return `rgba(139,92,246,${0.25 + ratio * 0.7})`;
+                            }),
+                            borderColor: '#7c3aed',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, callbacks: { label: c => `NT$ ${c.parsed.y.toLocaleString()}` } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: '#c4b5fd', callback: v => `$${v}` }, grid: { color: 'rgba(196,181,253,0.1)' } },
+                            x: { ticks: { color: '#c4b5fd', maxRotation: 45 }, grid: { display: false } }
+                        }
+                    }
+                });
+                return () => { if (revenueHourlyChartInstance.current) revenueHourlyChartInstance.current.destroy(); };
+            }, [data, currentTab]);
+
             // 統計資料
             const totalAmount = data.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
             const pendingCount = data.filter(d => d.status === 'pending').length;
@@ -8846,6 +8985,10 @@
                                     <button onClick={() => setCurrentTab('stats')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'stats' ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-900/20' : 'bg-cyan-950/50 text-cyan-200/90 hover:bg-cyan-900/50 hover:text-cyan-100 border border-cyan-800/40'}`}>
                                         <Coins size={16}/>
                                         <span>報表統計</span>
+                                    </button>
+                                    <button onClick={() => setCurrentTab('revenue')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'revenue' ? 'bg-green-500 text-white shadow-lg shadow-green-900/20' : 'bg-green-950/50 text-green-200/90 hover:bg-green-900/50 hover:text-green-100 border border-green-800/40'}`}>
+                                        <TrendingUp size={16}/>
+                                        <span>業績數據</span>
                                     </button>
                                     <button onClick={() => setCurrentTab('gm_give')} className={`px-4 md:px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${currentTab === 'gm_give' ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-900/20' : 'bg-yellow-950/50 text-yellow-200/90 hover:bg-yellow-900/50 hover:text-yellow-100 border border-yellow-800/40'}`}>
                                         <span>💰</span>
@@ -9731,6 +9874,149 @@
                                         </div>
                                     </div>
 
+                                </div>
+                            );
+                        })()}
+
+                        {/* 業績數據分頁 */}
+                        {currentTab === 'revenue' && (() => {
+                            const now = new Date();
+                            const thisYear = now.getFullYear();
+                            const thisMonth = now.getMonth();
+                            const prevMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+                            const prevYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+
+                            const completed = data.filter(d => d.status === 'completed');
+                            const thisMonthRevenue = completed.filter(d => {
+                                const t = new Date(d.created_at);
+                                return t.getFullYear() === thisYear && t.getMonth() === thisMonth;
+                            }).reduce((s, d) => s + (d.amount || 0), 0);
+                            const lastMonthRevenue = completed.filter(d => {
+                                const t = new Date(d.created_at);
+                                return t.getFullYear() === prevYear && t.getMonth() === prevMonth;
+                            }).reduce((s, d) => s + (d.amount || 0), 0);
+                            const growth = lastMonthRevenue === 0
+                                ? (thisMonthRevenue > 0 ? 100 : 0)
+                                : Math.round((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100);
+                            const avgOrder = completed.length > 0
+                                ? Math.round(completed.reduce((s, d) => s + (d.amount || 0), 0) / completed.length)
+                                : 0;
+
+                            // TOP 贊助者排行（依 game_account 彙總）
+                            const accountMap = {};
+                            completed.forEach(d => {
+                                const acc = d.game_account || '(未填帳號)';
+                                if (!accountMap[acc]) accountMap[acc] = { amount: 0, count: 0, latest: d.created_at };
+                                accountMap[acc].amount += d.amount || 0;
+                                accountMap[acc].count += 1;
+                                if (new Date(d.created_at) > new Date(accountMap[acc].latest)) accountMap[acc].latest = d.created_at;
+                            });
+                            const topSponsors = Object.entries(accountMap)
+                                .sort((a, b) => b[1].amount - a[1].amount)
+                                .slice(0, 10);
+
+                            return (
+                                <div className="space-y-6">
+                                    {/* KPI 卡片 */}
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {[
+                                            { label: '本月業績', value: `NT$ ${thisMonthRevenue.toLocaleString()}`, icon: '📅', color: 'from-green-600 to-emerald-700', sub: `${new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long' })}` },
+                                            { label: '上月業績', value: `NT$ ${lastMonthRevenue.toLocaleString()}`, icon: '🗓️', color: 'from-sky-600 to-blue-700', sub: `${prevYear}/${String(prevMonth + 1).padStart(2, '0')}` },
+                                            { label: '月成長率', value: `${growth >= 0 ? '+' : ''}${growth}%`, icon: growth >= 0 ? '📈' : '📉', color: growth >= 0 ? 'from-amber-500 to-orange-600' : 'from-red-600 to-rose-700', sub: '相比上月已完成' },
+                                            { label: '平均客單價', value: `NT$ ${avgOrder.toLocaleString()}`, icon: '💳', color: 'from-purple-600 to-violet-700', sub: `共 ${completed.length} 筆已完成` },
+                                        ].map((card, i) => (
+                                            <div key={i} className={`bg-gradient-to-br ${card.color} rounded-2xl p-5 text-white shadow-xl`}>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <span className="text-2xl">{card.icon}</span>
+                                                    <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">{card.label}</span>
+                                                </div>
+                                                <p className="text-2xl font-black mb-1">{card.value}</p>
+                                                <p className="text-white/70 text-xs font-medium">{card.sub}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* 近 12 個月月度業績 */}
+                                    <div className="bg-gradient-to-br from-green-950/40 to-stone-800 rounded-2xl p-6 border border-green-700/30 shadow-xl">
+                                        <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
+                                            <TrendingUp size={24} className="text-green-400" />
+                                            近 12 個月業績趨勢（已完成訂單）
+                                        </h3>
+                                        <div className="relative h-72">
+                                            <canvas ref={revenueMonthlyChartRef}></canvas>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* 本月每日業績 */}
+                                        <div className="bg-gradient-to-br from-amber-950/40 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                            <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2">
+                                                <Calendar size={20} className="text-amber-400" />
+                                                本月每日業績
+                                            </h3>
+                                            <div className="relative h-64">
+                                                <canvas ref={revenueDailyChartRef}></canvas>
+                                            </div>
+                                        </div>
+
+                                        {/* 時段分析 */}
+                                        <div className="bg-gradient-to-br from-purple-950/40 to-stone-800 rounded-2xl p-6 border border-purple-700/30 shadow-xl">
+                                            <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2">
+                                                <span>🕐</span>
+                                                時段業績分析（24 小時）
+                                            </h3>
+                                            <div className="relative h-64">
+                                                <canvas ref={revenueHourlyChartRef}></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* TOP 贊助者排行榜 */}
+                                    <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                        <h3 className="text-white font-black text-xl mb-5 flex items-center gap-2">
+                                            <Crown size={22} className="text-amber-400" />
+                                            贊助者排行榜 TOP 10（已完成訂單）
+                                        </h3>
+                                        {topSponsors.length === 0 ? (
+                                            <p className="text-stone-400 text-sm text-center py-8">尚無已完成訂單</p>
+                                        ) : (
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead>
+                                                        <tr className="text-stone-400 text-xs border-b border-stone-700">
+                                                            <th className="text-left py-2 px-3 font-semibold">名次</th>
+                                                            <th className="text-left py-2 px-3 font-semibold">遊戲帳號</th>
+                                                            <th className="text-right py-2 px-3 font-semibold">累積贊助</th>
+                                                            <th className="text-right py-2 px-3 font-semibold">訂單數</th>
+                                                            <th className="text-right py-2 px-3 font-semibold">最近一筆</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {topSponsors.map(([acc, stat], i) => (
+                                                            <tr key={acc} className="border-b border-stone-800/60 hover:bg-stone-700/20 transition-colors">
+                                                                <td className="py-3 px-3">
+                                                                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${i === 0 ? 'bg-yellow-400 text-black' : i === 1 ? 'bg-stone-300 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-stone-700 text-stone-300'}`}>
+                                                                        {i + 1}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-white font-bold font-mono text-xs">{acc}</td>
+                                                                <td className="py-3 px-3 text-right text-amber-300 font-black">NT$ {stat.amount.toLocaleString()}</td>
+                                                                <td className="py-3 px-3 text-right text-stone-300">{stat.count} 筆</td>
+                                                                <td className="py-3 px-3 text-right text-stone-400 text-xs">{new Date(stat.latest).toLocaleDateString('zh-TW')}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {data.length === 0 && (
+                                        <div className="text-center py-12 text-stone-400">
+                                            <TrendingUp size={48} className="mx-auto mb-4 opacity-30" />
+                                            <p className="font-bold">尚無贊助數據</p>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })()}
