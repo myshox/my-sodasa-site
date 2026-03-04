@@ -6636,6 +6636,8 @@
             const revenueDailyChartInstance = useRef(null);
             const revenueHourlyChartRef = useRef(null);
             const revenueHourlyChartInstance = useRef(null);
+            // 報表統計子分頁
+            const [statsSubTab, setStatsSubTab] = useState('overview');
             // 匯出報表 state
             const [reportPeriod, setReportPeriod] = useState('month');
             const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -9775,475 +9777,335 @@
                         {/* Stats 分頁 */}
                         {currentTab === 'stats' && (() => {
                             const now = Date.now();
-                            const today = new Date(now).setHours(0, 0, 0, 0);
-                            const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-                            const monthAgo = now - 30 * 24 * 60 * 60 * 1000;
-                            
-                            const stats = {
-                                total: data.reduce((sum, item) => sum + (item.amount || 0), 0),
-                                totalCompleted: data.filter(item => item.status === 'completed').reduce((sum, item) => sum + (item.amount || 0), 0),
-                                today: data.filter(item => new Date(item.created_at).getTime() >= today).reduce((sum, item) => sum + (item.amount || 0), 0),
-                                week: data.filter(item => new Date(item.created_at).getTime() >= weekAgo).reduce((sum, item) => sum + (item.amount || 0), 0),
-                                month: data.filter(item => new Date(item.created_at).getTime() >= monthAgo).reduce((sum, item) => sum + (item.amount || 0), 0),
-                                count: data.length,
-                                pending: data.filter(item => item.status === 'pending').length,
-                                completed: data.filter(item => item.status === 'completed').length,
-                                cancelled: data.filter(item => item.status === 'cancelled').length,
-                            };
-                            
-                            const methodStats = {};
-                            data.forEach(item => {
-                                const method = item.payment_method || 'unknown';
-                                methodStats[method] = (methodStats[method] || 0) + (item.amount || 0);
+                            const todayTs = new Date().setHours(0,0,0,0);
+                            const weekAgo = now - 7*86400000;
+                            const monthAgo = now - 30*86400000;
+                            const completed = data.filter(d => d.status === 'completed');
+                            const nowD = new Date();
+                            const yr = nowD.getFullYear(), mo = nowD.getMonth();
+                            const prevMo = mo===0?11:mo-1, prevYr = mo===0?yr-1:yr;
+                            const thisMonthRev = completed.filter(d=>{ const t=new Date(d.created_at); return t.getFullYear()===yr&&t.getMonth()===mo; }).reduce((s,d)=>s+(d.amount||0),0);
+                            const lastMonthRev = completed.filter(d=>{ const t=new Date(d.created_at); return t.getFullYear()===prevYr&&t.getMonth()===prevMo; }).reduce((s,d)=>s+(d.amount||0),0);
+                            const growth = lastMonthRev===0?(thisMonthRev>0?100:0):Math.round((thisMonthRev-lastMonthRev)/lastMonthRev*100);
+                            const avgOrder = completed.length ? Math.round(completed.reduce((s,d)=>s+(d.amount||0),0)/completed.length) : 0;
+                            const accountMap = {};
+                            completed.forEach(d => {
+                                const a=d.game_account||'(未填)';
+                                if(!accountMap[a]) accountMap[a]={amount:0,count:0,latest:d.created_at};
+                                accountMap[a].amount+=d.amount||0; accountMap[a].count++;
+                                if(new Date(d.created_at)>new Date(accountMap[a].latest)) accountMap[a].latest=d.created_at;
                             });
-                            
-                            // 準備趨勢圖表數據（最近 30 天）
-                            const last30Days = [];
-                            const trendData = {};
-                            for (let i = 29; i >= 0; i--) {
-                                const date = new Date(now - i * 24 * 60 * 60 * 1000);
-                                const dateStr = date.toISOString().split('T')[0];
-                                last30Days.push(dateStr);
-                                trendData[dateStr] = 0;
-                            }
-                            
-                            data.forEach(item => {
-                                const dateStr = new Date(item.created_at).toISOString().split('T')[0];
-                                if (trendData[dateStr] !== undefined) {
-                                    trendData[dateStr] += item.amount || 0;
-                                }
-                            });
-                            
-                            // 準備方案統計數據
-                            const planStats = {};
-                            data.forEach(item => {
-                                const plan = item.plan_name || '未知方案';
-                                planStats[plan] = (planStats[plan] || 0) + 1;
-                            });
-                            
+                            const topSponsors = Object.entries(accountMap).sort((a,b)=>b[1].amount-a[1].amount).slice(0,10);
+
+                            const kpis = [
+                                { label:'累積業績', value:`NT$ ${completed.reduce((s,d)=>s+(d.amount||0),0).toLocaleString()}`, sub:`${completed.length} 筆已完成`, icon:'💰', color:'from-amber-500 to-yellow-600' },
+                                { label:'本月業績', value:`NT$ ${thisMonthRev.toLocaleString()}`, sub:`${yr}/${String(mo+1).padStart(2,'0')}`, icon:'📅', color:'from-green-500 to-emerald-600' },
+                                { label:'上月業績', value:`NT$ ${lastMonthRev.toLocaleString()}`, sub:`${prevYr}/${String(prevMo+1).padStart(2,'0')}`, icon:'🗓️', color:'from-sky-500 to-blue-600' },
+                                { label:'月成長率', value:`${growth>=0?'+':''}${growth}%`, sub:'相比上月', icon:growth>=0?'📈':'📉', color:growth>=0?'from-teal-500 to-cyan-600':'from-red-500 to-rose-600' },
+                                { label:'今日業績', value:`NT$ ${data.filter(d=>new Date(d.created_at).getTime()>=todayTs).reduce((s,d)=>s+(d.amount||0),0).toLocaleString()}`, sub:'今天所有訂單', icon:'⚡', color:'from-orange-500 to-amber-600' },
+                                { label:'本週業績', value:`NT$ ${data.filter(d=>new Date(d.created_at).getTime()>=weekAgo).reduce((s,d)=>s+(d.amount||0),0).toLocaleString()}`, sub:'近 7 天', icon:'📆', color:'from-violet-500 to-purple-600' },
+                                { label:'平均客單', value:`NT$ ${avgOrder.toLocaleString()}`, sub:'已完成訂單均值', icon:'💳', color:'from-pink-500 to-rose-600' },
+                                { label:'待處理', value:data.filter(d=>d.status==='pending').length, sub:'筆等待確認', icon:'⏳', color:'from-stone-600 to-slate-700' },
+                            ];
+
+                            const subTabs = [
+                                { id:'overview', label:'總覽', icon:'📊' },
+                                { id:'charts',   label:'趨勢圖表', icon:'📈' },
+                                { id:'ranking',  label:'排行榜', icon:'🏆' },
+                                { id:'server',   label:'伺服器', icon:'🎮' },
+                                { id:'export',   label:'匯出報表', icon:'📥' },
+                            ];
+
                             return (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <div className="bg-gradient-to-br from-gold-500 to-gold-600 rounded-2xl p-6 text-white shadow-xl">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <Coins size={28} />
-                                                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">總計</span>
-                                            </div>
-                                            <p className="text-3xl font-black mb-1">NT$ {stats.total.toLocaleString()}</p>
-                                            <p className="text-gold-100 text-sm font-medium">總贊助金額</p>
-                                        </div>
-                                        
-                                        <div className="bg-gradient-to-br from-wind-500 to-wind-600 rounded-2xl p-6 text-white shadow-xl">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <CheckCircle size={28} />
-                                                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">已完成</span>
-                                            </div>
-                                            <p className="text-3xl font-black mb-1">NT$ {stats.totalCompleted.toLocaleString()}</p>
-                                            <p className="text-wind-100 text-sm font-medium">{stats.completed} 筆訂單</p>
-                                        </div>
-                                        
-                                        <div className="bg-gradient-to-br from-fire-500 to-fire-600 rounded-2xl p-6 text-white shadow-xl">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <Flame size={28} />
-                                                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">本週</span>
-                                            </div>
-                                            <p className="text-3xl font-black mb-1">NT$ {stats.week.toLocaleString()}</p>
-                                            <p className="text-fire-100 text-sm font-medium">近 7 日營收</p>
-                                        </div>
-                                        
-                                        <div className="bg-gradient-to-br from-stone-700 to-stone-800 rounded-2xl p-6 text-white shadow-xl">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <AlertCircle size={28} />
-                                                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">待處理</span>
-                                            </div>
-                                            <p className="text-3xl font-black mb-1">{stats.pending}</p>
-                                            <p className="text-stone-300 text-sm font-medium">筆訂單等待處理</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="bg-gradient-to-br from-cyan-950/40 to-stone-800 rounded-2xl p-6 border border-cyan-700/30 shadow-xl">
-                                        <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                            <Calendar size={24} className="text-cyan-400" />
-                                            時間統計
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-gradient-to-br from-amber-900/40 to-stone-800/80 rounded-xl p-5 border border-amber-700/30">
-                                                <p className="text-amber-100 text-sm font-semibold mb-2">今日</p>
-                                                <p className="text-amber-50 text-2xl font-black">NT$ {stats.today.toLocaleString()}</p>
-                                            </div>
-                                            <div className="bg-gradient-to-br from-sky-900/40 to-stone-800/80 rounded-xl p-5 border border-sky-700/30">
-                                                <p className="text-sky-100 text-sm font-semibold mb-2">本週 (7天)</p>
-                                                <p className="text-sky-50 text-2xl font-black">NT$ {stats.week.toLocaleString()}</p>
-                                            </div>
-                                            <div className="bg-gradient-to-br from-emerald-900/40 to-stone-800/80 rounded-xl p-5 border border-emerald-700/30">
-                                                <p className="text-emerald-100 text-sm font-semibold mb-2">本月 (30天)</p>
-                                                <p className="text-emerald-50 text-2xl font-black">NT$ {stats.month.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* 圖表視覺化 */}
-                                    {data.length > 0 && (
-                                        <>
-                                            {/* 贊助趨勢圖 */}
-                                            <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
-                                                <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                    <TrendingUp size={24} className="text-amber-400" />
-                                                    贊助趨勢分析（最近 30 天）
-                                                </h3>
-                                                <div className="relative h-80">
-                                                    <canvas ref={trendChartRef}></canvas>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                {/* 支付方式分布 */}
-                                                <div className="bg-gradient-to-br from-sky-950/30 to-stone-800 rounded-2xl p-6 border border-sky-700/30 shadow-xl">
-                                                    <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                        <CreditCard size={24} className="text-sky-400" />
-                                                        支付方式分布
-                                                    </h3>
-                                                    <div className="relative h-80">
-                                                        <canvas ref={paymentChartRef}></canvas>
-                                                    </div>
-                                                </div>
-                                                
-                                                {/* 方案選擇統計 */}
-                                                <div className="bg-gradient-to-br from-rose-950/30 to-stone-800 rounded-2xl p-6 border border-rose-700/30 shadow-xl">
-                                                    <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                                        <BarChart3 size={24} className="text-rose-400" />
-                                                        熱門方案 TOP 10
-                                                    </h3>
-                                                    <div className="relative h-80">
-                                                        <canvas ref={planChartRef}></canvas>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                    
-                                    {data.length === 0 && (
-                                        <div className="bg-gradient-to-br from-stone-800 to-slate-900 rounded-2xl p-12 border border-cyan-700/30 shadow-xl text-center">
-                                            <div className="text-cyan-500/40 mb-4">
-                                                <BarChart3 size={64} className="mx-auto" />
-                                            </div>
-                                            <p className="text-white font-bold text-lg mb-2">暫無數據</p>
-                                            <p className="text-stone-200 text-sm font-medium">等待贊助紀錄產生後即可查看圖表分析</p>
-                                        </div>
-                                    )}
-
-                                    {/* ── 遊戲伺服器即時狀態（GMTOOL 同步）── */}
-                                    <div className="bg-gradient-to-br from-emerald-950/40 to-stone-800 rounded-2xl p-6 border border-emerald-700/30 shadow-xl">
-                                        <div className="flex items-center justify-between mb-5">
-                                            <h3 className="text-white font-black text-xl flex items-center gap-2">
-                                                <span>🎮</span> 遊戲伺服器即時狀態
-                                            </h3>
-                                            <button onClick={() => { loadGmStats(); loadGmVip(); }} className="px-3 py-1.5 bg-emerald-700/40 hover:bg-emerald-600/50 text-emerald-300 text-xs font-bold rounded-lg border border-emerald-600/30 transition-colors flex items-center gap-1.5">
-                                                {gmStatsLoading ? <span className="animate-spin">⏳</span> : '🔄'} 重新整理
+                                <div className="space-y-0">
+                                    {/* 子分頁導覽列 */}
+                                    <div className="flex gap-1.5 overflow-x-auto pb-1 mb-6 scrollbar-none">
+                                        {subTabs.map(t => (
+                                            <button key={t.id} onClick={() => setStatsSubTab(t.id)}
+                                                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all shrink-0 ${statsSubTab===t.id
+                                                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-900/30'
+                                                    : 'bg-stone-800/60 text-stone-400 hover:bg-stone-700/60 hover:text-stone-200 border border-stone-700/40'}`}>
+                                                <span>{t.icon}</span><span>{t.label}</span>
                                             </button>
-                                        </div>
-                                        {gmStatsLoading ? (
-                                            <div className="text-center py-8 text-emerald-400 text-sm">載入中...</div>
-                                        ) : gmStats ? (
-                                            <>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-                                                    {[
-                                                        { label: '線上人數', value: gmStats.onlinePlayers, icon: '🟢', color: 'text-emerald-300' },
-                                                        { label: '總帳號數', value: gmStats.totalPlayers?.toLocaleString(), icon: '👥', color: 'text-sky-300' },
-                                                        { label: '今日新增', value: gmStats.newToday, icon: '✨', color: 'text-amber-300' },
-                                                        { label: '封號帳號', value: gmStats.bannedPlayers, icon: '🔒', color: 'text-red-300' },
-                                                        { label: '總金幣', value: gmStats.totalGold?.toLocaleString(), icon: '💰', color: 'text-yellow-300' },
-                                                        { label: '總水晶', value: gmStats.totalCrystal?.toLocaleString(), icon: '💎', color: 'text-cyan-300' },
-                                                    ].map((item, i) => (
-                                                        <div key={i} className="bg-stone-800/60 rounded-xl p-4 border border-stone-700/30 text-center">
-                                                            <div className="text-2xl mb-1">{item.icon}</div>
-                                                            <div className={`text-xl font-black ${item.color}`}>{item.value ?? '-'}</div>
-                                                            <div className="text-stone-400 text-xs mt-1">{item.label}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="text-center py-8 text-stone-400 text-sm">無法連線到遊戲伺服器，請確認 GMTOOL 服務狀態</div>
-                                        )}
+                                        ))}
+                                    </div>
 
-                                        {/* VIP 排行榜 */}
-                                        <div className="mt-4">
-                                            <h4 className="text-amber-300 font-black text-base mb-3 flex items-center gap-2">
-                                                <Crown size={18} /> VIP 玩家排行榜 TOP 10
-                                            </h4>
-                                            {gmVipLoading ? (
-                                                <div className="text-center py-4 text-amber-400 text-sm">載入中...</div>
-                                            ) : gmVip.length > 0 ? (
-                                                <div className="overflow-x-auto">
-                                                    <table className="w-full text-sm">
-                                                        <thead>
-                                                            <tr className="text-stone-400 text-xs border-b border-stone-700">
-                                                                <th className="text-left py-2 px-2 font-semibold">名次</th>
-                                                                <th className="text-left py-2 px-2 font-semibold">主帳號</th>
-                                                                <th className="text-left py-2 px-2 font-semibold">角色名</th>
-                                                                <th className="text-right py-2 px-2 font-semibold">累積儲值</th>
-                                                                <th className="text-right py-2 px-2 font-semibold">金幣</th>
-                                                                <th className="text-center py-2 px-2 font-semibold">狀態</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {gmVip.slice(0, 10).map((v, i) => (
-                                                                <tr key={i} className="border-b border-stone-800/60 hover:bg-stone-700/20 transition-colors">
-                                                                    <td className="py-2.5 px-2">
-                                                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ${i === 0 ? 'bg-yellow-500 text-black' : i === 1 ? 'bg-stone-400 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-stone-700 text-stone-300'}`}>{i+1}</span>
-                                                                    </td>
-                                                                    <td className="py-2.5 px-2 text-stone-300 font-mono text-xs">{v.masterName || v.account}</td>
-                                                                    <td className="py-2.5 px-2 text-white font-bold">{v.charName || '-'}</td>
-                                                                    <td className="py-2.5 px-2 text-right text-amber-300 font-bold">NT$ {(v.payTotal||0).toLocaleString()}</td>
-                                                                    <td className="py-2.5 px-2 text-right text-yellow-300">💰 {(v.gold||0).toLocaleString()}</td>
-                                                                    <td className="py-2.5 px-2 text-center">
-                                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v.isOnline ? 'bg-emerald-900/60 text-emerald-400' : 'bg-stone-700/60 text-stone-400'}`}>
-                                                                            {v.isOnline ? '🟢 在線' : '⚫ 離線'}
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                    {/* ── 總覽 ── */}
+                                    {statsSubTab === 'overview' && (
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                {kpis.map((k,i) => (
+                                                    <div key={i} className={`bg-gradient-to-br ${k.color} rounded-2xl p-4 md:p-5 text-white shadow-xl`}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-xl md:text-2xl">{k.icon}</span>
+                                                            <span className="text-[10px] font-black bg-white/20 px-2 py-0.5 rounded-full tracking-wide">{k.label}</span>
+                                                        </div>
+                                                        <p className="text-xl md:text-2xl font-black leading-tight mb-0.5">{k.value}</p>
+                                                        <p className="text-white/65 text-xs">{k.sub}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {data.length === 0 && (
+                                                <div className="rounded-2xl bg-stone-800/60 border border-stone-700/40 p-12 text-center">
+                                                    <BarChart3 size={48} className="mx-auto mb-3 text-stone-600" />
+                                                    <p className="text-stone-400 font-bold">尚無贊助數據</p>
                                                 </div>
-                                            ) : (
-                                                <div className="text-center py-4 text-stone-500 text-sm">無 VIP 資料</div>
                                             )}
                                         </div>
-                                    </div>
+                                    )}
 
-                                    {/* ── 業績深度分析 ── */}
-                                    {data.length > 0 && (() => {
-                                        const nowD = new Date();
-                                        const yr = nowD.getFullYear(), mo = nowD.getMonth();
-                                        const prevMo = mo === 0 ? 11 : mo - 1, prevYr = mo === 0 ? yr - 1 : yr;
-                                        const completed = data.filter(d => d.status === 'completed');
-                                        const thisMonthRev = completed.filter(d => { const t = new Date(d.created_at); return t.getFullYear() === yr && t.getMonth() === mo; }).reduce((s,d)=>s+(d.amount||0),0);
-                                        const lastMonthRev = completed.filter(d => { const t = new Date(d.created_at); return t.getFullYear() === prevYr && t.getMonth() === prevMo; }).reduce((s,d)=>s+(d.amount||0),0);
-                                        const growth = lastMonthRev === 0 ? (thisMonthRev > 0 ? 100 : 0) : Math.round((thisMonthRev - lastMonthRev) / lastMonthRev * 100);
-                                        const avgOrder = completed.length ? Math.round(completed.reduce((s,d)=>s+(d.amount||0),0)/completed.length) : 0;
-                                        const accountMap = {};
-                                        completed.forEach(d => {
-                                            const a = d.game_account||'(未填)';
-                                            if(!accountMap[a]) accountMap[a]={amount:0,count:0,latest:d.created_at};
-                                            accountMap[a].amount+=d.amount||0; accountMap[a].count++;
-                                            if(new Date(d.created_at)>new Date(accountMap[a].latest)) accountMap[a].latest=d.created_at;
-                                        });
-                                        const topSponsors = Object.entries(accountMap).sort((a,b)=>b[1].amount-a[1].amount).slice(0,10);
-                                        return (
-                                            <>
-                                                {/* 業績 KPI */}
-                                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    {[
-                                                        { label:'本月業績', value:`NT$ ${thisMonthRev.toLocaleString()}`, icon:'📅', color:'from-green-600 to-emerald-700', sub:`${yr}/${String(mo+1).padStart(2,'0')}` },
-                                                        { label:'上月業績', value:`NT$ ${lastMonthRev.toLocaleString()}`, icon:'🗓️', color:'from-sky-600 to-blue-700', sub:`${prevYr}/${String(prevMo+1).padStart(2,'0')}` },
-                                                        { label:'月成長率', value:`${growth>=0?'+':''}${growth}%`, icon:growth>=0?'📈':'📉', color:growth>=0?'from-amber-500 to-orange-600':'from-red-600 to-rose-700', sub:'相比上月已完成' },
-                                                        { label:'平均客單價', value:`NT$ ${avgOrder.toLocaleString()}`, icon:'💳', color:'from-purple-600 to-violet-700', sub:`共 ${completed.length} 筆已完成` },
-                                                    ].map((c,i)=>(
-                                                        <div key={i} className={`bg-gradient-to-br ${c.color} rounded-2xl p-5 text-white shadow-xl`}>
-                                                            <div className="flex items-center justify-between mb-3"><span className="text-2xl">{c.icon}</span><span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">{c.label}</span></div>
-                                                            <p className="text-2xl font-black mb-1">{c.value}</p>
-                                                            <p className="text-white/70 text-xs">{c.sub}</p>
+                                    {/* ── 趨勢圖表 ── */}
+                                    {statsSubTab === 'charts' && (
+                                        <div className="space-y-6">
+                                            {data.length === 0 ? (
+                                                <div className="rounded-2xl bg-stone-800/60 border border-stone-700/40 p-12 text-center">
+                                                    <TrendingUp size={48} className="mx-auto mb-3 text-stone-600" /><p className="text-stone-400 font-bold">尚無數據</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                                        <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2"><TrendingUp size={20} className="text-amber-400"/>30 天贊助趨勢</h3>
+                                                        <div className="relative h-72"><canvas ref={trendChartRef}></canvas></div>
+                                                    </div>
+                                                    <div className="bg-gradient-to-br from-green-950/40 to-stone-800 rounded-2xl p-6 border border-green-700/30 shadow-xl">
+                                                        <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2"><TrendingUp size={20} className="text-green-400"/>近 12 個月月度業績</h3>
+                                                        <div className="relative h-72"><canvas ref={revenueMonthlyChartRef}></canvas></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                        <div className="bg-gradient-to-br from-amber-950/40 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                                            <h3 className="text-white font-black text-base mb-4 flex items-center gap-2"><Calendar size={18} className="text-amber-400"/>本月每日業績</h3>
+                                                            <div className="relative h-60"><canvas ref={revenueDailyChartRef}></canvas></div>
                                                         </div>
-                                                    ))}
-                                                </div>
-
-                                                {/* 近 12 個月月度業績圖 */}
-                                                <div className="bg-gradient-to-br from-green-950/40 to-stone-800 rounded-2xl p-6 border border-green-700/30 shadow-xl">
-                                                    <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2"><TrendingUp size={24} className="text-green-400"/>近 12 個月業績趨勢（已完成）</h3>
-                                                    <div className="relative h-72"><canvas ref={revenueMonthlyChartRef}></canvas></div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                    <div className="bg-gradient-to-br from-amber-950/40 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
-                                                        <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2"><Calendar size={20} className="text-amber-400"/>本月每日業績</h3>
-                                                        <div className="relative h-64"><canvas ref={revenueDailyChartRef}></canvas></div>
+                                                        <div className="bg-gradient-to-br from-purple-950/40 to-stone-800 rounded-2xl p-6 border border-purple-700/30 shadow-xl">
+                                                            <h3 className="text-white font-black text-base mb-4 flex items-center gap-2"><span>🕐</span>時段業績分析（24h）</h3>
+                                                            <div className="relative h-60"><canvas ref={revenueHourlyChartRef}></canvas></div>
+                                                        </div>
+                                                        <div className="bg-gradient-to-br from-sky-950/30 to-stone-800 rounded-2xl p-6 border border-sky-700/30 shadow-xl">
+                                                            <h3 className="text-white font-black text-base mb-4 flex items-center gap-2"><CreditCard size={18} className="text-sky-400"/>支付方式分布</h3>
+                                                            <div className="relative h-60"><canvas ref={paymentChartRef}></canvas></div>
+                                                        </div>
+                                                        <div className="bg-gradient-to-br from-rose-950/30 to-stone-800 rounded-2xl p-6 border border-rose-700/30 shadow-xl">
+                                                            <h3 className="text-white font-black text-base mb-4 flex items-center gap-2"><BarChart3 size={18} className="text-rose-400"/>熱門方案 TOP 10</h3>
+                                                            <div className="relative h-60"><canvas ref={planChartRef}></canvas></div>
+                                                        </div>
                                                     </div>
-                                                    <div className="bg-gradient-to-br from-purple-950/40 to-stone-800 rounded-2xl p-6 border border-purple-700/30 shadow-xl">
-                                                        <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2"><span>🕐</span>時段業績分析（24h）</h3>
-                                                        <div className="relative h-64"><canvas ref={revenueHourlyChartRef}></canvas></div>
-                                                    </div>
-                                                </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
 
-                                                {/* TOP 贊助者 */}
-                                                <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
-                                                    <h3 className="text-white font-black text-xl mb-5 flex items-center gap-2"><Crown size={22} className="text-amber-400"/>贊助者排行榜 TOP 10</h3>
+                                    {/* ── 排行榜 ── */}
+                                    {statsSubTab === 'ranking' && (
+                                        <div className="space-y-6">
+                                            <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                                <h3 className="text-white font-black text-lg mb-5 flex items-center gap-2"><Crown size={20} className="text-amber-400"/>贊助者累積業績排行 TOP 10</h3>
+                                                {topSponsors.length === 0 ? <p className="text-stone-400 text-sm text-center py-8">尚無已完成訂單</p> : (
                                                     <div className="overflow-x-auto">
                                                         <table className="w-full text-sm">
                                                             <thead><tr className="text-stone-400 text-xs border-b border-stone-700">
-                                                                <th className="text-left py-2 px-3">名次</th><th className="text-left py-2 px-3">遊戲帳號</th>
-                                                                <th className="text-right py-2 px-3">累積贊助</th><th className="text-right py-2 px-3">訂單數</th><th className="text-right py-2 px-3">最近一筆</th>
+                                                                <th className="text-left py-2.5 px-3">名次</th>
+                                                                <th className="text-left py-2.5 px-3">遊戲帳號</th>
+                                                                <th className="text-right py-2.5 px-3">累積贊助</th>
+                                                                <th className="text-right py-2.5 px-3">訂單數</th>
+                                                                <th className="text-right py-2.5 px-3">最近一筆</th>
                                                             </tr></thead>
                                                             <tbody>{topSponsors.map(([acc,stat],i)=>(
-                                                                <tr key={acc} className="border-b border-stone-800/60 hover:bg-stone-700/20">
-                                                                    <td className="py-2.5 px-3"><span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${i===0?'bg-yellow-400 text-black':i===1?'bg-stone-300 text-black':i===2?'bg-amber-700 text-white':'bg-stone-700 text-stone-300'}`}>{i+1}</span></td>
-                                                                    <td className="py-2.5 px-3 text-white font-bold font-mono text-xs">{acc}</td>
-                                                                    <td className="py-2.5 px-3 text-right text-amber-300 font-black">NT$ {stat.amount.toLocaleString()}</td>
-                                                                    <td className="py-2.5 px-3 text-right text-stone-300">{stat.count} 筆</td>
-                                                                    <td className="py-2.5 px-3 text-right text-stone-400 text-xs">{new Date(stat.latest).toLocaleDateString('zh-TW')}</td>
+                                                                <tr key={acc} className="border-b border-stone-800/50 hover:bg-stone-700/20 transition-colors">
+                                                                    <td className="py-3 px-3"><span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${i===0?'bg-yellow-400 text-black':i===1?'bg-stone-300 text-black':i===2?'bg-amber-700 text-white':'bg-stone-700/60 text-stone-300'}`}>{i+1}</span></td>
+                                                                    <td className="py-3 px-3 text-white font-bold font-mono text-xs">{acc}</td>
+                                                                    <td className="py-3 px-3 text-right text-amber-300 font-black">NT$ {stat.amount.toLocaleString()}</td>
+                                                                    <td className="py-3 px-3 text-right text-stone-300 text-xs">{stat.count} 筆</td>
+                                                                    <td className="py-3 px-3 text-right text-stone-400 text-xs">{new Date(stat.latest).toLocaleDateString('zh-TW')}</td>
                                                                 </tr>
                                                             ))}</tbody>
                                                         </table>
                                                     </div>
-                                                </div>
-                                            </>
-                                        );
-                                    })()}
-
-                                    {/* ── 結算報表匯出 ── */}
-                                    <div className="bg-gradient-to-br from-indigo-950/50 to-stone-800 rounded-2xl p-6 border border-indigo-700/40 shadow-xl">
-                                        <h3 className="text-white font-black text-xl mb-6 flex items-center gap-2">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                            結算報表匯出（CSV）
-                                        </h3>
-
-                                        {/* 結算類型選擇 */}
-                                        <div className="flex flex-wrap gap-2 mb-5">
-                                            {[
-                                                { id:'day',    label:'日結' },
-                                                { id:'week',   label:'週結' },
-                                                { id:'custom', label:'天數結' },
-                                                { id:'month',  label:'月結' },
-                                                { id:'year',   label:'年結' },
-                                                { id:'range',  label:'自訂時間' },
-                                            ].map(p => (
-                                                <button key={p.id} onClick={() => { setReportPeriod(p.id); setReportPreview(null); }}
-                                                    className={`px-5 py-2 rounded-xl font-bold text-sm transition-all ${reportPeriod === p.id
-                                                        ? (p.id === 'range' ? 'bg-rose-500 text-white shadow-lg shadow-rose-900/40' : 'bg-indigo-500 text-white shadow-lg shadow-indigo-900/40')
-                                                        : (p.id === 'range' ? 'bg-rose-950/60 text-rose-300 hover:bg-rose-900/60 border border-rose-700/40' : 'bg-indigo-950/60 text-indigo-300 hover:bg-indigo-900/60 border border-indigo-700/40')}`}>
-                                                    {p.id === 'range' ? '🗂 自訂時間' : p.label}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        {/* 自訂時間：起訖 datetime-local */}
-                                        {reportPeriod === 'range' && (
-                                            <div className="bg-rose-950/30 border border-rose-700/40 rounded-2xl p-4 mb-5 space-y-3">
-                                                <p className="text-rose-300 text-xs font-bold mb-1">設定結算起訖時間（精確到分鐘）</p>
-                                                <div className="flex flex-wrap gap-4">
-                                                    <div className="flex-1 min-w-[220px]">
-                                                        <label className="block text-stone-400 text-xs mb-1">開始時間</label>
-                                                        <input type="datetime-local" value={reportRangeFrom}
-                                                            onChange={e => { setReportRangeFrom(e.target.value); setReportPreview(null); }}
-                                                            className="w-full bg-stone-900 border border-rose-700/50 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-rose-400"/>
-                                                    </div>
-                                                    <div className="flex items-center text-stone-500 self-end pb-2.5 shrink-0">→</div>
-                                                    <div className="flex-1 min-w-[220px]">
-                                                        <label className="block text-stone-400 text-xs mb-1">結束時間</label>
-                                                        <input type="datetime-local" value={reportRangeTo}
-                                                            onChange={e => { setReportRangeTo(e.target.value); setReportPreview(null); }}
-                                                            className="w-full bg-stone-900 border border-rose-700/50 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-rose-400"/>
-                                                    </div>
-                                                </div>
-                                                {reportRangeFrom && reportRangeTo && new Date(reportRangeFrom) < new Date(reportRangeTo) && (
-                                                    <p className="text-rose-200/70 text-xs">
-                                                        區間長度：{(() => {
-                                                            const ms = new Date(reportRangeTo) - new Date(reportRangeFrom);
-                                                            const h = Math.floor(ms / 3600000);
-                                                            const m = Math.floor((ms % 3600000) / 60000);
-                                                            const d = Math.floor(h / 24);
-                                                            return d > 0 ? `${d} 天 ${h % 24} 小時 ${m} 分` : `${h} 小時 ${m} 分`;
-                                                        })()}
-                                                    </p>
                                                 )}
                                             </div>
-                                        )}
-
-                                        {/* 日期/天數輸入（非自訂時間模式） */}
-                                        {reportPeriod !== 'range' && (
-                                        <div className="flex flex-wrap items-end gap-4 mb-5">
-                                            {reportPeriod === 'custom' ? (
-                                                <>
-                                                <div>
-                                                    <label className="block text-stone-400 text-xs mb-1">截止日期</label>
-                                                    <input type="date" value={reportDate} onChange={e=>{setReportDate(e.target.value);setReportPreview(null);}}
-                                                        className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-stone-400 text-xs mb-1">往前天數</label>
-                                                    <input type="number" min="1" max="365" value={reportCustomDays} onChange={e=>{setReportCustomDays(e.target.value);setReportPreview(null);}}
-                                                        className="w-24 bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
-                                                </div>
-                                                </>
-                                            ) : reportPeriod === 'year' ? (
-                                                <div>
-                                                    <label className="block text-stone-400 text-xs mb-1">選擇年份</label>
-                                                    <input type="number" min="2020" max="2099" value={reportDate.slice(0,4)} onChange={e=>{setReportDate(`${e.target.value}-01-01`);setReportPreview(null);}}
-                                                        className="w-28 bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
-                                                </div>
-                                            ) : reportPeriod === 'month' ? (
-                                                <div>
-                                                    <label className="block text-stone-400 text-xs mb-1">選擇年月</label>
-                                                    <input type="month" value={reportDate.slice(0,7)} onChange={e=>{setReportDate(e.target.value+'-01');setReportPreview(null);}}
-                                                        className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <label className="block text-stone-400 text-xs mb-1">{reportPeriod==='week'?'選擇週內任一天':'選擇日期'}</label>
-                                                    <input type="date" value={reportDate} onChange={e=>{setReportDate(e.target.value);setReportPreview(null);}}
-                                                        className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
-                                                </div>
-                                            )}
                                         </div>
-                                        )}
+                                    )}
 
-                                        {/* 動作按鈕 */}
-                                        <div className="flex flex-wrap gap-3 mb-5">
-                                            <button onClick={previewReport}
-                                                className="px-5 py-2.5 bg-indigo-700/60 hover:bg-indigo-600/70 text-white rounded-xl font-bold text-sm border border-indigo-600/50 transition-colors flex items-center gap-2">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                                預覽
-                                            </button>
-                                            <button onClick={exportReport}
-                                                className={`px-5 py-2.5 text-white rounded-xl font-black text-sm shadow-lg transition-all flex items-center gap-2 ${reportPeriod === 'range' ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-rose-900/40' : 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 shadow-indigo-900/40'}`}>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                                下載 CSV
-                                            </button>
-                                        </div>
-
-                                        {/* 預覽結果 */}
-                                        {reportPreview && (() => {
-                                            const s = reportPreview;
-                                            return (
-                                                <div className="bg-stone-900/60 rounded-xl border border-indigo-700/30 p-5 space-y-4">
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <span className="text-indigo-300 font-black text-base">{s.label}</span>
-                                                        <span className="text-stone-500 text-xs">{new Date(s.from).toLocaleDateString('zh-TW')} ~ {new Date(s.to).toLocaleDateString('zh-TW')}</span>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                    {/* ── 伺服器 ── */}
+                                    {statsSubTab === 'server' && (
+                                        <div className="space-y-6">
+                                            <div className="bg-gradient-to-br from-emerald-950/40 to-stone-800 rounded-2xl p-6 border border-emerald-700/30 shadow-xl">
+                                                <div className="flex items-center justify-between mb-5">
+                                                    <h3 className="text-white font-black text-lg flex items-center gap-2"><span>🎮</span>遊戲伺服器即時狀態</h3>
+                                                    <button onClick={() => { loadGmStats(); loadGmVip(); }} className="px-3 py-1.5 bg-emerald-700/40 hover:bg-emerald-600/50 text-emerald-300 text-xs font-bold rounded-lg border border-emerald-600/30 transition-colors flex items-center gap-1.5">
+                                                        {gmStatsLoading ? <span className="animate-spin inline-block">⏳</span> : '🔄'} 重新整理
+                                                    </button>
+                                                </div>
+                                                {gmStatsLoading ? <div className="text-center py-10 text-emerald-400 text-sm">載入中...</div>
+                                                : gmStats ? (
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                                                         {[
-                                                            { l:'業績', v:`NT$ ${s.revenue.toLocaleString()}`, c:'text-amber-300' },
-                                                            { l:'訂單總數', v:s.inRange.length, c:'text-white' },
-                                                            { l:'已完成', v:s.completed.length, c:'text-green-400' },
-                                                            { l:'待處理', v:s.pending.length, c:'text-yellow-400' },
-                                                            { l:'已取消', v:s.cancelled.length, c:'text-red-400' },
-                                                            { l:'平均客單', v:`NT$ ${s.avg.toLocaleString()}`, c:'text-purple-300' },
+                                                            { label:'線上人數', value:gmStats.onlinePlayers, icon:'🟢', color:'text-emerald-300' },
+                                                            { label:'總帳號數', value:gmStats.totalPlayers?.toLocaleString(), icon:'👥', color:'text-sky-300' },
+                                                            { label:'今日新增', value:gmStats.newToday, icon:'✨', color:'text-amber-300' },
+                                                            { label:'封號帳號', value:gmStats.bannedPlayers, icon:'🔒', color:'text-red-300' },
+                                                            { label:'總金幣', value:gmStats.totalGold?.toLocaleString(), icon:'💰', color:'text-yellow-300' },
+                                                            { label:'總水晶', value:gmStats.totalCrystal?.toLocaleString(), icon:'💎', color:'text-cyan-300' },
                                                         ].map((item,i)=>(
-                                                            <div key={i} className="bg-stone-800/50 rounded-xl p-3 text-center">
-                                                                <p className={`text-lg font-black ${item.c}`}>{item.v}</p>
-                                                                <p className="text-stone-500 text-xs mt-1">{item.l}</p>
+                                                            <div key={i} className="bg-stone-800/60 rounded-xl p-4 border border-stone-700/30 text-center">
+                                                                <div className="text-2xl mb-1">{item.icon}</div>
+                                                                <div className={`text-xl font-black ${item.color}`}>{item.value??'-'}</div>
+                                                                <div className="text-stone-400 text-xs mt-1">{item.label}</div>
                                                             </div>
                                                         ))}
                                                     </div>
-                                                    {Object.keys(s.methodMap).length > 0 && (
+                                                ) : <div className="text-center py-8 text-stone-400 text-sm">無法連線到遊戲伺服器</div>}
+                                            </div>
+                                            <div className="bg-gradient-to-br from-amber-950/30 to-stone-800 rounded-2xl p-6 border border-amber-700/30 shadow-xl">
+                                                <h4 className="text-amber-300 font-black text-base mb-4 flex items-center gap-2"><Crown size={18}/> VIP 玩家排行榜 TOP 10</h4>
+                                                {gmVipLoading ? <div className="text-center py-4 text-amber-400 text-sm">載入中...</div>
+                                                : gmVip.length > 0 ? (
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-sm">
+                                                            <thead><tr className="text-stone-400 text-xs border-b border-stone-700">
+                                                                <th className="text-left py-2 px-2">名次</th><th className="text-left py-2 px-2">主帳號</th><th className="text-left py-2 px-2">角色名</th>
+                                                                <th className="text-right py-2 px-2">累積儲值</th><th className="text-right py-2 px-2">金幣</th><th className="text-center py-2 px-2">狀態</th>
+                                                            </tr></thead>
+                                                            <tbody>{gmVip.slice(0,10).map((v,i)=>(
+                                                                <tr key={i} className="border-b border-stone-800/60 hover:bg-stone-700/20">
+                                                                    <td className="py-2.5 px-2"><span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ${i===0?'bg-yellow-500 text-black':i===1?'bg-stone-400 text-black':i===2?'bg-amber-700 text-white':'bg-stone-700 text-stone-300'}`}>{i+1}</span></td>
+                                                                    <td className="py-2.5 px-2 text-stone-300 font-mono text-xs">{v.masterName||v.account}</td>
+                                                                    <td className="py-2.5 px-2 text-white font-bold">{v.charName||'-'}</td>
+                                                                    <td className="py-2.5 px-2 text-right text-amber-300 font-bold">NT$ {(v.payTotal||0).toLocaleString()}</td>
+                                                                    <td className="py-2.5 px-2 text-right text-yellow-300">💰 {(v.gold||0).toLocaleString()}</td>
+                                                                    <td className="py-2.5 px-2 text-center"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v.isOnline?'bg-emerald-900/60 text-emerald-400':'bg-stone-700/60 text-stone-400'}`}>{v.isOnline?'🟢 在線':'⚫ 離線'}</span></td>
+                                                                </tr>
+                                                            ))}</tbody>
+                                                        </table>
+                                                    </div>
+                                                ) : <div className="text-center py-4 text-stone-500 text-sm">無 VIP 資料</div>}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ── 匯出報表 ── */}
+                                    {statsSubTab === 'export' && (
+                                        <div className="bg-gradient-to-br from-indigo-950/50 to-stone-800 rounded-2xl p-6 border border-indigo-700/40 shadow-xl space-y-5">
+                                            <h3 className="text-white font-black text-lg flex items-center gap-2">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                結算報表匯出（CSV）
+                                            </h3>
+                                            {/* 結算類型 */}
+                                            <div className="flex flex-wrap gap-2">
+                                                {[{id:'day',label:'日結'},{id:'week',label:'週結'},{id:'custom',label:'天數結'},{id:'month',label:'月結'},{id:'year',label:'年結'},{id:'range',label:'🗂 自訂時間'}].map(p=>(
+                                                    <button key={p.id} onClick={()=>{setReportPeriod(p.id);setReportPreview(null);}}
+                                                        className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${reportPeriod===p.id
+                                                            ?(p.id==='range'?'bg-rose-500 text-white shadow-lg':'bg-indigo-500 text-white shadow-lg')
+                                                            :(p.id==='range'?'bg-rose-950/60 text-rose-300 hover:bg-rose-900/60 border border-rose-700/40':'bg-indigo-950/60 text-indigo-300 hover:bg-indigo-900/60 border border-indigo-700/40')}`}>
+                                                        {p.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {/* 自訂時間 */}
+                                            {reportPeriod==='range' && (
+                                                <div className="bg-rose-950/30 border border-rose-700/40 rounded-2xl p-4 space-y-3">
+                                                    <p className="text-rose-300 text-xs font-bold">設定結算起訖時間（精確到分鐘）</p>
+                                                    <div className="flex flex-wrap gap-4">
+                                                        <div className="flex-1 min-w-[200px]">
+                                                            <label className="block text-stone-400 text-xs mb-1">開始時間</label>
+                                                            <input type="datetime-local" value={reportRangeFrom} onChange={e=>{setReportRangeFrom(e.target.value);setReportPreview(null);}}
+                                                                className="w-full bg-stone-900 border border-rose-700/50 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-rose-400"/>
+                                                        </div>
+                                                        <div className="flex items-center text-stone-500 self-end pb-2.5 shrink-0 font-bold">→</div>
+                                                        <div className="flex-1 min-w-[200px]">
+                                                            <label className="block text-stone-400 text-xs mb-1">結束時間</label>
+                                                            <input type="datetime-local" value={reportRangeTo} onChange={e=>{setReportRangeTo(e.target.value);setReportPreview(null);}}
+                                                                className="w-full bg-stone-900 border border-rose-700/50 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-rose-400"/>
+                                                        </div>
+                                                    </div>
+                                                    {reportRangeFrom && reportRangeTo && new Date(reportRangeFrom)<new Date(reportRangeTo) && (
+                                                        <p className="text-rose-200/70 text-xs">區間長度：{(()=>{
+                                                            const ms=new Date(reportRangeTo)-new Date(reportRangeFrom),h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),d=Math.floor(h/24);
+                                                            return d>0?`${d} 天 ${h%24} 小時 ${m} 分`:`${h} 小時 ${m} 分`;
+                                                        })()}</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {/* 日期輸入 */}
+                                            {reportPeriod!=='range' && (
+                                                <div className="flex flex-wrap items-end gap-4">
+                                                    {reportPeriod==='custom' ? (
+                                                        <>
                                                         <div>
-                                                            <p className="text-stone-400 text-xs font-bold mb-2">支付方式業績</p>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {Object.entries(s.methodMap).map(([m,v])=>(
-                                                                    <span key={m} className="px-3 py-1.5 bg-stone-800 rounded-lg text-sm text-white">
-                                                                        {m}: <span className="text-amber-300 font-bold">NT$ {v.toLocaleString()}</span>
-                                                                    </span>
-                                                                ))}
-                                                            </div>
+                                                            <label className="block text-stone-400 text-xs mb-1">截止日期</label>
+                                                            <input type="date" value={reportDate} onChange={e=>{setReportDate(e.target.value);setReportPreview(null);}} className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-stone-400 text-xs mb-1">往前天數</label>
+                                                            <input type="number" min="1" max="365" value={reportCustomDays} onChange={e=>{setReportCustomDays(e.target.value);setReportPreview(null);}} className="w-24 bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
+                                                        </div>
+                                                        </>
+                                                    ) : reportPeriod==='year' ? (
+                                                        <div>
+                                                            <label className="block text-stone-400 text-xs mb-1">選擇年份</label>
+                                                            <input type="number" min="2020" max="2099" value={reportDate.slice(0,4)} onChange={e=>{setReportDate(`${e.target.value}-01-01`);setReportPreview(null);}} className="w-28 bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
+                                                        </div>
+                                                    ) : reportPeriod==='month' ? (
+                                                        <div>
+                                                            <label className="block text-stone-400 text-xs mb-1">選擇年月</label>
+                                                            <input type="month" value={reportDate.slice(0,7)} onChange={e=>{setReportDate(e.target.value+'-01');setReportPreview(null);}} className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <label className="block text-stone-400 text-xs mb-1">{reportPeriod==='week'?'選擇週內任一天':'選擇日期'}</label>
+                                                            <input type="date" value={reportDate} onChange={e=>{setReportDate(e.target.value);setReportPreview(null);}} className="bg-stone-900 border border-indigo-700/50 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-400"/>
                                                         </div>
                                                     )}
-                                                    {s.completed.length === 0 && <p className="text-stone-500 text-sm text-center py-2">此區間無已完成訂單</p>}
                                                 </div>
-                                            );
-                                        })()}
-                                    </div>
-
+                                            )}
+                                            {/* 動作按鈕 */}
+                                            <div className="flex flex-wrap gap-3">
+                                                <button onClick={previewReport} className="px-5 py-2.5 bg-indigo-700/60 hover:bg-indigo-600/70 text-white rounded-xl font-bold text-sm border border-indigo-600/50 transition-colors flex items-center gap-2">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>預覽
+                                                </button>
+                                                <button onClick={exportReport} className={`px-5 py-2.5 text-white rounded-xl font-black text-sm shadow-lg transition-all flex items-center gap-2 ${reportPeriod==='range'?'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600':'bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600'}`}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下載 CSV
+                                                </button>
+                                            </div>
+                                            {/* 預覽結果 */}
+                                            {reportPreview && (() => {
+                                                const s = reportPreview;
+                                                return (
+                                                    <div className="bg-stone-900/60 rounded-xl border border-indigo-700/30 p-5 space-y-4">
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <span className="text-indigo-300 font-black text-base">{s.label}</span>
+                                                            <span className="text-stone-500 text-xs">{new Date(s.from).toLocaleString('zh-TW')} ~ {new Date(s.to).toLocaleString('zh-TW')}</span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                                                            {[
+                                                                {l:'業績',v:`NT$ ${s.revenue.toLocaleString()}`,c:'text-amber-300'},
+                                                                {l:'訂單總數',v:s.inRange.length,c:'text-white'},
+                                                                {l:'已完成',v:s.completed.length,c:'text-green-400'},
+                                                                {l:'待處理',v:s.pending.length,c:'text-yellow-400'},
+                                                                {l:'已取消',v:s.cancelled.length,c:'text-red-400'},
+                                                                {l:'平均客單',v:`NT$ ${s.avg.toLocaleString()}`,c:'text-purple-300'},
+                                                            ].map((item,i)=>(
+                                                                <div key={i} className="bg-stone-800/50 rounded-xl p-3 text-center">
+                                                                    <p className={`text-lg font-black ${item.c}`}>{item.v}</p>
+                                                                    <p className="text-stone-500 text-xs mt-1">{item.l}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {Object.keys(s.methodMap).length>0 && (
+                                                            <div>
+                                                                <p className="text-stone-400 text-xs font-bold mb-2">支付方式業績</p>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {Object.entries(s.methodMap).map(([m,v])=>(
+                                                                        <span key={m} className="px-3 py-1.5 bg-stone-800 rounded-lg text-sm text-white">{m}: <span className="text-amber-300 font-bold">NT$ {v.toLocaleString()}</span></span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {s.completed.length===0 && <p className="text-stone-500 text-sm text-center py-2">此區間無已完成訂單</p>}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })()}
