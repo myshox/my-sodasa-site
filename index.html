@@ -5293,13 +5293,12 @@
                     
                     console.log('贊助紀錄已儲存:', data);
                     
-                    // 儲存訂單編號到狀態並返回
-                    if (data && data[0] && data[0].order_number) {
-                        setOrderNumber(data[0].order_number);
-                        return data[0].order_number; // 返回訂單編號
-                    }
-                    
-                    return true;
+                    // 儲存訂單編號到狀態並返回（若無 order_number 則用備用編號）
+                    const orderNum = (data && data[0] && data[0].order_number)
+                        ? data[0].order_number
+                        : `ORD-${Date.now()}`;
+                    setOrderNumber(orderNum);
+                    return orderNum;
                 } catch (err) {
                     console.error('儲存贊助紀錄異常:', err);
                     showToast('系統錯誤，請稍後再試', 'error');
@@ -5340,9 +5339,9 @@
                 if (selectedMethod === 'shopline') {
                     showToast('正在生成訂單編號...', 'info');
                     const result = await saveSponsorshipRecord();
-                    const newOrderNumber = typeof result === 'string' ? result : null;
+                    const newOrderNumber = typeof result === 'string' ? result : `ORD-${Date.now()}`;
                     
-                    if (result && newOrderNumber) {
+                    if (result) {
                         // 顯示訂單編號和提醒
                         setTimeout(() => {
                             showConfirm(
@@ -5406,8 +5405,8 @@
                     // LINE Pay：先建立贊助紀錄（避免客人掃碼後直接關閉導致後台無紀錄），再顯示支付彈窗
                     showToast('正在建立訂單...', 'info');
                     const result = await saveSponsorshipRecord();
-                    const newOrderNumber = typeof result === 'string' ? result : null;
-                    if (result && newOrderNumber) {
+                    const newOrderNumber = typeof result === 'string' ? result : `ORD-${Date.now()}`;
+                    if (result) {
                         setOrderNumber(newOrderNumber);
                         setShowModal(true);
                     }
