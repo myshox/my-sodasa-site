@@ -6611,6 +6611,10 @@
             const [rechargeBonus, setRechargeBonus] = useState(0);
             const [rechargeUpdatePaydata, setRechargeUpdatePaydata] = useState(true);
             const [rechargeSkipGold, setRechargeSkipGold] = useState(false);
+            const [rechargeTargetAccount, setRechargeTargetAccount] = useState(''); // 實際充值目標帳號
+            const [rechargeMasterInput, setRechargeMasterInput] = useState('');
+            const [rechargeMasterChars, setRechargeMasterChars] = useState([]);
+            const [rechargeMasterLoading, setRechargeMasterLoading] = useState(false);
             // 批量發放金幣 / 水晶
             const [batchGiveAccounts, setBatchGiveAccounts] = useState('');
             const [batchGiveGold, setBatchGiveGold] = useState('');
@@ -7997,11 +8001,39 @@
             const openRechargeConfirm = (donation) => {
                 setRechargeBonus(0);
                 setRechargeUpdatePaydata(true);
+                setRechargeSkipGold(false);
+                setRechargeTargetAccount(donation.game_account || '');
+                setRechargeMasterInput('');
+                setRechargeMasterChars([]);
                 setRechargeConfirmModal({ id: donation.id, donation });
             };
 
+            const lookupRechargeMasterChars = async () => {
+                const name = rechargeMasterInput.trim();
+                if (!name) return;
+                setRechargeMasterLoading(true);
+                setRechargeMasterChars([]);
+                try {
+                    const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.chars && data.chars.length > 0) {
+                            setRechargeMasterChars(data.chars);
+                        } else {
+                            showToast('此主帳號下查無角色', 'warning');
+                        }
+                    } else {
+                        showToast('找不到此主帳號', 'error');
+                    }
+                } catch {
+                    showToast('查詢失敗', 'error');
+                } finally {
+                    setRechargeMasterLoading(false);
+                }
+            };
+
             // Donations 更新狀態
-            const updateStatus = async (id, newStatus, bonusPercent = 0, updatePaydata = true, skipGold = false) => {
+            const updateStatus = async (id, newStatus, bonusPercent = 0, updatePaydata = true, skipGold = false, targetAccount = null) => {
                 try {
                     const donation = data.find(d => d.id === id);
                     const oldStatus = donation?.status;
@@ -8028,7 +8060,8 @@
                     }
                     
                     // 標記為已完成時，自動呼叫 GM API 儲值（skipGold=true 時跳過，防重複發放）
-                    if (newStatus === 'completed' && !skipGold && donation?.game_account) {
+                    const chargeAccount = targetAccount || donation?.game_account;
+                    if (newStatus === 'completed' && !skipGold && chargeAccount) {
                         try {
                             const baseGold = donation.coins || 0;
                             const bonusGold = Math.round(baseGold * bonusPercent / 100);
@@ -8037,7 +8070,7 @@
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                    account: donation.game_account,
+                                    account: chargeAccount,
                                     twdAmount: donation.amount,
                                     goldAmount: totalGold,
                                     orderNo: String(donation.id),
@@ -8050,7 +8083,7 @@
                             const gmResult = await gmRes.json();
                             if (gmRes.ok) {
                                 const bonusMsg = bonusPercent > 0 ? ` (含 +${bonusPercent}% 回饋 ${bonusGold.toLocaleString()})` : '';
-                                showToast(`✅ 已儲值：${donation.game_account} +${totalGold.toLocaleString()} 金幣${bonusMsg}`, 'success');
+                                showToast(`✅ 已儲值：${chargeAccount} +${totalGold.toLocaleString()} 金幣${bonusMsg}`, 'success');
                             } else {
                                 showToast(`⚠️ 狀態已更新，但儲值失敗：${gmResult.message || '未知錯誤'}`, 'error');
                             }
@@ -11934,11 +11967,71 @@
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {/* 🔑 主帳號查詢角色 */}
+                                            <div className="bg-purple-900/20 border border-purple-700/30 rounded-xl p-3 space-y-2">
+                                                <p className="text-purple-300 text-xs font-semibold">🔑 查詢主帳號旗下角色（選擇充值對象）</p>
+                                                <div className="flex gap-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={rechargeMasterInput}
+                                                        onChange={e => { setRechargeMasterInput(e.target.value); setRechargeMasterChars([]); }}
+                                                        onKeyDown={e => e.key === 'Enter' && lookupRechargeMasterChars()}
+                                                        placeholder="輸入主帳號..."
+                                                        className="flex-1 bg-slate-900/70 border border-purple-700/40 rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-600 focus:border-purple-500 outline-none"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={lookupRechargeMasterChars}
+                                                        disabled={rechargeMasterLoading || !rechargeMasterInput.trim()}
+                                                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-colors shrink-0"
+                                                    >
+                                                        {rechargeMasterLoading ? '⏳' : '查詢'}
+                                                    </button>
+                                                </div>
+                                                {rechargeMasterChars.length > 0 && (
+                                                    <div className="space-y-1">
+                                                        <p className="text-purple-300/60 text-[11px]">點選角色即設為充值對象：</p>
+                                                        <div className="flex flex-col gap-1">
+                                                            {rechargeMasterChars.map((char, idx) => (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    onClick={() => setRechargeTargetAccount(char.account || char.charName || '')}
+                                                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all border ${
+                                                                        rechargeTargetAccount === (char.account || char.charName)
+                                                                            ? 'bg-purple-600/50 border-purple-500/70 text-white'
+                                                                            : 'bg-slate-800/60 border-slate-700/40 text-slate-300 hover:bg-purple-900/30 hover:border-purple-700/40'
+                                                                    }`}
+                                                                >
+                                                                    <div className="flex items-center gap-2">
+                                                                        {char.isOnline && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>}
+                                                                        <span className="font-bold">{char.charName || char.account}</span>
+                                                                        <span className="text-slate-500 font-mono text-[10px]">{char.account}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 shrink-0">
+                                                                        <span className="text-amber-400/80">💰{(char.gold||0).toLocaleString()}</span>
+                                                                        {rechargeTargetAccount === (char.account || char.charName) && <span className="text-purple-300 text-[10px] font-bold">✓ 已選</span>}
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
                                             {/* 玩家資訊 */}
                                             <div className="bg-stone-900/50 rounded-xl p-3 space-y-1 border border-stone-700/50">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-stone-400 text-sm">帳號</span>
-                                                    <span className="text-white font-bold text-sm font-mono">{d.game_account}</span>
+                                                    <span className="text-stone-400 text-sm">充值帳號</span>
+                                                    <span className={`font-bold text-sm font-mono ${rechargeTargetAccount !== d.game_account ? 'text-purple-300' : 'text-white'}`}>
+                                                        {rechargeTargetAccount || d.game_account}
+                                                        {rechargeTargetAccount !== d.game_account && <span className="ml-1 text-[10px] text-purple-400">（已變更）</span>}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-stone-400 text-sm">原訂帳號</span>
+                                                    <span className="text-stone-500 text-xs font-mono">{d.game_account}</span>
                                                 </div>
                                                 {gmInfo?.charName && (
                                                     <div className="flex items-center justify-between">
@@ -12048,9 +12141,11 @@
                                                     const syncPaydata = rechargeUpdatePaydata;
                                                     const skip = rechargeSkipGold;
                                                     const id = rechargeConfirmModal.id;
+                                                    const target = rechargeTargetAccount || d.game_account;
                                                     setRechargeConfirmModal(null);
                                                     setRechargeSkipGold(false);
-                                                    updateStatus(id, 'completed', bonus, syncPaydata, skip);
+                                                    setRechargeMasterChars([]);
+                                                    updateStatus(id, 'completed', bonus, syncPaydata, skip, target);
                                                 }}
                                                 className={`flex-1 py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-white ${d.status === 'completed' ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}
                                             >
