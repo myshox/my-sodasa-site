@@ -2225,6 +2225,11 @@
             const [masterLookup, setMasterLookup] = useState(null);   // { masterName, chars: [...] }
             const [masterLoading, setMasterLoading] = useState(false);
             const [masterError, setMasterError] = useState('');
+            const [gameMaster2, setGameMaster2] = useState('');        // 已儲存的第二主帳號
+            const [masterInput2, setMasterInput2] = useState('');      // 輸入中的第二主帳號
+            const [masterLookup2, setMasterLookup2] = useState(null);  // { masterName, chars: [...] }
+            const [masterLoading2, setMasterLoading2] = useState(false);
+            const [masterError2, setMasterError2] = useState('');
 
             useEffect(() => {
                 const loadUserData = async () => {
@@ -2236,10 +2241,13 @@
                         }
                         setUser(currentUser);
 
-                    // 讀取已儲存的主帳號
+                    // 讀取已儲存的主帳號（第一組 + 第二組）
                     const savedMaster = currentUser.user_metadata?.game_master || '';
+                    const savedMaster2 = currentUser.user_metadata?.game_master2 || '';
                     setGameMaster(savedMaster);
                     setMasterInput(savedMaster);
+                    setGameMaster2(savedMaster2);
+                    setMasterInput2(savedMaster2);
 
                     // 讀取遊戲帳號列表（支援舊格式和新格式）
                     const accounts = currentUser.user_metadata?.game_accounts || 
@@ -2251,13 +2259,23 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 若有主帳號，自動從 GM API 同步角色列表
+                    // 若有主帳號，自動從 GM API 同步角色列表（第一組）
                     if (savedMaster) {
                         try {
                             const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster)}`);
                             if (res.ok) {
                                 const data = await res.json();
                                 setMasterLookup(data);
+                            }
+                        } catch {}
+                    }
+                    // 若有第二主帳號，也自動同步
+                    if (savedMaster2) {
+                        try {
+                            const res2 = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster2)}`);
+                            if (res2.ok) {
+                                const data2 = await res2.json();
+                                setMasterLookup2(data2);
                             }
                         } catch {}
                     }
@@ -2404,14 +2422,94 @@
                 }
             };
 
+            // ── 第二組主帳號：查詢 ──────────────────────────
+            const handleMasterLookup2 = async () => {
+                const name = masterInput2.trim();
+                if (!name) { showToast('請輸入第二組遊戲主帳號', 'error'); return; }
+                setMasterLoading2(true);
+                setMasterError2('');
+                setMasterLookup2(null);
+                try {
+                    const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        const msg = err.message || `找不到主帳號「${name}」`;
+                        setMasterError2(msg);
+                        setMasterLookup2({ error: msg });
+                    } else {
+                        const data = await res.json();
+                        if (!data.chars || data.chars.length === 0) {
+                            setMasterError2(`主帳號「${name}」下沒有任何角色`);
+                            setMasterLookup2({ ...data, error: '無角色' });
+                        } else {
+                            setMasterLookup2(data);
+                        }
+                    }
+                } catch {
+                    const msg = '查詢失敗，請確認網路或稍後再試';
+                    setMasterError2(msg);
+                    setMasterLookup2({ error: msg });
+                } finally {
+                    setMasterLoading2(false);
+                }
+            };
+
+            // ── 第二組主帳號：綁定（合併到現有角色清單）──────
+            const handleSaveMaster2 = async () => {
+                const name = masterInput2.trim();
+                if (!name) { showToast('請輸入第二組遊戲主帳號', 'error'); return; }
+                if (!masterLookup2 || masterLookup2.error) { showToast('請先按「查詢」確認主帳號存在', 'error'); return; }
+                if (!masterLookup2.chars || masterLookup2.chars.length === 0) {
+                    showToast('此主帳號下沒有任何角色', 'error'); return;
+                }
+                // 第一組主帳號的角色 CDKEY 集合（避免重複）
+                const existingCdkeys = new Set(gameAccounts.map(a => a.name));
+                const master2Accounts = masterLookup2.chars
+                    .filter(ch => !existingCdkeys.has(ch.account))
+                    .map((ch, i) => ({
+                        id: (Date.now() + 1000 + i).toString(),
+                        name: ch.account,
+                        charName: ch.charName,
+                        is_primary: false,
+                        master2: true,
+                        created_at: Date.now(),
+                    }));
+                const mergedAccounts = [...gameAccounts, ...master2Accounts];
+                try {
+                    const { error } = await supabase.auth.updateUser({
+                        data: {
+                            game_master2: name,
+                            game_accounts: mergedAccounts,
+                        }
+                    });
+                    if (error) { showToast('儲存失敗：' + error.message, 'error'); return; }
+                    setGameMaster2(name);
+                    setGameAccounts(mergedAccounts);
+                    showToast(`✅ 第二組主帳號「${name}」已綁定，新增 ${master2Accounts.length} 個角色`, 'success');
+                    const currentUser = await authHelpers.getCurrentUser();
+                    setUser(currentUser);
+                    // 刷新 gmData
+                    const result = { ...gmData };
+                    await Promise.all(master2Accounts.map(async (acc) => {
+                        try {
+                            const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
+                            if (res.ok) result[acc.name] = await res.json();
+                        } catch {}
+                    }));
+                    setGmData(result);
+                } catch {
+                    showToast('儲存失敗，請稍後再試', 'error');
+                }
+            };
+
             const handleAddAccount = async () => {
                 if (!newAccountName.trim()) {
                     showToast('請輸入遊戲帳號', 'error');
                     return;
                 }
                 
-                if (gameAccounts.length >= 5) {
-                    showToast('最多只能新增 5 個遊戲帳號', 'error');
+                if (gameAccounts.length >= 10) {
+                    showToast('最多只能新增 10 個遊戲帳號（兩組主帳號各 5 個）', 'error');
                     return;
                 }
                 
@@ -2655,6 +2753,84 @@
                                     )}
                                 </div>
 
+                                {/* 第二組遊戲主帳號綁定 */}
+                                <div className={`rounded-xl p-4 mb-4 border-2 ${gameMaster2 ? 'bg-violet-50 border-violet-200' : 'bg-stone-50 border-stone-200'}`}>
+                                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                        <User size={20} className={gameMaster2 ? 'text-violet-600' : 'text-stone-400'} />
+                                        <span className="text-stone-700 font-bold">第二組遊戲主帳號</span>
+                                        {gameMaster2 ? (
+                                            <span className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-black rounded-full border border-violet-300">✅ 已綁定</span>
+                                        ) : (
+                                            <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-xs font-bold rounded-full border border-stone-300">選填</span>
+                                        )}
+                                        <span className="text-xs text-stone-500">（選填，如有第二組遊戲帳號可在此綁定）</span>
+                                    </div>
+                                    <div className="flex gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            value={masterInput2}
+                                            onChange={e => { setMasterInput2(e.target.value); setMasterError2(''); setMasterLookup2(null); }}
+                                            onKeyDown={e => e.key === 'Enter' && handleMasterLookup2()}
+                                            placeholder="輸入第二組遊戲主帳號名稱（選填）"
+                                            className="flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm border-violet-300 focus:border-violet-500 bg-white"
+                                        />
+                                        <button
+                                            onClick={handleMasterLookup2}
+                                            disabled={masterLoading2}
+                                            className="px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1"
+                                        >
+                                            {masterLoading2 ? <span className="animate-spin">⏳</span> : <Search size={14} />}
+                                            查詢
+                                        </button>
+                                        {gameMaster2 && (
+                                            <button
+                                                onClick={async () => {
+                                                    if (!confirm(`確定解除第二組主帳號「${gameMaster2}」的綁定？`)) return;
+                                                    const kept = gameAccounts.filter(a => !a.master2);
+                                                    await supabase.auth.updateUser({ data: { game_master2: null, game_accounts: kept } });
+                                                    setGameMaster2(''); setMasterInput2(''); setMasterLookup2(null);
+                                                    setGameAccounts(kept);
+                                                    showToast('已解除第二組主帳號綁定', 'info');
+                                                }}
+                                                className="px-3 py-2 bg-stone-200 hover:bg-red-100 text-stone-500 hover:text-red-600 font-bold rounded-lg transition-colors text-sm"
+                                                title="解除綁定"
+                                            >✕</button>
+                                        )}
+                                    </div>
+                                    {masterError2 && <p className="text-red-600 text-xs font-semibold mb-2">❌ {masterError2}</p>}
+                                    {gameMaster2 && !masterError2 && (
+                                        <p className="text-violet-700 text-xs font-semibold mb-2">
+                                            ✅ 已綁定第二組：<span className="font-black">{gameMaster2}</span>
+                                        </p>
+                                    )}
+                                    {masterLookup2 && !masterLookup2.error && (
+                                        <div className="bg-white rounded-lg border border-violet-200 p-3 mt-2">
+                                            <p className="text-violet-800 font-bold text-sm mb-2">
+                                                🎮 找到主帳號「{masterLookup2.masterName}」，共 {masterLookup2.chars.length} 個角色：
+                                            </p>
+                                            <div className="space-y-1.5 mb-3">
+                                                {masterLookup2.chars.map((ch, i) => (
+                                                    <div key={i} className="flex items-center gap-3 bg-violet-50 rounded-lg px-3 py-2 text-sm">
+                                                        <span className={`w-2 h-2 rounded-full shrink-0 ${ch.isOnline ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className="font-black text-stone-800">{ch.charName || '(無角色名)'}</span>
+                                                            <span className="text-stone-500 text-xs ml-2 font-mono">{ch.account}</span>
+                                                        </div>
+                                                        <span className="text-amber-600 font-bold text-xs shrink-0">💰 {(ch.gold || 0).toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={handleSaveMaster2}
+                                                className="w-full py-2 bg-violet-500 hover:bg-violet-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle size={14} />
+                                                綁定第二組主帳號並加入角色
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* 遊戲帳號列表 */}
                                 <div className="bg-gold-50 border-2 border-gold-200 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-4">
@@ -2662,6 +2838,7 @@
                                             <User size={20} className="text-gold-600" />
                                             <span className="text-stone-700 font-bold">我的遊戲角色</span>
                                             {gameMaster && <span className="text-xs text-sky-600 font-semibold">（主帳號：{gameMaster}）</span>}
+                                            {gameMaster2 && <span className="text-xs text-violet-600 font-semibold">（第二組：{gameMaster2}）</span>}
                                         </div>
                                         {gameAccounts.length < 5 && (
                                             <button
@@ -6776,8 +6953,10 @@
             
             // 註冊用戶編輯（資料、角色、遊戲特殊編號）
             const [editingUser, setEditingUser] = useState(null);
-            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''], game_master: '', game_accounts: ['', '', '', '', ''] });
+            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''], game_master: '', game_master2: '', game_accounts: ['', '', '', '', '', '', '', '', '', ''] });
             const [editUserMasterLookup, setEditUserMasterLookup] = useState(null);
+            const [editUserMaster2Lookup, setEditUserMaster2Lookup] = useState(null);
+            const [editUserMaster2Loading, setEditUserMaster2Loading] = useState(false);
             const [editUserCharNames, setEditUserCharNames] = useState({});
             // GM 直接操作（設定金幣、封號、站內信）
             const [gmOpGold, setGmOpGold] = useState('');
@@ -11189,9 +11368,10 @@
   setEditingUser(user);
   const parseA = (r) => { if (Array.isArray(r)) return r; if (typeof r==='string'){try{const p=JSON.parse(r);return Array.isArray(p)?p:[];}catch{return[];}} return []; };
   const accs = parseA(user.game_accounts);
-  const cdkeys = accs.map(a => typeof a==='string' ? a : (a?.name||a?.cdkey||'')).concat(['','','','','']).slice(0,5);
-  setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [user.game_special_id_1||'',user.game_special_id_2||'',user.game_special_id_3||'',user.game_special_id_4||'',user.game_special_id_5||''], game_master: user.game_master || '', game_accounts: cdkeys });
+  const cdkeys = accs.map(a => typeof a==='string' ? a : (a?.name||a?.cdkey||'')).concat(['','','','','','','','','','']).slice(0,10);
+  setEditUserForm({ display_name: user.display_name || user.email || '', role: user.role || '', game_special_ids: [user.game_special_id_1||'',user.game_special_id_2||'',user.game_special_id_3||'',user.game_special_id_4||'',user.game_special_id_5||''], game_master: user.game_master || '', game_master2: user.game_master2 || '', game_accounts: cdkeys });
   setEditUserMasterLookup(null);
+  setEditUserMaster2Lookup(null);
   setEditUserCharNames({});
   setOpenUserActionId(null);
   // 自動查詢現有 CDKEY 的角色名
@@ -11608,27 +11788,99 @@
                                                             <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-medium ${editUserMasterLookup.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>
                                                                 {editUserMasterLookup.error
                                                                     ? `❌ ${editUserMasterLookup.error}`
-                                                                    : `✅ 找到「${editUserMasterLookup.masterName}」，共 ${editUserMasterLookup.chars?.length || 0} 個角色，已自動填入`}
+                                                                    : `✅ 找到「${editUserMasterLookup.masterName}」，共 ${editUserMasterLookup.chars?.length || 0} 個角色，已自動填入角色1~5`}
                                                             </div>
                                                         )}
                                                     </div>
-                                                    {/* 5 個角色：CDKEY + 角色名 合併顯示 */}
-                                                    <label className="block text-stone-400 text-xs font-bold mb-2">遊戲角色 · CDKEY（最多 5 個）</label>
+                                                    {/* 第二組主帳號 */}
+                                                    <div className="mb-4">
+                                                        <label className="block text-violet-400 text-xs font-bold mb-1">第二組遊戲主帳號（選填）</label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={editUserForm.game_master2}
+                                                                onChange={e => { setEditUserForm(f => ({ ...f, game_master2: e.target.value })); setEditUserMaster2Lookup(null); }}
+                                                                onKeyDown={async e => {
+                                                                    if (e.key !== 'Enter') return;
+                                                                    const name = editUserForm.game_master2.trim();
+                                                                    if (!name) return;
+                                                                    setEditUserMaster2Loading(true);
+                                                                    try {
+                                                                        const res = await fetch(`${GM_WORKER}/master/${encodeURIComponent(name)}`);
+                                                                        if (res.ok) {
+                                                                            const d = await res.json();
+                                                                            setEditUserMaster2Lookup(d);
+                                                                            const newCdkeys5to9 = d.chars.map(c => c.account).concat(['','','','','']).slice(0,5);
+                                                                            const cur = [...(editUserForm.game_accounts || ['','','','','','','','','',''])];
+                                                                            for (let i = 0; i < 5; i++) cur[5+i] = newCdkeys5to9[i] || '';
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: cur }));
+                                                                            const names = { ...editUserCharNames };
+                                                                            d.chars.slice(0,5).forEach((c, i) => { if (c.charName) names[5+i] = c.charName; });
+                                                                            setEditUserCharNames(names);
+                                                                        } else setEditUserMaster2Lookup({ error: '找不到此主帳號' });
+                                                                    } catch { setEditUserMaster2Lookup({ error: '查詢失敗' }); }
+                                                                    finally { setEditUserMaster2Loading(false); }
+                                                                }}
+                                                                className="flex-1 px-3 py-2 rounded-lg bg-stone-900 border border-violet-600/40 text-white font-mono text-sm placeholder-stone-500 focus:border-violet-400 outline-none"
+                                                                placeholder="輸入第二組主帳號，按 Enter 自動查詢"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                disabled={editUserMaster2Loading}
+                                                                onClick={async () => {
+                                                                    const name = editUserForm.game_master2.trim();
+                                                                    if (!name) return;
+                                                                    setEditUserMaster2Loading(true);
+                                                                    try {
+                                                                        const res = await fetch(`${GM_WORKER}/master/${encodeURIComponent(name)}`);
+                                                                        if (res.ok) {
+                                                                            const d = await res.json();
+                                                                            setEditUserMaster2Lookup(d);
+                                                                            const newCdkeys5to9 = d.chars.map(c => c.account).concat(['','','','','']).slice(0,5);
+                                                                            const cur = [...(editUserForm.game_accounts || ['','','','','','','','','',''])];
+                                                                            for (let i = 0; i < 5; i++) cur[5+i] = newCdkeys5to9[i] || '';
+                                                                            setEditUserForm(f => ({ ...f, game_accounts: cur }));
+                                                                            const names = { ...editUserCharNames };
+                                                                            d.chars.slice(0,5).forEach((c, i) => { if (c.charName) names[5+i] = c.charName; });
+                                                                            setEditUserCharNames(names);
+                                                                        } else setEditUserMaster2Lookup({ error: '找不到此主帳號' });
+                                                                    } catch { setEditUserMaster2Lookup({ error: '查詢失敗' }); }
+                                                                    finally { setEditUserMaster2Loading(false); }
+                                                                }}
+                                                                className="px-3 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold rounded-lg text-sm flex items-center gap-1 transition-colors"
+                                                            >
+                                                                {editUserMaster2Loading ? '⏳' : <Search size={13}/>}
+                                                                查詢
+                                                            </button>
+                                                        </div>
+                                                        {editUserMaster2Lookup && (
+                                                            <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-medium ${editUserMaster2Lookup.error ? 'bg-red-900/30 text-red-400' : 'bg-violet-900/30 text-violet-300'}`}>
+                                                                {editUserMaster2Lookup.error
+                                                                    ? `❌ ${editUserMaster2Lookup.error}`
+                                                                    : `✅ 找到「${editUserMaster2Lookup.masterName}」，共 ${editUserMaster2Lookup.chars?.length || 0} 個角色，已自動填入角色6~10`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* 10 個角色：CDKEY + 角色名 合併顯示（前5為主帳號1，後5為主帳號2） */}
+                                                    <label className="block text-stone-400 text-xs font-bold mb-2">遊戲角色 · CDKEY（最多 10 個，前5為主帳1，後5為主帳2）</label>
                                                     <div className="space-y-2">
-                                                        {[0,1,2,3,4].map(i => {
+                                                        {[0,1,2,3,4,5,6,7,8,9].map(i => {
                                                             const cdkeyVal = (editUserForm.game_accounts || [])[i] || '';
                                                             const charName = editUserCharNames[i] || '';
+                                                            const isMaster2Slot = i >= 5;
                                                             return (
                                                                 <div key={i} className="flex items-center gap-2">
-                                                                    <span className="text-stone-500 text-xs w-10 shrink-0 text-right">角色{i+1}</span>
+                                                                    <span className={`text-xs w-10 shrink-0 text-right font-bold ${isMaster2Slot ? 'text-violet-400' : 'text-stone-500'}`}>
+                                                                        {isMaster2Slot ? `2-${i-4}` : `角色${i+1}`}
+                                                                    </span>
                                                                     <input
                                                                         type="text"
                                                                         value={cdkeyVal}
                                                                         onChange={e => {
-                                                                            const next = [...(editUserForm.game_accounts || ['','','','',''])];
+                                                                            const next = [...(editUserForm.game_accounts || ['','','','','','','','','',''])];
                                                                             next[i] = e.target.value;
                                                                             const ids = [...(editUserForm.game_special_ids || ['','','','',''])];
-                                                                            ids[i] = e.target.value;
+                                                                            if (i < 5) ids[i] = e.target.value;
                                                                             setEditUserForm(f => ({ ...f, game_accounts: next, game_special_ids: ids }));
                                                                             setEditUserCharNames(n => ({ ...n, [i]: '' }));
                                                                         }}
@@ -11637,11 +11889,11 @@
                                                                             if (!k) return;
                                                                             try { const r = await fetch(`${GM_WORKER}/player/${encodeURIComponent(k)}`); if (r.ok) { const d = await r.json(); setEditUserCharNames(n => ({ ...n, [i]: d.charName || '' })); } } catch {}
                                                                         }}
-                                                                        className="flex-1 px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white font-mono text-sm placeholder-stone-600 focus:border-emerald-500 outline-none"
-                                                                        placeholder={`CDKEY ${i+1}`}
+                                                                        className={`flex-1 px-3 py-2 rounded-lg bg-stone-900 text-white font-mono text-sm placeholder-stone-600 outline-none ${isMaster2Slot ? 'border border-violet-600/40 focus:border-violet-400' : 'border border-stone-600 focus:border-emerald-500'}`}
+                                                                        placeholder={isMaster2Slot ? `第二組 CDKEY ${i-4}` : `CDKEY ${i+1}`}
                                                                     />
                                                                     {charName
-                                                                        ? <span className="bg-emerald-900/50 text-emerald-300 border border-emerald-600/30 text-xs px-2 py-1 rounded-lg font-bold whitespace-nowrap">{charName}</span>
+                                                                        ? <span className={`border text-xs px-2 py-1 rounded-lg font-bold whitespace-nowrap ${isMaster2Slot ? 'bg-violet-900/50 text-violet-300 border-violet-600/30' : 'bg-emerald-900/50 text-emerald-300 border-emerald-600/30'}`}>{charName}</span>
                                                                         : cdkeyVal && <span className="text-stone-600 text-xs whitespace-nowrap">查詢中...</span>
                                                                     }
                                                                 </div>
@@ -11745,17 +11997,29 @@
                                                                 });
                                                                 if (error) throw error;
 
-                                                                // 2. 更新遊戲帳號綁定（game_master + game_accounts）
-                                                                const cdkeys = (editUserForm.game_accounts || []).filter(s => s.trim() !== '');
-                                                                const newGameAccounts = cdkeys.map((cdkey, i) => ({
-                                                                    id: String(Date.now() + i),
-                                                                    name: cdkey.trim(),
-                                                                    is_primary: i === 0,
-                                                                    created_at: Date.now()
-                                                                }));
+                                                                // 2. 更新遊戲帳號綁定（game_master + game_master2 + game_accounts）
+                                                                const allCdkeys = (editUserForm.game_accounts || []);
+                                                                const master1Cdkeys = allCdkeys.slice(0,5).filter(s => s.trim() !== '');
+                                                                const master2Cdkeys = allCdkeys.slice(5,10).filter(s => s.trim() !== '');
+                                                                const newGameAccounts = [
+                                                                    ...master1Cdkeys.map((cdkey, i) => ({
+                                                                        id: String(Date.now() + i),
+                                                                        name: cdkey.trim(),
+                                                                        is_primary: i === 0,
+                                                                        created_at: Date.now()
+                                                                    })),
+                                                                    ...master2Cdkeys.map((cdkey, i) => ({
+                                                                        id: String(Date.now() + 100 + i),
+                                                                        name: cdkey.trim(),
+                                                                        is_primary: false,
+                                                                        master2: true,
+                                                                        created_at: Date.now()
+                                                                    }))
+                                                                ];
                                                                 const { error: e2 } = await supabase.rpc('update_user_game_binding', {
                                                                     target_user_id: editingUser.id,
                                                                     new_game_master: editUserForm.game_master.trim() || null,
+                                                                    new_game_master2: editUserForm.game_master2.trim() || null,
                                                                     new_game_accounts: newGameAccounts
                                                                 });
                                                                 if (e2) {

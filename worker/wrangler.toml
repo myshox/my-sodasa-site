@@ -1,0 +1,11 @@
+name = "soda-recharge"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DB_HOST = "162.245.220.106"
+DB_PORT = "3306"
+DB_NAME = "sqsd"
+DB_USER = "sqsd"
+DB_PASS = "sarFGSEKJdJrnaFc"
