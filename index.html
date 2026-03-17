@@ -2259,37 +2259,74 @@
                                    }] : []);
                     setGameAccounts(accounts);
                     
-                    // 若有主帳號，自動從 GM API 同步角色列表（第一組）
-                    if (savedMaster) {
-                        try {
-                            const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster)}`);
-                            if (res.ok) {
-                                const data = await res.json();
-                                setMasterLookup(data);
-                            }
-                        } catch {}
-                    }
-                    // 若有第二主帳號，也自動同步
-                    if (savedMaster2) {
-                        try {
-                            const res2 = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster2)}`);
-                            if (res2.ok) {
-                                const data2 = await res2.json();
-                                setMasterLookup2(data2);
-                            }
-                        } catch {}
-                    }
-
-                    // 取得各帳號的 GM 遊戲資料（仍保留以備用）
-                    if (accounts.length > 0) {
-                        const result = {};
+                    // 並行查詢主帳號1 + 主帳號2（加速：同時送出，不等第一個回來才送第二個）
+                    const gmResult = {};
+                    const masterFetches = [];
+                    if (savedMaster) masterFetches.push(
+                        fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster)}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => {
+                                if (d) {
+                                    setMasterLookup(d);
+                                    // 直接從 master 資料建 gmData（省去個別 /player/ 呼叫）
+                                    (d.chars || []).forEach(ch => {
+                                        gmResult[ch.account] = {
+                                            account: ch.account,
+                                            charName: ch.charName,
+                                            masterName: savedMaster,
+                                            isOnline: ch.isOnline,
+                                            gold: ch.gold || 0,
+                                            crystal: ch.crystal || 0,
+                                            payTotal: ch.payTotal || 0,
+                                            vipLevel: (ch.payTotal || 0) >= 15000 ? 2 : (ch.payTotal || 0) >= 5000 ? 1 : 0,
+                                        };
+                                    });
+                                }
+                            }).catch(() => {})
+                    );
+                    if (savedMaster2) masterFetches.push(
+                        fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster2)}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => {
+                                if (d) {
+                                    setMasterLookup2(d);
+                                    (d.chars || []).forEach(ch => {
+                                        gmResult[ch.account] = {
+                                            account: ch.account,
+                                            charName: ch.charName,
+                                            masterName: savedMaster2,
+                                            isOnline: ch.isOnline,
+                                            gold: ch.gold || 0,
+                                            crystal: ch.crystal || 0,
+                                            payTotal: ch.payTotal || 0,
+                                            vipLevel: (ch.payTotal || 0) >= 15000 ? 2 : (ch.payTotal || 0) >= 5000 ? 1 : 0,
+                                        };
+                                    });
+                                }
+                            }).catch(() => {})
+                    );
+                    if (masterFetches.length > 0) {
+                        await Promise.all(masterFetches);
+                        // 只補查 master 資料中沒有的帳號（手動新增的帳號）
+                        const uncovered = accounts.filter(a => !gmResult[a.name]);
+                        if (uncovered.length > 0) {
+                            await Promise.all(uncovered.map(async (acc) => {
+                                try {
+                                    const r = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
+                                    if (r.ok) gmResult[acc.name] = await r.json();
+                                } catch {}
+                            }));
+                        }
+                        setGmData({ ...gmResult });
+                    } else if (accounts.length > 0) {
+                        // 沒有主帳號時才逐一查詢
                         await Promise.all(accounts.map(async (acc) => {
                             try {
-                                const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
-                                if (res.ok) result[acc.name] = await res.json();
+                                const r = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
+                                if (r.ok) gmResult[acc.name] = await r.json();
                             } catch {}
                         }));
-                        setGmData(result);
+                        setGmData({ ...gmResult });
                     }
                     
                     // 載入用戶的贊助紀錄（從 donations 表，限制筆數以加快載入）
@@ -8179,14 +8216,33 @@
             };
             
             // 開啟儲值加成確認 Modal
-            const openRechargeConfirm = (donation) => {
+            const openRechargeConfirm = async (donation) => {
                 setRechargeBonus(0);
                 setRechargeUpdatePaydata(true);
                 setRechargeSkipGold(false);
                 setRechargeTargetAccount(donation.game_account || '');
-                setRechargeMasterInput('');
                 setRechargeMasterChars([]);
                 setRechargeConfirmModal({ id: donation.id, donation });
+
+                // 自動帶入主帳號：先從 gmPlayerCache 取 masterName，再查角色
+                const cached = gmPlayerCache[donation.game_account];
+                const autoMaster = cached?.masterName || donation.game_master || '';
+                setRechargeMasterInput(autoMaster);
+                if (autoMaster) {
+                    setRechargeMasterLoading(true);
+                    try {
+                        const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(autoMaster)}`);
+                        if (res.ok) {
+                            const d = await res.json();
+                            if (d.chars && d.chars.length > 0) {
+                                setRechargeMasterChars(d.chars);
+                                // 若 game_account 在角色列表中，自動選取對應角色
+                                const matched = d.chars.find(c => c.account === donation.game_account);
+                                if (matched) setRechargeTargetAccount(matched.account);
+                            }
+                        }
+                    } catch {} finally { setRechargeMasterLoading(false); }
+                }
             };
 
             const lookupRechargeMasterChars = async () => {
@@ -12234,16 +12290,19 @@
                                                 </div>
                                             )}
 
-                                            {/* 🔑 主帳號查詢角色 */}
+                                            {/* 🔑 選擇充值角色 */}
                                             <div className="bg-purple-900/20 border border-purple-700/30 rounded-xl p-3 space-y-2">
-                                                <p className="text-purple-300 text-xs font-semibold">🔑 查詢主帳號旗下角色（選擇充值對象）</p>
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-purple-300 text-xs font-semibold">🔑 選擇充值角色</p>
+                                                    {rechargeMasterLoading && <span className="text-purple-400 text-xs animate-pulse">查詢中...</span>}
+                                                </div>
                                                 <div className="flex gap-1.5">
                                                     <input
                                                         type="text"
                                                         value={rechargeMasterInput}
                                                         onChange={e => { setRechargeMasterInput(e.target.value); setRechargeMasterChars([]); }}
                                                         onKeyDown={e => e.key === 'Enter' && lookupRechargeMasterChars()}
-                                                        placeholder="輸入主帳號..."
+                                                        placeholder="輸入主帳號查詢角色..."
                                                         className="flex-1 bg-slate-900/70 border border-purple-700/40 rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-600 focus:border-purple-500 outline-none"
                                                     />
                                                     <button
@@ -12257,30 +12316,35 @@
                                                 </div>
                                                 {rechargeMasterChars.length > 0 && (
                                                     <div className="space-y-1">
-                                                        <p className="text-purple-300/60 text-[11px]">點選角色即設為充值對象：</p>
-                                                        <div className="flex flex-col gap-1">
-                                                            {rechargeMasterChars.map((char, idx) => (
-                                                                <button
-                                                                    key={idx}
-                                                                    type="button"
-                                                                    onClick={() => setRechargeTargetAccount(char.account || char.charName || '')}
-                                                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all border ${
-                                                                        rechargeTargetAccount === (char.account || char.charName)
-                                                                            ? 'bg-purple-600/50 border-purple-500/70 text-white'
-                                                                            : 'bg-slate-800/60 border-slate-700/40 text-slate-300 hover:bg-purple-900/30 hover:border-purple-700/40'
-                                                                    }`}
-                                                                >
-                                                                    <div className="flex items-center gap-2">
-                                                                        {char.isOnline && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>}
-                                                                        <span className="font-bold">{char.charName || char.account}</span>
-                                                                        <span className="text-slate-500 font-mono text-[10px]">{char.account}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2 shrink-0">
-                                                                        <span className="text-amber-400/80">💰{(char.gold||0).toLocaleString()}</span>
-                                                                        {rechargeTargetAccount === (char.account || char.charName) && <span className="text-purple-300 text-[10px] font-bold">✓ 已選</span>}
-                                                                    </div>
-                                                                </button>
-                                                            ))}
+                                                        <p className="text-purple-300/60 text-[11px]">點選角色設為充值對象：</p>
+                                                        <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                                                            {rechargeMasterChars.map((char, idx) => {
+                                                                const isSelected = rechargeTargetAccount === char.account;
+                                                                return (
+                                                                    <button
+                                                                        key={idx}
+                                                                        type="button"
+                                                                        onClick={() => setRechargeTargetAccount(char.account || '')}
+                                                                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all border ${
+                                                                            isSelected
+                                                                                ? 'bg-purple-600/60 border-purple-400/80 text-white ring-1 ring-purple-400/50'
+                                                                                : 'bg-slate-800/60 border-slate-700/40 text-slate-300 hover:bg-purple-900/30 hover:border-purple-700/40'
+                                                                        }`}
+                                                                    >
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className={`w-2 h-2 rounded-full shrink-0 ${char.isOnline ? 'bg-emerald-400' : 'bg-slate-600'}`}></span>
+                                                                            <span className="font-bold">{char.charName || char.account}</span>
+                                                                            <span className="text-slate-500 font-mono text-[10px]">{char.account}</span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2 shrink-0">
+                                                                            <span className="text-amber-400/80">💰{(char.gold||0).toLocaleString()}</span>
+                                                                            {isSelected
+                                                                                ? <span className="bg-purple-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded">✓ 充值此角色</span>
+                                                                                : <span className="text-slate-600 text-[10px]">點選</span>}
+                                                                        </div>
+                                                                    </button>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}
