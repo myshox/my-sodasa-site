@@ -12290,98 +12290,126 @@
                                                 </div>
                                             )}
 
-                                            {/* 🔑 選擇充值角色 */}
-                                            <div className="bg-purple-900/20 border border-purple-700/30 rounded-xl p-3 space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-purple-300 text-xs font-semibold">🔑 選擇充值角色</p>
-                                                    {rechargeMasterLoading && <span className="text-purple-400 text-xs animate-pulse">查詢中...</span>}
-                                                </div>
-                                                <div className="flex gap-1.5">
+                                            {/* ★ 選擇充值角色（主視覺） */}
+                                            <div className="rounded-xl overflow-hidden border border-slate-600/50">
+                                                {/* 查詢主帳號列 */}
+                                                <div className="bg-slate-700/40 px-3 py-2 flex gap-1.5 items-center border-b border-slate-600/40">
                                                     <input
                                                         type="text"
                                                         value={rechargeMasterInput}
                                                         onChange={e => { setRechargeMasterInput(e.target.value); setRechargeMasterChars([]); }}
                                                         onKeyDown={e => e.key === 'Enter' && lookupRechargeMasterChars()}
-                                                        placeholder="輸入主帳號查詢角色..."
-                                                        className="flex-1 bg-slate-900/70 border border-purple-700/40 rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-600 focus:border-purple-500 outline-none"
+                                                        placeholder="輸入主帳號查詢所有角色..."
+                                                        className="flex-1 bg-slate-900/60 border border-slate-600/50 rounded-lg px-3 py-1.5 text-white text-xs placeholder-slate-500 focus:border-purple-400 outline-none"
                                                     />
                                                     <button
                                                         type="button"
                                                         onClick={lookupRechargeMasterChars}
                                                         disabled={rechargeMasterLoading || !rechargeMasterInput.trim()}
-                                                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-colors shrink-0"
+                                                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-colors shrink-0 flex items-center gap-1"
                                                     >
-                                                        {rechargeMasterLoading ? '⏳' : '查詢'}
+                                                        {rechargeMasterLoading ? <span className="animate-spin">⏳</span> : <Search size={11}/>}
+                                                        查
                                                     </button>
                                                 </div>
-                                                {rechargeMasterChars.length > 0 && (
-                                                    <div className="space-y-1">
-                                                        <p className="text-purple-300/60 text-[11px]">點選角色設為充值對象：</p>
-                                                        <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
-                                                            {rechargeMasterChars.map((char, idx) => {
-                                                                const isSelected = rechargeTargetAccount === char.account;
-                                                                return (
-                                                                    <button
-                                                                        key={idx}
-                                                                        type="button"
-                                                                        onClick={() => setRechargeTargetAccount(char.account || '')}
-                                                                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all border ${
-                                                                            isSelected
-                                                                                ? 'bg-purple-600/60 border-purple-400/80 text-white ring-1 ring-purple-400/50'
-                                                                                : 'bg-slate-800/60 border-slate-700/40 text-slate-300 hover:bg-purple-900/30 hover:border-purple-700/40'
-                                                                        }`}
-                                                                    >
+
+                                                {/* 角色選擇區 */}
+                                                {rechargeMasterLoading ? (
+                                                    <div className="px-3 py-4 text-center text-purple-400 text-xs animate-pulse">
+                                                        🔍 查詢角色中...
+                                                    </div>
+                                                ) : rechargeMasterChars.length > 0 ? (
+                                                    <div className="divide-y divide-slate-700/40 max-h-52 overflow-y-auto">
+                                                        {rechargeMasterChars.map((char, idx) => {
+                                                            const isSelected = rechargeTargetAccount === char.account;
+                                                            return (
+                                                                <button
+                                                                    key={idx}
+                                                                    type="button"
+                                                                    onClick={() => setRechargeTargetAccount(char.account || '')}
+                                                                    className={`w-full flex items-center gap-3 px-4 py-3 transition-all text-left ${
+                                                                        isSelected
+                                                                            ? 'bg-emerald-600/25 border-l-4 border-emerald-400'
+                                                                            : 'bg-slate-800/30 border-l-4 border-transparent hover:bg-slate-700/40 hover:border-slate-500'
+                                                                    }`}
+                                                                >
+                                                                    {/* 選取指示 */}
+                                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                                                        isSelected ? 'bg-emerald-500 border-emerald-400' : 'border-slate-600'
+                                                                    }`}>
+                                                                        {isSelected && <span className="text-white text-[10px] font-black">✓</span>}
+                                                                    </div>
+                                                                    {/* 在線狀態點 */}
+                                                                    <span className={`w-2 h-2 rounded-full shrink-0 ${char.isOnline ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' : 'bg-slate-600'}`}></span>
+                                                                    {/* 角色資訊 */}
+                                                                    <div className="flex-1 min-w-0">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className={`w-2 h-2 rounded-full shrink-0 ${char.isOnline ? 'bg-emerald-400' : 'bg-slate-600'}`}></span>
-                                                                            <span className="font-bold">{char.charName || char.account}</span>
-                                                                            <span className="text-slate-500 font-mono text-[10px]">{char.account}</span>
+                                                                            <span className={`font-black text-sm ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
+                                                                                {char.charName || '(無角色名)'}
+                                                                            </span>
+                                                                            {char.isOnline && <span className="text-[10px] bg-emerald-900/60 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">線上</span>}
                                                                         </div>
-                                                                        <div className="flex items-center gap-2 shrink-0">
-                                                                            <span className="text-amber-400/80">💰{(char.gold||0).toLocaleString()}</span>
-                                                                            {isSelected
-                                                                                ? <span className="bg-purple-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded">✓ 充值此角色</span>
-                                                                                : <span className="text-slate-600 text-[10px]">點選</span>}
-                                                                        </div>
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                        </div>
+                                                                        <span className="text-slate-500 font-mono text-[10px]">{char.account}</span>
+                                                                    </div>
+                                                                    {/* 金幣 */}
+                                                                    <div className="text-right shrink-0">
+                                                                        <div className="text-amber-400 text-xs font-bold">💰 {(char.gold||0).toLocaleString()}</div>
+                                                                        {isSelected && <div className="text-emerald-400 text-[10px] font-black mt-0.5">← 充值到這裡</div>}
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="px-3 py-3 text-center text-slate-500 text-xs">
+                                                        請輸入主帳號查詢旗下角色
                                                     </div>
                                                 )}
+
+                                                {/* 目前充值目標 */}
+                                                <div className={`px-4 py-2.5 border-t flex items-center justify-between ${
+                                                    rechargeTargetAccount && rechargeTargetAccount !== d.game_account
+                                                        ? 'bg-emerald-900/20 border-emerald-700/30'
+                                                        : 'bg-slate-800/30 border-slate-700/40'
+                                                }`}>
+                                                    <span className="text-slate-400 text-xs">本次充值到</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {(() => {
+                                                            const selChar = rechargeMasterChars.find(c => c.account === rechargeTargetAccount);
+                                                            return selChar ? (
+                                                                <span className="text-emerald-300 font-black text-sm">
+                                                                    {selChar.charName}
+                                                                    <span className="text-slate-500 font-mono text-[10px] ml-1">({rechargeTargetAccount})</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-white font-bold font-mono text-sm">
+                                                                    {rechargeTargetAccount || d.game_account || '—'}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                        {rechargeTargetAccount !== d.game_account && rechargeTargetAccount && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setRechargeTargetAccount(d.game_account || '')}
+                                                                className="text-slate-500 hover:text-slate-300 text-[10px] underline transition-colors"
+                                                                title="還原為原訂帳號"
+                                                            >
+                                                                還原
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            {/* 玩家資訊 */}
-                                            <div className="bg-stone-900/50 rounded-xl p-3 space-y-1 border border-stone-700/50">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-stone-400 text-sm">充值帳號</span>
-                                                    <span className={`font-bold text-sm font-mono ${rechargeTargetAccount !== d.game_account ? 'text-purple-300' : 'text-white'}`}>
-                                                        {rechargeTargetAccount || d.game_account}
-                                                        {rechargeTargetAccount !== d.game_account && <span className="ml-1 text-[10px] text-purple-400">（已變更）</span>}
-                                                    </span>
+                                            {/* 訂單資訊（簡化） */}
+                                            <div className="bg-stone-900/50 rounded-xl px-4 py-3 border border-stone-700/50 flex items-center justify-between gap-4">
+                                                <div className="text-xs text-stone-500 space-y-0.5">
+                                                    <div>方案 <span className="text-stone-300 font-bold">{d.plan_name || '—'}</span></div>
+                                                    <div>原訂帳號 <span className="text-stone-500 font-mono">{d.game_account}</span></div>
                                                 </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-stone-400 text-sm">原訂帳號</span>
-                                                    <span className="text-stone-500 text-xs font-mono">{d.game_account}</span>
-                                                </div>
-                                                {gmInfo?.charName && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-stone-400 text-sm">角色</span>
-                                                        <span className="text-sky-400 text-sm">👤 {gmInfo.charName}</span>
-                                                    </div>
-                                                )}
-                                                {gmInfo?.vipLevel !== undefined && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-stone-400 text-sm">VIP</span>
-                                                        <span className="text-amber-400 text-sm">Lv.{gmInfo.vipLevel}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-stone-400 text-sm">方案</span>
-                                                    <span className="text-stone-200 text-sm">{d.plan_name || '—'}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-stone-400 text-sm">金額</span>
-                                                    <span className="text-stone-200 text-sm">NT$ {(d.amount || 0).toLocaleString()}</span>
+                                                <div className="text-right text-xs text-stone-500 space-y-0.5">
+                                                    <div className="text-stone-200 font-bold text-sm">NT$ {(d.amount||0).toLocaleString()}</div>
+                                                    {gmInfo?.charName && <div className="text-sky-400">👤 {gmInfo.charName}</div>}
                                                 </div>
                                             </div>
 
@@ -12480,7 +12508,12 @@
                                                 className={`flex-1 py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-white ${d.status === 'completed' ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'}`}
                                             >
                                                 <CheckCircle size={16} />
-                                                {d.status === 'completed' ? '⚠️ 再次儲值' : '確認儲值'}
+                                                {(() => {
+                                                    if (d.status === 'completed') return '⚠️ 再次儲值';
+                                                    const selChar = rechargeMasterChars.find(c => c.account === rechargeTargetAccount);
+                                                    const name = selChar?.charName || rechargeTargetAccount || d.game_account;
+                                                    return `確認充值給 ${name}`;
+                                                })()}
                                             </button>
                                         </div>
                                     </motion.div>
