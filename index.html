@@ -2232,139 +2232,145 @@
             const [masterError2, setMasterError2] = useState('');
 
             useEffect(() => {
-                const loadUserData = async () => {
+                const GM_CACHE_KEY = 'soda_gm_cache';
+                const GM_CACHE_TTL = 5 * 60 * 1000; // 5 分鐘快取
+
+                // 讀取 localStorage 快取
+                const readGmCache = (userId) => {
                     try {
-                        const currentUser = await authHelpers.getCurrentUser();
-                        if (!currentUser) {
-                            navigate('/auth');
-                            return;
-                        }
-                        setUser(currentUser);
+                        const raw = localStorage.getItem(`${GM_CACHE_KEY}_${userId}`);
+                        if (!raw) return null;
+                        const { data, ts } = JSON.parse(raw);
+                        if (Date.now() - ts > GM_CACHE_TTL) return null; // 過期
+                        return data;
+                    } catch { return null; }
+                };
+                const writeGmCache = (userId, data) => {
+                    try { localStorage.setItem(`${GM_CACHE_KEY}_${userId}`, JSON.stringify({ data, ts: Date.now() })); } catch {}
+                };
 
-                    // 讀取已儲存的主帳號（第一組 + 第二組）
-                    const savedMaster = currentUser.user_metadata?.game_master || '';
-                    const savedMaster2 = currentUser.user_metadata?.game_master2 || '';
-                    setGameMaster(savedMaster);
-                    setMasterInput(savedMaster);
-                    setGameMaster2(savedMaster2);
-                    setMasterInput2(savedMaster2);
+                // 從 master 資料建立 gmResult 物件
+                const buildGmResult = (d, masterName) => {
+                    const result = {};
+                    (d?.chars || []).forEach(ch => {
+                        result[ch.account] = {
+                            account: ch.account, charName: ch.charName,
+                            masterName, isOnline: ch.isOnline,
+                            gold: ch.gold || 0, crystal: ch.crystal || 0,
+                            payTotal: ch.payTotal || 0,
+                            vipLevel: (ch.payTotal||0) >= 15000 ? 2 : (ch.payTotal||0) >= 5000 ? 1 : 0,
+                        };
+                    });
+                    return result;
+                };
 
-                    // 讀取遊戲帳號列表（支援舊格式和新格式）
-                    const accounts = currentUser.user_metadata?.game_accounts || 
-                                   (currentUser.user_metadata?.game_account ? [{
-                                       id: '1',
-                                       name: currentUser.user_metadata.game_account,
-                                       is_primary: true,
-                                       created_at: Date.now()
-                                   }] : []);
-                    setGameAccounts(accounts);
-                    
-                    // 並行查詢主帳號1 + 主帳號2（加速：同時送出，不等第一個回來才送第二個）
+                // 背景更新 GM 資料（不阻塞頁面顯示）
+                const refreshGmDataBg = async (currentUser, accounts, savedMaster, savedMaster2) => {
                     const gmResult = {};
-                    const masterFetches = [];
-                    if (savedMaster) masterFetches.push(
+                    const fetches = [];
+                    if (savedMaster) fetches.push(
                         fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster)}`)
                             .then(r => r.ok ? r.json() : null)
-                            .then(d => {
-                                if (d) {
-                                    setMasterLookup(d);
-                                    // 直接從 master 資料建 gmData（省去個別 /player/ 呼叫）
-                                    (d.chars || []).forEach(ch => {
-                                        gmResult[ch.account] = {
-                                            account: ch.account,
-                                            charName: ch.charName,
-                                            masterName: savedMaster,
-                                            isOnline: ch.isOnline,
-                                            gold: ch.gold || 0,
-                                            crystal: ch.crystal || 0,
-                                            payTotal: ch.payTotal || 0,
-                                            vipLevel: (ch.payTotal || 0) >= 15000 ? 2 : (ch.payTotal || 0) >= 5000 ? 1 : 0,
-                                        };
-                                    });
-                                }
-                            }).catch(() => {})
+                            .then(d => { if (d) { setMasterLookup(d); Object.assign(gmResult, buildGmResult(d, savedMaster)); } })
+                            .catch(() => {})
                     );
-                    if (savedMaster2) masterFetches.push(
+                    if (savedMaster2) fetches.push(
                         fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(savedMaster2)}`)
                             .then(r => r.ok ? r.json() : null)
-                            .then(d => {
-                                if (d) {
-                                    setMasterLookup2(d);
-                                    (d.chars || []).forEach(ch => {
-                                        gmResult[ch.account] = {
-                                            account: ch.account,
-                                            charName: ch.charName,
-                                            masterName: savedMaster2,
-                                            isOnline: ch.isOnline,
-                                            gold: ch.gold || 0,
-                                            crystal: ch.crystal || 0,
-                                            payTotal: ch.payTotal || 0,
-                                            vipLevel: (ch.payTotal || 0) >= 15000 ? 2 : (ch.payTotal || 0) >= 5000 ? 1 : 0,
-                                        };
-                                    });
-                                }
-                            }).catch(() => {})
+                            .then(d => { if (d) { setMasterLookup2(d); Object.assign(gmResult, buildGmResult(d, savedMaster2)); } })
+                            .catch(() => {})
                     );
-                    if (masterFetches.length > 0) {
-                        await Promise.all(masterFetches);
-                        // 只補查 master 資料中沒有的帳號（手動新增的帳號）
-                        const uncovered = accounts.filter(a => !gmResult[a.name]);
-                        if (uncovered.length > 0) {
-                            await Promise.all(uncovered.map(async (acc) => {
+                    if (fetches.length > 0) {
+                        await Promise.all(fetches);
+                        // 補查不在 master 底下的帳號
+                        await Promise.all(
+                            accounts.filter(a => !gmResult[a.name]).map(async (acc) => {
                                 try {
                                     const r = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
                                     if (r.ok) gmResult[acc.name] = await r.json();
                                 } catch {}
-                            }));
-                        }
-                        setGmData({ ...gmResult });
+                            })
+                        );
                     } else if (accounts.length > 0) {
-                        // 沒有主帳號時才逐一查詢
                         await Promise.all(accounts.map(async (acc) => {
                             try {
                                 const r = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/player/${encodeURIComponent(acc.name)}`);
                                 if (r.ok) gmResult[acc.name] = await r.json();
                             } catch {}
                         }));
+                    }
+                    if (Object.keys(gmResult).length > 0) {
                         setGmData({ ...gmResult });
+                        writeGmCache(currentUser.id, gmResult);
                     }
-                    
-                    // 載入用戶的贊助紀錄（從 donations 表，限制筆數以加快載入）
+                };
+
+                const loadUserData = async (forceGmRefresh = false) => {
                     try {
-                        const { data: donations, error } = await supabase
-                            .from('donations')
-                            .select('id, order_number, amount, coins, plan_name, game_account, payment_method, status, created_at, processed_at, notes')
-                            .eq('user_id', currentUser.id)
-                            .order('created_at', { ascending: false })
-                            .limit(200);
-                        
-                        if (error) {
-                            console.error('載入贊助紀錄失敗:', error);
-                            setSponsorships([]);
-                        } else {
-                            setSponsorships(donations || []);
-                        }
+                        const currentUser = await authHelpers.getCurrentUser();
+                        if (!currentUser) { navigate('/auth'); return; }
+                        setUser(currentUser);
+
+                        const savedMaster = currentUser.user_metadata?.game_master || '';
+                        const savedMaster2 = currentUser.user_metadata?.game_master2 || '';
+                        setGameMaster(savedMaster);
+                        setMasterInput(savedMaster);
+                        setGameMaster2(savedMaster2);
+                        setMasterInput2(savedMaster2);
+
+                        const accounts = currentUser.user_metadata?.game_accounts ||
+                            (currentUser.user_metadata?.game_account ? [{
+                                id: '1', name: currentUser.user_metadata.game_account,
+                                is_primary: true, created_at: Date.now()
+                            }] : []);
+                        setGameAccounts(accounts);
+
+                        // ① 立即從快取顯示 GM 資料（不等 API）
+                        const cached = readGmCache(currentUser.id);
+                        if (cached) setGmData(cached);
+
+                        // ② 同時送出：GM 背景更新 + Supabase donations（完全並行）
+                        const shouldRefreshGm = forceGmRefresh || !cached || (savedMaster || savedMaster2 || accounts.length > 0);
+                        const [_, donationsRes] = await Promise.all([
+                            shouldRefreshGm
+                                ? refreshGmDataBg(currentUser, accounts, savedMaster, savedMaster2)
+                                : Promise.resolve(),
+                            supabase.from('donations')
+                                .select('id, order_number, amount, coins, plan_name, game_account, payment_method, status, created_at, processed_at, notes')
+                                .eq('user_id', currentUser.id)
+                                .order('created_at', { ascending: false })
+                                .limit(100),
+                        ]);
+                        setSponsorships(donationsRes?.data || []);
                     } catch (err) {
-                        console.error('載入贊助紀錄異常:', err);
-                        setSponsorships([]);
-                    }
+                        console.error('loadUserData 異常:', err);
                     } finally {
                         setLoading(false);
                     }
                 };
-                
-                loadUserData();
-                window.addEventListener('storage-update', loadUserData);
 
-                // 管理員修改資料後，會員切換回來即可看到最新資料
-                const onFocusMember = () => loadUserData();
+                // 切換回頁面時只做輕量刷新（不重打 GM API，除非快取已過期）
+                let lastVisibleMs = Date.now();
+                const onFocusMember = () => {
+                    const now = Date.now();
+                    if (now - lastVisibleMs > 30000) { // 離開超過 30 秒才刷新
+                        lastVisibleMs = now;
+                        loadUserData(false);
+                    }
+                };
+                const onVisibility = () => {
+                    if (document.visibilityState === 'visible') onFocusMember();
+                };
+
+                loadUserData(true);
+                window.addEventListener('storage-update', () => loadUserData(true));
                 window.addEventListener('focus', onFocusMember);
-                document.addEventListener('visibilitychange', onFocusMember);
+                document.addEventListener('visibilitychange', onVisibility);
 
                 return () => {
                     window.removeEventListener('storage-update', loadUserData);
                     window.removeEventListener('focus', onFocusMember);
-                    document.removeEventListener('visibilitychange', onFocusMember);
+                    document.removeEventListener('visibilitychange', onVisibility);
                 };
             }, []);
             
