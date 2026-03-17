@@ -1502,7 +1502,7 @@
             };
 
             return (
-                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none w-full max-w-md px-4">
+                <div className="fixed top-20 md:top-6 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none w-full max-w-md px-4">
                     <AnimatePresence>
                         {toasts.map((toast) => {
                             const { bg, icon: Icon, color, ring } = getToastStyle(toast.type);
@@ -1817,19 +1817,19 @@
                             <motion.div 
                                 initial={{ scale: 0.95, opacity: 0 }} 
                                 animate={{ scale: 1, opacity: 1 }} 
-                                className="bg-white rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                                className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <div className="flex items-center justify-between mb-6 sticky top-0 bg-white pb-4 border-b border-stone-200 z-10">
-                                    <h2 className="text-2xl md:text-3xl font-black text-stone-800 flex items-center gap-3">
-                                        <ScrollText size={32} className="text-gold-500" />
+                                <div className="flex items-center justify-between mb-5 sticky top-0 bg-white pb-4 border-b border-stone-200 z-10 gap-3">
+                                    <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-stone-800 flex items-center gap-2">
+                                        <ScrollText size={24} className="text-gold-500 shrink-0" />
                                         服務條款與免責聲明
                                     </h2>
                                     <button 
                                         onClick={() => setShowTermsModal(false)}
-                                        className="p-2 hover:bg-stone-100 rounded-xl transition-colors"
+                                        className="p-2 hover:bg-stone-100 rounded-xl transition-colors shrink-0"
                                     >
-                                        <X size={24} className="text-stone-600" />
+                                        <X size={20} className="text-stone-600" />
                                     </button>
                                 </div>
 
@@ -1906,7 +1906,7 @@
                             <motion.div 
                                 initial={{ scale: 0.95, opacity: 0 }} 
                                 animate={{ scale: 1, opacity: 1 }} 
-                                className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
+                                className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <div className="flex items-center justify-between mb-6">
@@ -1980,7 +1980,7 @@
                     )}
 
                     <div className="max-w-md mx-auto">
-                        <div className="stone-panel p-8 md:p-10">
+                        <div className="stone-panel p-5 sm:p-8 md:p-10">
                             <h1 className="text-3xl md:text-4xl font-black text-stone-800 mb-2 text-center">
                                 {isRecoveryMode ? '設定新密碼' : (isLogin ? '會員登入' : '註冊帳號')}
                             </h1>
@@ -2676,8 +2676,8 @@
                         )}
 
                         {/* 用戶資訊卡 */}
-                        <div className="stone-panel p-6 md:p-8 mb-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+                        <div className="stone-panel p-4 sm:p-6 md:p-8 mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
                                 <h2 className="text-xl sm:text-2xl font-black text-stone-800">個人資料</h2>
                                 <div className="flex gap-2 flex-wrap">
                                     {/* 管理員才顯示後台按鈕 */}
@@ -2808,23 +2808,25 @@
                                         )}
                                         <span className="text-xs text-stone-500">（選填，如有第二組遊戲帳號可在此綁定）</span>
                                     </div>
-                                    <div className="flex gap-2 mb-2">
-                                        <input
-                                            type="text"
-                                            value={masterInput2}
-                                            onChange={e => { setMasterInput2(e.target.value); setMasterError2(''); setMasterLookup2(null); }}
-                                            onKeyDown={e => e.key === 'Enter' && handleMasterLookup2()}
-                                            placeholder="輸入第二組遊戲主帳號名稱（選填）"
-                                            className="flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm border-violet-300 focus:border-violet-500 bg-white"
-                                        />
-                                        <button
-                                            onClick={handleMasterLookup2}
-                                            disabled={masterLoading2}
-                                            className="px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1"
-                                        >
-                                            {masterLoading2 ? <span className="animate-spin">⏳</span> : <Search size={14} />}
-                                            查詢
-                                        </button>
+                                    <div className="flex flex-col gap-2 mb-2">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={masterInput2}
+                                                onChange={e => { setMasterInput2(e.target.value); setMasterError2(''); setMasterLookup2(null); }}
+                                                onKeyDown={e => e.key === 'Enter' && handleMasterLookup2()}
+                                                placeholder="輸入第二組遊戲主帳號名稱（選填）"
+                                                className="flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm border-violet-300 focus:border-violet-500 bg-white min-w-0"
+                                            />
+                                            <button
+                                                onClick={handleMasterLookup2}
+                                                disabled={masterLoading2}
+                                                className="px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1 shrink-0"
+                                            >
+                                                {masterLoading2 ? <span className="animate-spin">⏳</span> : <Search size={14} />}
+                                                查詢
+                                            </button>
+                                        </div>
                                         {gameMaster2 && (
                                             <button
                                                 onClick={async () => {
@@ -2835,9 +2837,9 @@
                                                     setGameAccounts(kept);
                                                     showToast('已解除第二組主帳號綁定', 'info');
                                                 }}
-                                                className="px-3 py-2 bg-stone-200 hover:bg-red-100 text-stone-500 hover:text-red-600 font-bold rounded-lg transition-colors text-sm"
+                                                className="w-full px-3 py-2 bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-600 font-bold rounded-lg transition-colors text-sm border border-stone-200 hover:border-red-200"
                                                 title="解除綁定"
-                                            >✕</button>
+                                            >✕ 解除第二組主帳號綁定</button>
                                         )}
                                     </div>
                                     {masterError2 && <p className="text-red-600 text-xs font-semibold mb-2">❌ {masterError2}</p>}
@@ -3192,7 +3194,7 @@
 
             return (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                    <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden bg-gradient-tribal z-10">
+                    <section className="relative h-screen min-h-[580px] flex items-center justify-center overflow-hidden bg-gradient-tribal z-10">
                         <div className="absolute inset-0 z-0 opacity-100">
                             <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
                                 <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="Hero" className="w-full h-full object-cover" priority />
@@ -3201,9 +3203,9 @@
                         </div>
 
                         <div className="relative z-20 text-center max-w-7xl px-6 pt-12 md:pt-20">
-                            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-16 md:-mt-24">
-                                <div className="mb-8 md:mb-10 animate-float drop-shadow-lg">
-                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
+                            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-10 md:-mt-24">
+                                <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
+                                    <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
 
                                 <div className="inline-flex items-center gap-3 md:gap-4 px-5 md:px-7 py-2.5 rounded-full bg-white/90 border border-stone-200/80 text-stone-600 font-bold mb-6 md:mb-10 shadow-md shadow-stone-200/30 backdrop-blur-md text-base md:text-lg tracking-wide">
@@ -3213,7 +3215,7 @@
                                     <span>火熱公測中</span>
                                 </div>
 
-                                <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#8B1538] font-display font-black mb-8 md:mb-10 max-w-4xl mx-auto tracking-tight leading-[1.15] px-2 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_8px_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.4)]">
+                                <p className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-[#8B1538] font-display font-black mb-5 md:mb-10 max-w-4xl mx-auto tracking-tight leading-[1.15] px-2 [text-shadow:0_0_2px_#fff,0_0_4px_#fff,0_0_8px_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.4)]">
                                     最初的感動，最純粹的冒險
                                 </p>
                                 
@@ -3345,7 +3347,7 @@
                                     { t: "經典設定", d: "完美復刻 2.5 版本數值。地水火風屬性相剋，策略才是王道。", i: Flame, color: "text-fire-500", bg: "bg-fire-50", border: "border-fire-200" },
                                     { t: "長久穩定", d: "採用商業級分佈式架構，數據異地備份，承諾永久保存。", i: Home, color: "text-earth-600", bg: "bg-earth-50", border: "border-earth-200" }
                                 ].map((item, idx) => (
-                                    <motion.div key={idx} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="stone-panel p-8 md:p-10 text-center group bg-white cursor-default">
+                                    <motion.div key={idx} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="stone-panel p-5 sm:p-8 md:p-10 text-center group bg-white cursor-default">
                                         <div className={`w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl ${item.bg} flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform duration-300`}>
                                             <item.i size={36} className={item.color} />
                                         </div>
@@ -3380,7 +3382,7 @@
 
                         <div className="space-y-8">
                             {/* 版權聲明 */}
-                            <div className="stone-panel p-8 md:p-10 bg-white">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <AlertCircle size={28} className="text-gold-500" />
                                     版權聲明
@@ -3399,7 +3401,7 @@
                             </div>
 
                             {/* 服務條款 */}
-                            <div className="stone-panel p-8 md:p-10 bg-white">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <CheckCircle size={28} className="text-wind-500" />
                                     服務條款
@@ -3438,7 +3440,7 @@
                             </div>
 
                             {/* 玩家贊助說明（整合優化） */}
-                            <div className="stone-panel p-8 md:p-10 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <Coins size={28} className="text-orange-500" />
                                     玩家贊助說明
@@ -3468,7 +3470,7 @@
                             </div>
 
                             {/* 免責聲明 */}
-                            <div className="stone-panel p-8 md:p-10 bg-white">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <ShieldCheck size={28} className="text-fire-500" />
                                     免責聲明
@@ -3510,7 +3512,7 @@
                             </div>
 
                             {/* 隱私權政策 */}
-                            <div className="stone-panel p-8 md:p-10 bg-white">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <Lock size={28} className="text-wind-500" />
                                     隱私權政策
@@ -3545,7 +3547,7 @@
                             </div>
 
                             {/* 年齡限制 */}
-                            <div className="stone-panel p-8 md:p-10 bg-gradient-to-br from-gold-50 to-yellow-50 border-2 border-gold-300">
+                            <div className="stone-panel p-5 sm:p-8 md:p-10 bg-gradient-to-br from-gold-50 to-yellow-50 border-2 border-gold-300">
                                 <h2 className="text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                     <User size={28} className="text-gold-500" />
                                     年齡限制與家長同意
@@ -5799,7 +5801,7 @@
 
                     <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-10 md:gap-12">
                         <div className="lg:col-span-2 space-y-8 md:space-y-10">
-                             <div ref={accountRef} className="stone-panel p-8 md:p-10 border-stone-200 bg-white">
+                             <div ref={accountRef} className="stone-panel p-5 sm:p-8 md:p-10 border-stone-200 bg-white">
                                 <div className="flex items-center gap-4 mb-6 border-b border-stone-100 pb-6">
                                     <div className="p-3 bg-stone-50 rounded-2xl text-stone-500"><User size={28} /></div>
                                     <div className="flex-1">
@@ -5936,7 +5938,7 @@
                                 )}
                             </div>
 
-                            <div ref={methodRef} className="stone-panel p-8 md:p-10 border-2 border-amber-200 shadow-md bg-gradient-to-br from-amber-50/60 to-white">
+                            <div ref={methodRef} className="stone-panel p-5 sm:p-8 md:p-10 border-2 border-amber-200 shadow-md bg-gradient-to-br from-amber-50/60 to-white">
                                 <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-amber-100">
                                     <div className="p-3 bg-amber-400 rounded-2xl text-white shadow-md"><CreditCard size={28} /></div>
                                         <h3 className="text-xl md:text-2xl font-black text-stone-800">1. 選擇支付方式</h3>
@@ -6213,7 +6215,7 @@
                     {/* 公益承諾 */}
                     <div className="max-w-7xl mx-auto mt-24 md:mt-32">
                         <div 
-                            className="stone-panel p-10 md:p-20 relative overflow-hidden shadow-2xl border-0"
+                            className="stone-panel p-6 sm:p-10 md:p-20 relative overflow-hidden shadow-2xl border-0"
                             style={{ 
                                 backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url(${getAssetUrl(ASSETS.LOVE_BG)})`,
                                 backgroundSize: 'cover',
@@ -6276,7 +6278,7 @@
                         <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
                         
                         {/* 官方 LINE 區塊 */}
-                        <div className="stone-panel p-10 md:p-16 text-center shadow-xl bg-white">
+                        <div className="stone-panel p-6 sm:p-10 md:p-16 text-center shadow-xl bg-white">
                             <div className="w-28 h-28 md:w-36 md:h-36 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500">
                                 <SmartImage src={getAssetUrl(ASSETS.LINE_LOGO)} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" alt="LINE" />
                             </div>
@@ -6286,7 +6288,7 @@
                                 專人一對一服務，解決您的遊戲問題、儲值異常或違規檢舉。
                             </p>
 
-                            <div className="bg-stone-50 rounded-3xl p-8 mb-10 border border-stone-100 inline-block w-full max-w-sm">
+                            <div className="bg-stone-50 rounded-2xl sm:rounded-3xl p-5 sm:p-8 mb-8 border border-stone-100 inline-block w-full max-w-sm">
                                 <p className="text-stone-400 text-xs font-bold mb-2 uppercase tracking-widest">官方 LINE ID</p>
                                 <p className="text-3xl md:text-4xl font-black text-stone-700 tracking-wider font-mono">@939yjtdj</p>
                             </div>
@@ -6344,7 +6346,7 @@
                         </div>
 
                         {/* 常見詐騙手法 */}
-                        <div className="stone-panel p-8 md:p-10 bg-white">
+                        <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
                             <h2 className="text-xl md:text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
                                 <Eye size={28} className="text-orange-500" />
                                 常見詐騙手法
@@ -9375,7 +9377,7 @@
             }
             
             return (
-                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-3 md:px-6 min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+                <div className="pt-20 md:pt-32 pb-24 md:pb-20 px-4 md:px-6 min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
                     <div className="max-w-7xl mx-auto">
                         {/* 頁面標題 - 管理後台 Header */}
                         <div className="mb-6 md:mb-8">
@@ -9464,7 +9466,8 @@
                         
                         {/* 分頁切換 - 統一設計語言 */}
                         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-3">
-                            <div className="w-full lg:w-auto overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0">
+                            <div className="w-full lg:w-auto relative -mx-4 px-4 md:mx-0 md:px-0">
+                                <div className="overflow-x-auto pb-1 scrollbar-none" style={{scrollbarWidth:'none',msOverflowStyle:'none'}}>
                                 <div className="flex gap-1.5 min-w-max p-1.5 bg-slate-800/60 rounded-2xl border border-slate-700/50">
                                     <button onClick={() => setCurrentTab('donations')} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-1.5 ${currentTab === 'donations' ? 'bg-amber-500 text-white shadow-md shadow-amber-900/40' : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'}`}>
                                         <Coins size={14}/>
@@ -9525,6 +9528,9 @@
                                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                     </a>
                                 </div>
+                                </div>
+                                {/* 右側漸層提示可捲動（僅手機顯示） */}
+                                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-slate-950 to-transparent lg:hidden rounded-r-2xl"></div>
                             </div>
                             
                             <div className="flex gap-2 w-full lg:w-auto flex-wrap items-center">
@@ -11742,7 +11748,7 @@
                                 {editingUser && (
                                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60" onClick={() => setEditingUser(null)}>
                                         <div className="bg-stone-800 rounded-2xl border border-stone-600 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                                            <div className="p-6 md:p-8">
+                                            <div className="p-4 sm:p-6 md:p-8">
                                                 <div className="flex items-start justify-between gap-4 mb-6">
                                                     <div>
                                                         <h3 className="text-2xl font-black text-white mb-1">編輯用戶資料</h3>
@@ -12197,8 +12203,8 @@
                         {/* 新增/編輯管理員 Modal */}
                         {showAddAdminModal && (
                             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                                <div className="bg-stone-800 rounded-3xl p-8 max-w-md w-full border border-stone-700 shadow-2xl">
-                                    <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+                                <div className="bg-stone-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 max-w-md w-full border border-stone-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+                                    <h3 className="text-xl sm:text-2xl font-black text-white mb-5 sm:mb-6 flex items-center gap-3">
                                         {editingAdmin ? <Edit2 size={24} className="text-water-500" /> : <UserPlus size={24} className="text-fire-500" />}
                                         {editingAdmin ? '編輯管理員' : '新增管理員'}
                                     </h3>
@@ -12660,7 +12666,7 @@
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 1, type: 'spring', stiffness: 200 }}
                         onClick={handleOpen}
-                        className="fixed z-40 right-20 md:right-20 bottom-24 md:bottom-6 w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl shadow-orange-500/40 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 border-white/30"
+                        className="fixed z-40 right-4 md:right-20 bottom-24 md:bottom-6 w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl shadow-orange-500/40 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 border-white/30"
                         title="最新活動"
                         aria-label="開啟最新活動"
                     >
@@ -12911,7 +12917,7 @@
                     {/* 大字模式切換（中高齡友善） */}
                     <button
                         onClick={() => setLargeMode(v => !v)}
-                        className={`fixed z-40 right-4 bottom-24 md:bottom-6 flex items-center justify-center w-12 h-12 rounded-full shadow-lg border-2 transition-all min-h-[48px] min-w-[48px] ${largeMode ? 'bg-gold-500 text-white border-gold-600' : 'bg-white/90 text-stone-600 border-stone-200 hover:bg-stone-50'}`}
+                        className={`fixed z-40 left-4 bottom-24 md:bottom-6 md:left-auto md:right-4 flex items-center justify-center w-12 h-12 rounded-full shadow-lg border-2 transition-all min-h-[48px] min-w-[48px] ${largeMode ? 'bg-gold-500 text-white border-gold-600' : 'bg-white/90 text-stone-600 border-stone-200 hover:bg-stone-50'}`}
                         title={largeMode ? '切換一般模式' : '大字模式（字體放大、按鈕加大）'}
                         aria-label={largeMode ? '切換一般模式' : '大字模式'}
                     >
