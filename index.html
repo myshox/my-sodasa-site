@@ -12821,13 +12821,16 @@
 
         const LARGE_MODE_KEY = 'sodasa-accessibility-large';
         const ACTIVITY_FLOAT_DISMISSED_KEY = 'sodasa-activity-float-dismissed';
-        const HOMEPAGE_POPUP_SHOWN_KEY = 'sodasa-homepage-popup-shown';
         const POPUP_NEVER_AUTO_KEY = 'sodasa-popup-never-auto';
+        /** 舊版曾錯誤寫入，導致永遠不再自動彈出 — 僅用於啟動時清除 */
+        const HOMEPAGE_POPUP_LEGACY_KEYS = ['sodasa-homepage-popup-shown', 'sodasa-homepage-popup-shown-v2'];
 
         // 右下角活動浮動按鈕：點擊彈出最新活動
         const FloatingActivityButton = () => {
             const navigate = useNavigate();
             const location = useLocation();
+            const autoPopupTimerRef = useRef(null);
+            const autoPopupFiredRef = useRef(false);
             const [dismissed, setDismissed] = useState(() => {
                 const raw = localStorage.getItem(ACTIVITY_FLOAT_DISMISSED_KEY);
                 if (!raw) return false;
@@ -12864,18 +12867,51 @@
                 return () => window.removeEventListener('storage', onStorage);
             }, [showModal]);
 
-            // 首頁自動彈窗（每 session 僅一次；若使用者勾選「不再自動顯示」則跳過）
+            // 首頁自動彈窗：不依賴「一進站就寫 session」（舊版會誤鎖死導致永遠不彈）
+            // 離開首頁會重置計時狀態，再次進入首頁仍會自動開（除非勾「不再自動」）
+            // 延遲須晚於全站 Loading（z-[100]）結束與退場動畫
+            const HOMEPAGE_POPUP_DELAY_MS = 2800;
             useEffect(() => {
-                if (location.pathname !== '/' || dismissed || neverAuto) return;
-                if (sessionStorage.getItem(HOMEPAGE_POPUP_SHOWN_KEY) === '1') return;
-                const t = setTimeout(() => {
-                    sessionStorage.setItem(HOMEPAGE_POPUP_SHOWN_KEY, '1');
+                if (neverAuto) return;
+                try {
+                    HOMEPAGE_POPUP_LEGACY_KEYS.forEach((k) => sessionStorage.removeItem(k));
+                } catch (e) { /* 私密模式等 */ }
+                /* HashRouter：首頁為 pathname === '/'（勿再用 hash 字串比對，易誤判） */
+                const isHome = location.pathname === '/' || location.pathname === '';
+                if (!isHome) {
+                    if (autoPopupTimerRef.current) {
+                        clearTimeout(autoPopupTimerRef.current);
+                        autoPopupTimerRef.current = null;
+                    }
+                    autoPopupFiredRef.current = false;
+                    return;
+                }
+                if (autoPopupFiredRef.current) return;
+                if (autoPopupTimerRef.current) {
+                    clearTimeout(autoPopupTimerRef.current);
+                }
+                autoPopupTimerRef.current = setTimeout(() => {
+                    autoPopupFiredRef.current = true;
                     setShowModal(true);
                     setLoading(true);
                     fetchPopupEvents().then(setEvents).finally(() => setLoading(false));
-                }, 1500);
-                return () => clearTimeout(t);
-            }, [location.pathname, dismissed, neverAuto]);
+                    autoPopupTimerRef.current = null;
+                }, HOMEPAGE_POPUP_DELAY_MS);
+                return () => {
+                    if (autoPopupTimerRef.current) {
+                        clearTimeout(autoPopupTimerRef.current);
+                        autoPopupTimerRef.current = null;
+                    }
+                };
+            }, [location.pathname, neverAuto]);
+
+            // 若已手動開啟彈窗，取消尚未觸發的自動計時
+            useEffect(() => {
+                if (showModal && autoPopupTimerRef.current) {
+                    clearTimeout(autoPopupTimerRef.current);
+                    autoPopupTimerRef.current = null;
+                }
+            }, [showModal]);
 
             const extractFirstImage = (html) => {
                 if (!html) return null;
@@ -12900,29 +12936,32 @@
                 localStorage.setItem(ACTIVITY_FLOAT_DISMISSED_KEY, Date.now().toString());
             };
 
-            if (dismissed) return null;
-
             return (
                 <>
+                    {!dismissed && (
                     <motion.button
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 1, type: 'spring', stiffness: 200 }}
                         onClick={handleOpen}
-                        className="fixed z-40 right-4 md:right-20 bottom-24 md:bottom-6 w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl shadow-orange-500/40 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 border-white/30"
+                        className="fixed z-[105] right-4 md:right-20 bottom-24 md:bottom-6 w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-xl shadow-orange-500/40 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-transform border-2 border-white/30"
                         title="最新活動"
                         aria-label="開啟最新活動"
                     >
-                        <button
+                        <span
+                            role="button"
+                            tabIndex={0}
                             onClick={handleDismiss}
-                            className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-stone-600 text-white flex items-center justify-center hover:bg-stone-500 transition-colors text-xs font-bold"
-                            aria-label="關閉"
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDismiss(e); } }}
+                            className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-stone-600 text-white flex items-center justify-center hover:bg-stone-500 transition-colors text-xs font-bold z-10"
+                            aria-label="關閉浮動按鈕（仍可在首頁自動彈出活動）"
                         >
                             <X size={12} strokeWidth={3} />
-                        </button>
+                        </span>
                         <Gift size={20} className="mb-0.5" />
                         <span className="text-[10px] font-bold leading-tight">新活動</span>
                     </motion.button>
+                    )}
 
                     <AnimatePresence>
                         {showModal && (
@@ -12930,7 +12969,7 @@
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm"
+                                className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm"
                                 onClick={() => setShowModal(false)}
                             >
                                 <motion.div
