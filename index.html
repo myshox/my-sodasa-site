@@ -197,6 +197,17 @@
     </script>
 
     <style>
+        /* 全站設計權杖：間距、圓角、觸控目標（每一層共用） */
+        :root {
+            --ui-touch: 44px;
+            --ui-touch-comfort: 48px;
+            --ui-gap-sm: 0.5rem;
+            --ui-gap: 0.75rem;
+            --ui-gap-lg: 1rem;
+            --ui-radius: 0.75rem;
+            --ui-radius-lg: 1.25rem;
+            --ui-input-bg: rgba(255, 255, 255, 0.92);
+        }
         html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         /* 遊戲官網：暖色紙紋＋頂光，略帶冒險感 */
         html.game-site body { 
@@ -460,10 +471,84 @@
         }
         .marquee-content:hover { animation-play-state: paused; }
         
-        /* 觸控優化：最小 44px 點擊區（按鈕與導覽，不強制內文連結以免跑版） */
+        /* 頂部「主要選單」：全寬高一致（桌機／手機） */
+        nav[aria-label="主要選單"] a[href] {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--ui-touch);
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            border-radius: var(--ui-radius);
+        }
+        /* 頂欄右側：BGM、會員、登入、後台 */
+        .nav-top-actions > a[href] {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--ui-touch);
+            padding-left: 0.65rem;
+            padding-right: 0.65rem;
+            border-radius: var(--ui-radius);
+        }
+        /* 觸控與互動：手機／小平板全站一致（底欄不加 min-width 避免 Tab 擠爆） */
         @media (max-width: 768px) {
-            button, [role="button"] { min-height: 44px; min-width: 44px; }
-            nav a[href], .mobile-bottom-nav a[href], footer a[href] { min-height: 44px; min-width: 44px; }
+            button:not(.ui-skip-touch),
+            [role="button"]:not(.ui-skip-touch),
+            input[type="submit"]:not(.ui-skip-touch),
+            input[type="button"]:not(.ui-skip-touch) {
+                min-height: var(--ui-touch);
+            }
+            .mobile-bottom-nav a[href] {
+                min-height: var(--ui-touch-comfort);
+                min-width: 0 !important;
+                flex: 1 1 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            footer.site-footer a[href] {
+                min-height: var(--ui-touch);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.35rem 0.65rem;
+                border-radius: var(--ui-radius);
+            }
+            .music-player-dock button {
+                min-height: var(--ui-touch);
+                min-width: var(--ui-touch);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        /* 主內容表單：統一高度與圓角 */
+        .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        .page-content select,
+        .page-content textarea {
+            border-radius: var(--ui-radius);
+        }
+        @media (max-width: 768px) {
+            .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            .page-content select {
+                min-height: var(--ui-touch);
+                box-sizing: border-box;
+            }
+            .page-content textarea {
+                min-height: 6.5rem;
+                box-sizing: border-box;
+            }
+            .admin-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            .admin-content select {
+                min-height: var(--ui-touch);
+                box-sizing: border-box;
+            }
+            .admin-content textarea {
+                min-height: 5rem;
+                box-sizing: border-box;
+            }
         }
         /* 各頁寬內容不撐破版面 */
         @media (max-width: 767px) {
@@ -487,6 +572,9 @@
         html.accessibility-large a[href] {
             min-height: 48px;
             min-width: 48px;
+        }
+        html.accessibility-large .mobile-bottom-nav a[href] {
+            min-width: 0 !important;
         }
         html.accessibility-large input,
         html.accessibility-large select,
@@ -1032,7 +1120,7 @@
             if (playlist.length === 0) return null;
 
             return (
-                <div className="flex items-center gap-1.5 bg-stone-900/90 backdrop-blur-md rounded-lg py-1.5 px-2 md:px-3 border border-amber-800/40 shadow-inner max-w-[min(100vw-8rem,280px)]">
+                <div className="music-player-dock flex items-center gap-1.5 bg-stone-900/90 backdrop-blur-md rounded-lg py-1.5 px-2 md:px-3 border border-amber-800/40 shadow-inner max-w-[min(100vw-8rem,280px)]">
                     <audio 
                         ref={audioRef} 
                         src={currentTrack.url} 
@@ -1692,12 +1780,12 @@
         };
 
         const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-amber-600" }) => (
-            <header className="mb-10 md:mb-12 text-center max-w-2xl mx-auto">
-                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-3 mb-3">
-                    {Icon && <Icon size={28} className={`${color} shrink-0 mx-auto sm:mx-0`} strokeWidth={1.75} aria-hidden />}
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display">{title}</h1>
+            <header className="mb-10 md:mb-14 text-center max-w-2xl mx-auto px-1">
+                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-4">
+                    {Icon && <Icon size={30} className={`${color} shrink-0 mx-auto sm:mx-0`} strokeWidth={1.75} aria-hidden />}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
                 </div>
-                {subtitle && <p className="text-stone-500 text-sm md:text-base leading-relaxed">{subtitle}</p>}
+                {subtitle && <p className="text-stone-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">{subtitle}</p>}
             </header>
         ));
 
@@ -1738,21 +1826,21 @@
             if (location.pathname === '/admin') return null;
 
             return (
-                <div className="mobile-bottom-nav fixed bottom-0 left-0 w-full z-50 pb-safe md:hidden border-t-2 border-amber-700/50 bg-[#12100e]/96 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
-                    <div className="flex justify-around items-center min-h-[60px] max-w-lg mx-auto px-1 py-1">
+                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t-2 border-amber-700/50 bg-[#12100e]/96 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
+                    <div className="flex justify-between items-stretch min-h-[56px] max-w-lg mx-auto px-1 py-1.5 gap-0.5" role="navigation" aria-label="手機底部選單">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
                             return (
                                 <Link 
                                     key={item.path} 
                                     to={item.path} 
-                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-1 px-0.5 rounded-lg transition-colors ${isActive ? 'text-amber-300' : 'text-stone-500 active:text-stone-400'}`}
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-xl transition-colors active:opacity-90 ${isActive ? 'text-amber-300' : 'text-stone-500 active:text-stone-400'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <span className={`flex items-center justify-center w-9 h-9 rounded-lg mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_8px_rgba(251,191,36,0.35)]' : 'bg-stone-800/80 border border-stone-700/80'}`}>
-                                        <item.icon size={20} strokeWidth={isActive ? 2.25 : 2} className={isActive ? '' : 'text-stone-400'} />
+                                    <span className={`flex items-center justify-center w-10 h-10 rounded-xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_8px_rgba(251,191,36,0.35)]' : 'bg-stone-800/80 border border-stone-700/80'}`}>
+                                        <item.icon size={21} strokeWidth={isActive ? 2.25 : 2} className={isActive ? '' : 'text-stone-400'} aria-hidden />
                                     </span>
-                                    <span className={`text-[10px] font-bold font-display tracking-wide truncate max-w-full leading-tight ${isActive ? 'text-amber-200' : 'text-stone-500'}`}>{item.label}</span>
+                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-amber-200' : 'text-stone-500'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -13031,8 +13119,8 @@
 
                     {/* 強制補綁主帳號彈窗（有過往捐款但未綁定者） */}
                     {bindingModal && (
-                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-md">
-                            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border-2 border-red-300">
+                        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-stone-900/80 backdrop-blur-md">
+                            <div className="bg-white rounded-t-2xl sm:rounded-3xl shadow-2xl max-w-md w-full max-h-[min(90dvh,92vh)] overflow-y-auto overscroll-contain overflow-hidden border-2 border-red-300">
                                 <div className="bg-gradient-to-r from-red-500 to-orange-500 px-6 py-5 flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
                                         <AlertCircle size={28} className="text-white" />
@@ -13104,7 +13192,7 @@
                                 </Link>
                             </nav>
 
-                            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+                            <div className="nav-top-actions flex items-center gap-1.5 md:gap-2 shrink-0">
                                 <MusicPlayer />
                                 
                                 {user ? (
@@ -13150,7 +13238,7 @@
                         </AnimatePresence>
                     </main>
 
-                    <footer className="bg-[#0f0d0b] py-10 md:py-14 px-4 sm:px-6 border-t-2 border-amber-900/40 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0">
+                    <footer className="site-footer bg-[#0f0d0b] py-10 md:py-14 px-4 sm:px-6 border-t-2 border-amber-900/40 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0">
                         <div className="max-w-7xl mx-auto space-y-6">
                             {/* 免責聲明 */}
                             <div className="rounded-xl p-5 md:p-6 border border-stone-700/80 bg-stone-800/40">
