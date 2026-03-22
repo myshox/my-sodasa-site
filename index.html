@@ -2,7 +2,7 @@
 <html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -206,6 +206,10 @@
             line-height: 1.7;
             letter-spacing: 0.02em;
             font-feature-settings: "palt" 1;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            padding-left: env(safe-area-inset-left, 0);
+            padding-right: env(safe-area-inset-right, 0);
         }
         /* 閱讀區塊：適合長文寬度與行高（手機／平板／電腦） */
         .reading-content {
@@ -213,16 +217,34 @@
             line-height: 1.8;
         }
         @media (max-width: 767px) {
-            body { line-height: 1.75; letter-spacing: 0.025em; font-size: 16px; }
+            body {
+                line-height: 1.75; letter-spacing: 0.025em; font-size: 16px;
+                padding-bottom: env(safe-area-inset-bottom, 0);
+            }
+            #main-content {
+                overflow-x: hidden;
+                max-width: 100%;
+                -webkit-overflow-scrolling: touch;
+            }
             .reading-content { max-width: 100%; padding-left: 0.5rem; padding-right: 0.5rem; }
+            /* 手機：與內層 px-4 搭配，避免左右貼邊 */
+            .page-content { padding-left: max(1rem, env(safe-area-inset-left, 0px)); padding-right: max(1rem, env(safe-area-inset-right, 0px)); }
         }
+        #main-content { overflow-x: hidden; }
+        /* 平板：內容區左右留白、長文置中 */
         @media (min-width: 768px) and (max-width: 1023px) {
             body { font-size: 17px; line-height: 1.8; }
+            .page-content { padding-left: 1.25rem; padding-right: 1.25rem; }
             .reading-content { max-width: 40rem; margin-left: auto; margin-right: auto; }
         }
+        /* 網頁版（桌面）：留白、字級、長文置中 */
         @media (min-width: 1024px) {
-            body { font-size: 17px; }
-            .reading-content { max-width: 44rem; }
+            body { font-size: 17px; line-height: 1.75; }
+            .page-content { padding-left: 1.5rem; padding-right: 1.5rem; }
+            .reading-content { max-width: min(44rem, 100%); margin-left: auto; margin-right: auto; }
+        }
+        @media (min-width: 1280px) {
+            .page-content { padding-left: 2rem; padding-right: 2rem; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -348,9 +370,15 @@
         }
         .marquee-content:hover { animation-play-state: paused; }
         
-        /* 觸控優化：最小 44px 點擊區 */
+        /* 觸控優化：最小 44px 點擊區（按鈕與導覽，不強制內文連結以免跑版） */
         @media (max-width: 768px) {
-            button, a[href], [role="button"] { min-height: 44px; min-width: 44px; }
+            button, [role="button"] { min-height: 44px; min-width: 44px; }
+            nav a[href], .neu-bottom a[href], footer a[href] { min-height: 44px; min-width: 44px; }
+        }
+        /* 各頁寬內容不撐破版面 */
+        @media (max-width: 767px) {
+            .page-content table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+            .page-content pre, .page-content .overflow-x-auto { max-width: 100%; }
         }
         
         /* 大字模式：中高齡友善（字體放大、按鈕加大） */
@@ -399,6 +427,10 @@
             -webkit-backdrop-filter: blur(12px);
             box-shadow: 0 4px 20px rgba(160, 110, 40, 0.18), 0 1px 0 rgba(255,255,255,0.6);
             border-bottom: 1.5px solid rgba(200, 155, 70, 0.25);
+        }
+        /* 頂部固定導覽：瀏海區留白 */
+        nav.fixed.top-0 {
+            padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
         }
         .neu-item {
             background: #e8ddc5;
@@ -1569,17 +1601,14 @@
             );
         };
 
-        const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-fire-500" }) => (
-            <div className="text-center mb-12 md:mb-16 relative z-10">
-                <div className="flex justify-center mb-5">
-                    <div className="p-4 md:p-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl border-2 border-amber-300 shadow-xl shadow-amber-200/60 animate-float">
-                        {Icon && <Icon size={44} className="text-white" strokeWidth={1.5} />}
-                    </div>
+        const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-amber-600" }) => (
+            <header className="mb-10 md:mb-12 text-center max-w-2xl mx-auto">
+                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-3 mb-3">
+                    {Icon && <Icon size={28} className={`${color} shrink-0 mx-auto sm:mx-0`} strokeWidth={1.75} aria-hidden />}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display">{title}</h1>
                 </div>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-stone-800 mb-3 tracking-tight drop-shadow-sm font-display px-2">{title}</h1>
-                <div className="w-16 md:w-20 h-1.5 bg-gradient-to-r from-amber-400 to-orange-400 mx-auto mb-5 rounded-full"></div>
-                <p className="text-stone-600 text-base md:text-lg max-w-2xl mx-auto font-medium px-2 sm:px-4 leading-relaxed">{subtitle}</p>
-            </div>
+                {subtitle && <p className="text-stone-500 text-sm md:text-base leading-relaxed">{subtitle}</p>}
+            </header>
         ));
 
         // --- Mobile Nav ---
@@ -1619,21 +1648,21 @@
             if (location.pathname === '/admin') return null;
 
             return (
-                <div className="fixed bottom-0 left-0 w-full z-50 pb-safe md:hidden neu-bottom">
-                    <div className="flex justify-around items-center h-[72px] px-2">
+                <div className="fixed bottom-0 left-0 w-full z-50 pb-safe md:hidden border-t border-amber-200/60 bg-[#f5ecd8]/95 backdrop-blur-lg shadow-[0_-4px_24px_rgba(120,80,30,0.08)]">
+                    <div className="flex justify-around items-center min-h-[64px] max-w-lg mx-auto px-1 py-1.5">
                         {navItems.map((item) => {
-                            const isActive = location.pathname === item.path;
+                            const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
                             return (
                                 <Link 
                                     key={item.path} 
                                     to={item.path} 
-                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 px-1 rounded-2xl ${isActive ? 'text-amber-700' : 'text-stone-500'}`}
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 py-1.5 px-0.5 rounded-xl transition-colors ${isActive ? 'text-amber-800' : 'text-stone-500 active:text-stone-700'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <div className={`p-2.5 rounded-2xl ${isActive ? 'neu-item-active' : 'neu-item'}`}>
-                                        <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                                    </div>
-                                    <span className={`text-[12px] font-bold tracking-wide mt-0.5 truncate max-w-full ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                                    <span className={`flex items-center justify-center w-10 h-10 rounded-full mb-0.5 transition-colors ${isActive ? 'bg-amber-500 text-white shadow-sm' : 'bg-transparent'}`}>
+                                        <item.icon size={22} strokeWidth={isActive ? 2.25 : 2} />
+                                    </span>
+                                    <span className={`text-[11px] font-semibold truncate max-w-full leading-tight ${isActive ? 'text-amber-900' : 'text-stone-500'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -1832,7 +1861,7 @@
             };
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                     {/* 服務條款彈窗 */}
                     {showTermsModal && (
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/80 backdrop-blur-sm" onClick={() => setShowTermsModal(false)}>
@@ -2003,7 +2032,7 @@
 
                     <div className="max-w-md mx-auto">
                         <div className="stone-panel p-5 sm:p-8 md:p-10">
-                            <h1 className="text-3xl md:text-4xl font-black text-stone-800 mb-2 text-center">
+                            <h1 className="text-2xl md:text-3xl font-black text-stone-800 mb-2 text-center">
                                 {isRecoveryMode ? '設定新密碼' : (isLogin ? '會員登入' : '註冊帳號')}
                             </h1>
                             <p className="text-stone-500 text-center mb-8">
@@ -2670,14 +2699,14 @@
             
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="載入中..." />
                     </motion.div>
                 );
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto">
                         <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
 
@@ -3356,12 +3385,9 @@
 
                     <section className="py-24 md:py-32 px-6 relative mb-20 md:mb-0">
                         <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-16 md:mb-24">
-                                <h2 className="text-3xl md:text-5xl font-display font-black text-stone-800 mb-4 inline-block relative">
-                                    部落生存法則
-                                    <span className="absolute -bottom-2 left-0 w-full h-3 bg-yellow-200/50 -z-10 rounded-full"></span>
-                                </h2>
-                                <p className="text-stone-500 font-medium text-lg md:text-xl mt-4">四大屬性加持，打造最平衡的尼斯大陸。</p>
+                            <div className="text-center mb-12 md:mb-16">
+                                <h2 className="text-2xl md:text-4xl font-display font-black text-stone-800 mb-3">部落生存法則</h2>
+                                <p className="text-stone-500 font-medium text-base md:text-lg">四大屬性加持，打造最平衡的尼斯大陸。</p>
                             </div>
                             <div className="grid md:grid-cols-3 gap-8 md:gap-10">
                                 {[
@@ -3390,17 +3416,16 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/60 pt-28 md:pt-32 pb-32 md:pb-20"
+                    className="page-content min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/60 pt-28 md:pt-32 pb-32 md:pb-20"
                 >
                     <div className="max-w-4xl mx-auto px-5 sm:px-6 md:px-6 lg:px-8">
-                        {/* 頁面標題 */}
-                        <div className="text-center mb-12">
-                            <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 flex items-center justify-center gap-3">
-                                <ScrollText size={48} className="text-gold-500" />
-                                服務條款與免責聲明
-                            </h1>
-                            <p className="text-stone-600 text-lg">請仔細閱讀以下條款</p>
-                        </div>
+                        <header className="text-center mb-10 md:mb-12 max-w-2xl mx-auto">
+                            <div className="inline-flex items-center justify-center gap-2 sm:gap-3 mb-2">
+                                <ScrollText size={26} className="text-amber-600 shrink-0" aria-hidden />
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight">服務條款與免責聲明</h1>
+                            </div>
+                            <p className="text-stone-500 text-sm md:text-base">請仔細閱讀以下條款</p>
+                        </header>
 
                         <div className="space-y-8">
                             {/* 版權聲明 */}
@@ -3716,7 +3741,7 @@
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pt-28 md:pt-32 pb-32 md:pb-32 px-5 md:px-6 lg:px-10 min-h-screen bg-gradient-to-b from-amber-50 to-orange-50/40"
+                    className="page-content pt-28 md:pt-32 pb-32 md:pb-32 px-4 sm:px-5 md:px-6 lg:px-10 min-h-screen bg-gradient-to-b from-amber-50 to-orange-50/40"
                 >
                     <div className="max-w-screen-xl mx-auto">
                         {/* 麵包屑 */}
@@ -3740,7 +3765,7 @@
                                     <span className={`${catInfo.color} text-white px-3 py-1.5 rounded-lg text-sm font-semibold`}>{catInfo.icon} {catInfo.label}</span>
                                     {guide.is_pinned && <Star size={16} fill="#f97316" className="text-orange-500" />}
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-black text-stone-900 mb-6 leading-snug">
+                                <h1 className="text-2xl md:text-3xl font-black text-stone-900 mb-5 leading-snug">
                                     {guide.title}
                                 </h1>
                                 <div className="flex flex-wrap items-center gap-4 py-4 border-y border-stone-100">
@@ -4171,7 +4196,7 @@
 
             if (loadingDetail) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-32 md:pt-44 pb-36 min-h-screen flex flex-col items-center justify-center gap-6 px-4">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="page-content pt-32 md:pt-44 pb-36 min-h-screen flex flex-col items-center justify-center gap-6 px-4">
                         <LoadingSpinner message="載入攻略內容中..." />
                         <p className="text-sm text-stone-500">若載入較久，可能是內容較大或網路較慢</p>
                         <button onClick={retryLoadDetail} className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm transition-colors">
@@ -4193,47 +4218,44 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/50"
+                    className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/50"
                 >
                     <div className="max-w-7xl mx-auto">
-                        {/* 標題 */}
-                        <div className="text-center mb-12">
-                            <h1 className="text-4xl md:text-5xl font-black text-stone-800 mb-4 tracking-tight">
-                                活動攻略
-                                <span className="block absolute -bottom-2 left-0 w-full h-3 bg-yellow-200/50 -z-10 rounded-full" style={{display:'none'}} />
-                            </h1>
-                            <p className="text-stone-500 font-medium text-lg max-w-xl mx-auto">
-                                限時活動、新手教學、副本攻略—一次掌握
-                            </p>
-                        </div>
+                        <header className="text-center mb-8 md:mb-10">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight mb-2">活動攻略</h1>
+                            <p className="text-stone-500 text-sm md:text-base max-w-lg mx-auto leading-relaxed">活動、教學、副本—依分類瀏覽或搜尋</p>
+                        </header>
 
-                        {/* 搜尋 + 切換列 */}
-                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
-                                <input
-                                    type="text"
-                                    placeholder="搜尋攻略標題、作者..."
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-stone-200 bg-white text-stone-800 placeholder-stone-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-base"
-                                />
-                            </div>
-                            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl shrink-0">
-                                {[{ m: 'grid', icon: LayoutGrid, t: '卡片' }, { m: 'list', icon: List, t: '條列' }].map(({ m, icon: Icon, t }) => (
-                                    <button key={m} onClick={() => handleViewModeChange(m)}
-                                        className={`px-5 py-3 rounded-xl font-bold text-base flex items-center gap-2 transition-all min-h-[48px] ${viewMode === m ? 'bg-white text-stone-800 shadow-md' : 'text-stone-500 hover:text-stone-700'}`}>
-                                        <Icon size={18} />{t}
-                                    </button>
-                                ))}
+                        {/* 搜尋 + 檢視切換（單一區塊，減少層次） */}
+                        <div className="rounded-2xl border border-stone-200/80 bg-white/90 p-3 sm:p-4 shadow-sm mb-6">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="relative flex-1 min-w-0">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={18} />
+                                    <input
+                                        type="text"
+                                        placeholder="搜尋標題、作者…"
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                        className="w-full pl-10 pr-3 py-3 rounded-xl border border-stone-200 bg-stone-50/80 text-stone-800 placeholder-stone-400 focus:border-amber-400 focus:bg-white focus:ring-1 focus:ring-amber-200 outline-none transition-all text-[15px]"
+                                    />
+                                </div>
+                                <div className="flex rounded-xl bg-stone-100/90 p-0.5 shrink-0 self-stretch sm:self-auto">
+                                    {[{ m: 'grid', icon: LayoutGrid, t: '卡片' }, { m: 'list', icon: List, t: '條列' }].map(({ m, icon: Icon, t }) => (
+                                        <button key={m} type="button" onClick={() => handleViewModeChange(m)}
+                                            className={`px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[44px] flex-1 sm:flex-none ${viewMode === m ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}>
+                                            <Icon size={16} />{t}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
                         {/* 分類篩選 */}
-                        <div className="flex flex-wrap gap-2.5 mb-10">
+                        <div className="flex flex-wrap gap-2 mb-8">
                             <button
+                                type="button"
                                 onClick={() => setCategory('all')}
-                                className={`px-5 py-2.5 rounded-2xl text-base font-bold transition-all min-h-[48px] ${category === 'all' ? 'bg-stone-800 text-white shadow-md' : 'bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'}`}
+                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all min-h-[40px] ${category === 'all' ? 'bg-stone-800 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300'}`}
                             >
                                 📚 全部
                                 {!loading && guides.length > 0 && <span className="ml-2 text-sm opacity-60">({guides.length})</span>}
@@ -4243,9 +4265,10 @@
                                 if (count === 0 && !loading) return null;
                                 return (
                                     <button
+                                        type="button"
                                         key={id}
                                         onClick={() => setCategory(id)}
-                                        className={`px-5 py-2.5 rounded-2xl text-base font-bold transition-all min-h-[48px] ${category === id ? 'bg-stone-800 text-white shadow-md' : 'bg-white border-2 border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'}`}
+                                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all min-h-[40px] ${category === id ? 'bg-stone-800 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300'}`}
                                     >
                                         {c.icon} {c.label}
                                         {!loading && <span className="ml-2 text-sm opacity-60">({count})</span>}
@@ -4274,8 +4297,8 @@
                                 {/* 置頂精選 */}
                                 {showPinSection && (
                                     <div>
-                                        <h2 className="flex items-center gap-2.5 text-2xl font-black text-stone-800 mb-5">
-                                            <Star size={22} fill="currentColor" className="text-amber-500" /> 精選置頂
+                                        <h2 className="flex items-center gap-2 text-lg font-bold text-stone-800 mb-4">
+                                            <Star size={18} fill="currentColor" className="text-amber-500" /> 精選置頂
                                         </h2>
                                         {viewMode === 'grid' ? (
                                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -4292,8 +4315,8 @@
                                 {(showPinSection ? normalGuides : filteredGuides).length > 0 && (
                                     <div>
                                         {showPinSection && normalGuides.length > 0 && (
-                                            <h2 className="flex items-center gap-2.5 text-2xl font-black text-stone-800 mb-5">
-                                                <BookOpen size={22} className="text-stone-600" /> 所有攻略
+                                            <h2 className="flex items-center gap-2 text-lg font-bold text-stone-800 mb-4">
+                                                <BookOpen size={18} className="text-stone-600" /> 所有攻略
                                             </h2>
                                         )}
                                         {viewMode === 'grid' ? (
@@ -5164,7 +5187,7 @@
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="pt-24 md:pt-32 pb-32 md:pb-40 px-4 sm:px-6 lg:px-8 min-h-screen bg-gradient-tribal relative overflow-hidden"
+                    className="page-content pt-24 md:pt-32 pb-32 md:pb-40 px-4 sm:px-6 lg:px-8 min-h-screen bg-gradient-tribal relative overflow-hidden"
                 >
                     {/* 背景：金黃光暈 + 紙紋 */}
                     <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -5174,19 +5197,19 @@
                         <div className="absolute inset-0 opacity-[0.035]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #8b5a2b 1px, transparent 0)', backgroundSize: '20px 20px' }} />
                     </div>
 
-                    {/* 標題區：主視覺 */}
-                    <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16 relative">
+                    {/* 標題區 */}
+                    <div className="max-w-3xl mx-auto text-center mb-10 md:mb-14 relative">
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.08, type: 'spring', stiffness: 220 }}
-                            className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-gold-400 to-gold-600 rounded-2xl shadow-card mb-6 border-2 border-gold-500/40"
+                            transition={{ delay: 0.06, type: 'spring', stiffness: 220 }}
+                            className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-gold-400 to-gold-600 rounded-xl shadow-md mb-4 border border-gold-500/30"
                         >
-                            <Download size={40} className="text-white md:w-12 md:h-12" strokeWidth={2.5} />
+                            <Download size={32} className="text-white" strokeWidth={2.5} />
                         </motion.div>
-                        <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-stone-800 mb-3 tracking-tight">遊戲下載</h1>
-                        <p className="text-stone-600 font-medium text-base md:text-lg max-w-xl mx-auto">
-                            選擇裝置、一鍵取得客戶端，馬上開始冒險
+                        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-stone-800 mb-2 tracking-tight">遊戲下載</h1>
+                        <p className="text-stone-600 font-medium text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+                            選擇裝置取得客戶端，馬上開始冒險
                         </p>
                         <p className="text-stone-500 text-sm mt-4 flex items-center justify-center gap-2">
                             <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-500" /> 按鈕將於新分頁開啟下載
@@ -5350,7 +5373,7 @@
             }, []);
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
@@ -5666,7 +5689,7 @@
 
             if (loading) {
                 return (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                         <LoadingSpinner message="驗證登入中..." />
                     </motion.div>
                 );
@@ -5675,7 +5698,7 @@
             // 主帳號未綁定時擋牆
             if (gameMasterBound !== null && (!gameMasterBound || gameAccounts.length === 0)) {
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                         <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
                         <div className="max-w-2xl mx-auto mt-8">
                             <div className="bg-white rounded-3xl border-2 border-red-300 shadow-xl overflow-hidden">
@@ -5729,7 +5752,7 @@
             }
             
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                     <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
                     
                     {/* 免責聲明提示 */}
@@ -6249,7 +6272,7 @@
                                     <Heart className="fill-red-500" size={16} />
                                     <span>公益承諾</span>
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-display font-black text-stone-800 mb-6">營收 1% 捐給公益</h2>
+                                <h2 className="text-2xl md:text-4xl font-display font-black text-stone-800 mb-4">營收 1% 捐給公益</h2>
                                 <p className="text-lg md:text-xl text-stone-500 font-medium max-w-2xl mx-auto leading-relaxed">
                                     讓遊戲的歡樂延伸到現實世界，幫助更多需要的人。
                                 </p>
@@ -6295,7 +6318,7 @@
             const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
 
             return (
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="pt-28 md:pt-44 pb-32 md:pb-24 px-5 sm:px-6 md:px-6 lg:px-8 min-h-screen">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="page-content pt-28 md:pt-44 pb-32 md:pb-24 px-4 sm:px-5 md:px-6 lg:px-8 min-h-screen">
                     <div className="max-w-4xl mx-auto w-full space-y-8">
                         <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
                         
@@ -6305,14 +6328,14 @@
                                 <SmartImage src={getAssetUrl(ASSETS.LINE_LOGO)} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" alt="LINE" />
                             </div>
                             
-                            <h3 className="text-3xl md:text-4xl font-display font-black text-stone-800 mb-4">加入官方 LINE</h3>
-                            <p className="text-stone-500 font-medium text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                                專人一對一服務，解決您的遊戲問題、儲值異常或違規檢舉。
+                            <h3 className="text-xl md:text-2xl font-bold text-stone-800 mb-3">加入官方 LINE</h3>
+                            <p className="text-stone-500 font-medium text-base mb-8 max-w-md mx-auto leading-relaxed">
+                                專人一對一服務，解決遊戲問題、儲值異常或違規檢舉。
                             </p>
 
-                            <div className="bg-stone-50 rounded-2xl sm:rounded-3xl p-5 sm:p-8 mb-8 border border-stone-100 inline-block w-full max-w-sm">
-                                <p className="text-stone-400 text-xs font-bold mb-2 uppercase tracking-widest">官方 LINE ID</p>
-                                <p className="text-3xl md:text-4xl font-black text-stone-700 tracking-wider font-mono">@939yjtdj</p>
+                            <div className="bg-stone-50 rounded-2xl p-5 sm:p-6 mb-8 border border-stone-100 inline-block w-full max-w-sm">
+                                <p className="text-stone-400 text-xs font-bold mb-1 uppercase tracking-widest">官方 LINE ID</p>
+                                <p className="text-2xl md:text-3xl font-black text-stone-700 tracking-wider font-mono">@939yjtdj</p>
                             </div>
 
                             <div className="flex justify-center">
@@ -6458,7 +6481,7 @@
         const NotFoundPage = () => {
             const navigate = useNavigate();
             return (
-                <div className="min-h-screen flex items-center justify-center px-4 pt-20">
+                <div className="page-content min-h-screen flex items-center justify-center px-4 pt-20">
                     <div className="text-center max-w-md">
                         <div className="text-8xl font-black text-stone-200 mb-4">404</div>
                         <h1 className="text-2xl font-black text-stone-800 mb-3">找不到頁面</h1>
@@ -9392,7 +9415,7 @@
 
             if (isLoggedIn && !adminScriptsReady) {
                 return (
-                    <div className="pt-32 pb-24 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
+                    <div className="page-content pt-32 pb-24 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900">
                         <LoadingSpinner message="載入後台中..." />
                     </div>
                 );
@@ -12906,7 +12929,7 @@
             }, [location.pathname]);
 
             return (
-                <div className="min-h-screen flex flex-col font-sans pb-20 md:pb-0 text-stone-800 relative">
+                <div className="min-h-screen flex flex-col font-sans pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-0 text-stone-800 relative">
                     <a href="#main-content" className="skip-link">跳過至主內容</a>
                     <AnimatePresence>
                         {isLoading && <LoadingScreen key="loader" />}
@@ -12968,53 +12991,47 @@
                     <ScrollToTop />
                     <PageTitle />
                     <nav className={`fixed top-0 w-full z-50 py-3 ${isScrolled ? 'neu-nav-bg' : ''}`}>
-                        <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center">
                             <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0">
                                 <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-sm">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
                                 </div>
                             </Link>
 
-                            <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl neu-raised">
-                                {['部落首頁', '活動攻略', '遊戲下載', '金幣贊助', '官方客服'].map((label, i) => {
+                            <nav className="hidden lg:flex items-center gap-0.5 px-1.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-stone-200/90 shadow-sm" aria-label="主要選單">
+                                {['首頁', '攻略', '下載', '金幣', '客服'].map((label, i) => {
                                     const path = i === 0 ? '/' : i === 1 ? '/guides' : i === 2 ? '/download' : i === 3 ? '/recharge' : '/support';
-                                    const isActive = location.pathname === path;
+                                    const isActive = location.pathname === path || (path === '/guides' && location.pathname.startsWith('/guides'));
                                     return (
-                                        <Link key={path} to={path} className="rounded-xl">
-                                            <div className={`px-4 py-2.5 rounded-xl text-sm font-bold ${isActive ? 'neu-item-active text-white' : 'neu-item text-stone-700'}`}>
-                                                {label}
-                                            </div>
+                                        <Link key={path} to={path} className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${isActive ? 'bg-amber-500 text-white shadow-sm' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'}`}>
+                                            {label}
                                         </Link>
                                     );
                                 })}
-                                <Link key="events" to="/events" className="rounded-xl">
-                                    <div className={`px-4 py-2.5 rounded-xl text-sm font-bold ${location.pathname === '/events' ? 'neu-item-active text-white' : 'neu-item text-stone-700'}`}>
-                                        最新活動
-                                    </div>
+                                <Link to="/events" className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${location.pathname === '/events' ? 'bg-amber-500 text-white shadow-sm' : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'}`}>
+                                    活動
                                 </Link>
-                            </div>
+                            </nav>
 
                             <div className="flex items-center gap-2 md:gap-3">
                                 <MusicPlayer />
                                 
                                 {user ? (
-                                    <Link to="/member" className="hidden lg:flex items-center gap-2 px-3 py-2 text-stone-700 neu-item rounded-xl font-bold text-sm" title="會員中心">
-                                        <User className="w-4 h-4" />
-                                        <span className="hidden xl:inline">會員中心</span>
+                                    <Link to="/member" className={`hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-colors ${location.pathname === '/member' ? 'bg-amber-100 text-amber-900' : 'text-stone-600 hover:bg-stone-100'}`} title="會員中心">
+                                        <User className="w-4 h-4 shrink-0" />
+                                        <span className="hidden xl:inline">會員</span>
                                     </Link>
                                 ) : (
-                                    <Link to="/auth" className="hidden lg:flex items-center gap-2 px-3 py-2 text-white rounded-xl font-bold text-sm shadow-lg" style={{ background: 'linear-gradient(135deg, #d4a84b 0%, #c4953a 100%)', boxShadow: '6px 6px 12px rgba(139,90,43,0.3), -2px -2px 6px rgba(255,255,255,0.2)' }} title="登入/註冊">
-                                        <User className="w-4 h-4" />
+                                    <Link to="/auth" className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors shadow-sm" title="登入/註冊">
+                                        <User className="w-4 h-4 shrink-0" />
                                         <span className="hidden xl:inline">登入</span>
                                     </Link>
                                 )}
                                 
                                 {(user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'super_admin') && (
-                                    <Link to="/admin" className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-sm" title="後台管理">
-                                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${location.pathname === '/admin' ? 'text-white' : 'neu-item text-orange-700'}`} style={location.pathname === '/admin' ? { background: 'linear-gradient(135deg, #d4a84b, #c47819)', boxShadow: 'inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.1)' } : {}}>
-                                            <Settings className="w-4 h-4" />
-                                            <span className="hidden xl:inline">後台管理</span>
-                                        </div>
+                                    <Link to="/admin" className={`hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-colors ${location.pathname === '/admin' ? 'bg-stone-800 text-white' : 'text-orange-700 hover:bg-orange-50'}`} title="後台管理">
+                                        <Settings className="w-4 h-4 shrink-0" />
+                                        <span className="hidden xl:inline">後台</span>
                                     </Link>
                                 )}
                             </div>
@@ -13042,12 +13059,12 @@
                         </AnimatePresence>
                     </main>
 
-                    <footer className="bg-stone-900 py-12 md:py-16 px-6 border-t-4 border-wood-600 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
-                        <div className="max-w-7xl mx-auto space-y-8">
-                            {/* 免責聲明區塊 */}
-                            <div className="bg-stone-800/50 rounded-2xl p-6 md:p-8 border border-stone-700">
-                                <h3 className="text-gold-400 font-black text-lg mb-4 flex items-center gap-2">
-                                    <AlertCircle size={20} />
+                    <footer className="bg-stone-900 py-10 md:py-14 px-4 sm:px-6 border-t border-stone-700 mt-auto relative z-10 text-stone-400 mb-20 md:mb-0">
+                        <div className="max-w-7xl mx-auto space-y-6">
+                            {/* 免責聲明 */}
+                            <div className="rounded-xl p-5 md:p-6 border border-stone-700/80 bg-stone-800/40">
+                                <h3 className="text-stone-200 font-bold text-base mb-3 flex items-center gap-2">
+                                    <AlertCircle size={18} className="text-amber-500/90 shrink-0" />
                                     免責聲明
                                 </h3>
                                 <div className="space-y-3 text-stone-400 text-sm leading-relaxed">
@@ -13077,13 +13094,12 @@
                                 </div>
                             </div>
 
-                            {/* 頁尾資訊 */}
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-6 border-t border-stone-800">
-                                <div className="flex items-center gap-5 opacity-90">
-                                    <div className="h-9 md:h-10 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-stone-800/80">
+                                <div className="flex items-center gap-3 opacity-90">
+                                    <div className="h-8 md:h-9 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
                                         <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" alt="蘇打石器" />
                                     </div>
-                                    <span className="font-bold text-sm tracking-widest border-l border-stone-600 pl-5 h-8 flex items-center">SODA STONE AGE</span>
+                                    <span className="text-xs font-semibold tracking-wider text-stone-500">SODA STONE AGE</span>
                                 </div>
                                 <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-xs">
                                     <Link to="/download" className="hover:text-gold-400 transition-colors font-bold">遊戲下載</Link>
