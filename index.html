@@ -3423,7 +3423,7 @@
 
             return (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
-                    <section className="relative h-screen min-h-[580px] flex items-center justify-center overflow-hidden bg-gradient-tribal z-10">
+                    <section className="relative min-h-[100dvh] min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-tribal z-10 pt-[max(5.75rem,calc(3.75rem+env(safe-area-inset-top,0px)))] pb-10 md:pt-[max(6.75rem,calc(4.5rem+env(safe-area-inset-top,0px)))] md:pb-16">
                         <div className="absolute inset-0 z-0 opacity-100">
                             <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
                                 <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="Hero" className="w-full h-full object-cover" priority />
@@ -3432,8 +3432,8 @@
                             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.45)_100%)] z-[11] pointer-events-none"></div>
                         </div>
 
-                        <div className="relative z-20 text-center max-w-7xl px-6 pt-12 md:pt-20">
-                            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="-mt-10 md:-mt-24">
+                        <div className="relative z-20 text-center max-w-7xl px-6 w-full">
+                            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }}>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
