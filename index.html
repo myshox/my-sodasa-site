@@ -161,21 +161,20 @@
                         'gradient-tribal': 'linear-gradient(145deg, #fdf6e4 0%, #f5e4b8 45%, #e8cf8a 100%)',
                         'gradient-game-dark': 'linear-gradient(180deg, #1a1814 0%, #0f0e0c 100%)',
                     },
-                    boxShadow: {
-                        'stone': '6px 6px 0px rgba(160, 110, 40, 0.3)',
-                        'stone-hover': '3px 3px 0px rgba(160, 110, 40, 0.3)',
-                        'card': '0 12px 24px -8px rgba(160, 110, 40, 0.2)',
-                        'btn': '0 6px 0 rgba(0,0,0,0.18)',
-                        'btn-press': '0 0 0 rgba(0,0,0,0)',
-                        'glow-gold': '0 0 30px rgba(240, 170, 40, 0.6)',
-                        'glow-fire': '0 0 28px rgba(255, 100, 80, 0.5)',
-                    },
                     animation: {
                         'float': 'float 8s ease-in-out infinite',
                         'pulse-slow': 'pulse 4s infinite',
                         'shimmer': 'shimmer 2.5s linear infinite',
                         'bounce-slow': 'bounce 3s infinite',
                         'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
+                        'fade-in-left': 'fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
+                        'fade-in-right': 'fadeInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
+                        'scale-in': 'scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                        'glow-pulse': 'glowPulse 2.5s ease-in-out infinite',
+                        'gradient-shift': 'gradientShift 4s ease infinite',
+                        'float-slow': 'floatSlow 12s ease-in-out infinite',
+                        'sparkle': 'sparkle 3s ease-in-out infinite',
                     },
                     keyframes: {
                         float: {
@@ -189,7 +188,54 @@
                         fadeIn: {
                             '0%': { opacity: 0, transform: 'scale(0.98) translateY(10px)' },
                             '100%': { opacity: 1, transform: 'scale(1) translateY(0)' }
+                        },
+                        fadeInUp: {
+                            from: { opacity: 0, transform: 'translateY(40px)' },
+                            to: { opacity: 1, transform: 'translateY(0)' }
+                        },
+                        fadeInLeft: {
+                            from: { opacity: 0, transform: 'translateX(-40px)' },
+                            to: { opacity: 1, transform: 'translateX(0)' }
+                        },
+                        fadeInRight: {
+                            from: { opacity: 0, transform: 'translateX(40px)' },
+                            to: { opacity: 1, transform: 'translateX(0)' }
+                        },
+                        scaleIn: {
+                            from: { opacity: 0, transform: 'scale(0.8)' },
+                            to: { opacity: 1, transform: 'scale(1)' }
+                        },
+                        glowPulse: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(251, 191, 36, 0.3), 0 6px 20px rgba(0,0,0,0.15)' },
+                            '50%': { boxShadow: '0 0 40px rgba(251, 191, 36, 0.5), 0 6px 20px rgba(0,0,0,0.15)' }
+                        },
+                        gradientShift: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' }
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '33%': { transform: 'translateY(-20px) rotate(5deg)' },
+                            '66%': { transform: 'translateY(10px) rotate(-3deg)' }
+                        },
+                        sparkle: {
+                            '0%, 100%': { transform: 'scale(0) rotate(0deg)', opacity: 0 },
+                            '50%': { transform: 'scale(1) rotate(180deg)', opacity: 1 }
                         }
+                    },
+                    transitionTimingFunction: {
+                        'bounce-out': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    },
+                    boxShadow: {
+                        'stone': '6px 6px 0px rgba(160, 110, 40, 0.3)',
+                        'stone-hover': '3px 3px 0px rgba(160, 110, 40, 0.3)',
+                        'card': '0 12px 24px -8px rgba(160, 110, 40, 0.2)',
+                        'btn': '0 6px 0 rgba(0,0,0,0.18)',
+                        'btn-press': '0 0 0 rgba(0,0,0,0)',
+                        'glow-gold': '0 0 30px rgba(240, 170, 40, 0.6)',
+                        'glow-fire': '0 0 28px rgba(255, 100, 80, 0.5)',
+                        'glow-amber': '0 0 40px rgba(251,191,36,0.4), 0 0 80px rgba(251,191,36,0.15)',
                     }
                 }
             }
@@ -353,15 +399,16 @@
                 inset 0 -2px 0 rgba(160, 100, 30, 0.06),
                 0 0 0 1px rgba(90, 60, 20, 0.12),
                 6px 6px 0 rgba(120, 75, 25, 0.38);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
         }
         
         .stone-panel:hover {
             box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.85),
                 0 0 0 1px rgba(200, 140, 40, 0.25),
-                8px 8px 0 rgba(120, 75, 25, 0.45);
-            transform: translateY(-3px);
+                8px 8px 0 rgba(120, 75, 25, 0.45),
+                0 20px 40px -12px rgba(160, 110, 40, 0.2);
+            transform: translateY(-6px) rotateX(2deg);
         }
         /* 遊戲感裝飾框（首頁 CTA 等） */
         .game-hud-frame {
@@ -394,6 +441,7 @@
         .btn-shine {
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             background-size: 200% 100%;
+            animation: shimmer 2.5s linear infinite;
         }
         .pb-safe {
             padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -456,8 +504,9 @@
         }
         
         ::selection {
-            background: #ffeaa7;
-            color: #57534e;
+            background: rgba(251, 191, 36, 0.35);
+            color: #2d2520;
+            text-shadow: none;
         }
         
         /* 跑馬燈動畫 */
@@ -650,6 +699,319 @@
             nav, [class*="fixed"], .neu-bottom, [aria-label="大字模式"] { display: none !important; }
             main { padding-top: 0 !important; }
             a[href]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #666; }
+        }
+
+        /* ===== 大改版：進階動畫與視覺效果 ===== */
+
+        /* 粒子漂浮 */
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            25% { transform: translateY(-30px) translateX(10px); opacity: 0.6; }
+            50% { transform: translateY(-60px) translateX(-5px); opacity: 0.4; }
+            75% { transform: translateY(-30px) translateX(15px); opacity: 0.7; }
+        }
+
+        /* 閃爍星光 */
+        @keyframes sparkle {
+            0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1) rotate(180deg); opacity: 1; }
+        }
+
+        /* 漸層背景流動 */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 邊框發光脈衝 */
+        @keyframes borderGlow {
+            0%, 100% { border-color: rgba(251, 191, 36, 0.4); box-shadow: 0 0 20px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 220, 150, 0.12), 0 0 40px rgba(0,0,0,0.35); }
+            50% { border-color: rgba(251, 191, 36, 0.7); box-shadow: 0 0 35px rgba(251, 191, 36, 0.25), inset 0 1px 0 rgba(255, 220, 150, 0.2), 0 0 40px rgba(0,0,0,0.35); }
+        }
+
+        /* 由下往上淡入 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 由左淡入 */
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 由右淡入 */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 縮放淡入 */
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 按鈕發光脈衝 */
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 6px 20px rgba(0,0,0,0.15); }
+            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.5), 0 6px 20px rgba(0,0,0,0.15); }
+        }
+
+        /* 光掃過效果 */
+        @keyframes shineSweep {
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(200%) skewX(-15deg); }
+        }
+
+        /* 打字機游標閃爍 */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* 波紋擴散 */
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        /* 浮動裝飾 - 慢速 */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(5deg); }
+            66% { transform: translateY(10px) rotate(-3deg); }
+        }
+
+        /* 脈衝縮放 */
+        @keyframes pulseScale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Hero 背景光效 */
+        @keyframes heroLight {
+            0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* 捲動揭示動畫類別 */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .scroll-reveal-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal-left.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .scroll-reveal-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal-right.revealed {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .scroll-reveal-scale {
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal-scale.revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* 延遲階梯 */
+        .stagger-1 { transition-delay: 0.1s; }
+        .stagger-2 { transition-delay: 0.2s; }
+        .stagger-3 { transition-delay: 0.3s; }
+        .stagger-4 { transition-delay: 0.4s; }
+        .stagger-5 { transition-delay: 0.5s; }
+        .stagger-6 { transition-delay: 0.6s; }
+
+        /* 毛玻璃卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 發光按鈕 */
+        .glow-btn {
+            animation: glowPulse 2.5s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .glow-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            animation: shineSweep 3s ease-in-out infinite;
+        }
+
+        /* 粒子基礎樣式 */
+        .hero-particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        /* 裝飾星光 */
+        .sparkle-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #fbbf24 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkle 3s ease-in-out infinite;
+        }
+
+        /* HUD 邊框動畫 */
+        .game-hud-frame-animated {
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        /* 增強石板卡片 hover */
+        .stone-panel {
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+        }
+        .stone-panel:hover {
+            transform: translateY(-6px) rotateX(2deg);
+        }
+
+        /* 導航連結底線動畫 */
+        .nav-link-animated {
+            position: relative;
+        }
+        .nav-link-animated::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            transition: width 0.3s ease, left 0.3s ease;
+            border-radius: 1px;
+        }
+        .nav-link-animated:hover::after {
+            width: 80%;
+            left: 10%;
+        }
+
+        /* 頁面過渡：模糊淡入 */
+        .page-transition-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            filter: blur(4px);
+        }
+        .page-transition-active {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 區段分隔裝飾 */
+        .tribal-divider {
+            position: relative;
+            height: 3px;
+            max-width: 200px;
+            margin: 0 auto;
+            background: linear-gradient(90deg, transparent, #d4b483, #b8892a, #d4b483, transparent);
+            border-radius: 2px;
+        }
+        .tribal-divider::before,
+        .tribal-divider::after {
+            content: '◆';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b8892a;
+            font-size: 10px;
+            line-height: 1;
+        }
+        .tribal-divider::before { left: -12px; }
+        .tribal-divider::after { right: -12px; }
+
+        /* Footer 頂部裝飾邊框 */
+        .footer-tribal-border {
+            background: linear-gradient(90deg, transparent 5%, #b8892a 20%, #d4b483 35%, #f5b942 50%, #d4b483 65%, #b8892a 80%, transparent 95%);
+            height: 2px;
+            margin-bottom: 0;
+        }
+
+        /* 手機底部導航觸控回饋 */
+        .mobile-nav-item {
+            position: relative;
+            overflow: hidden;
+        }
+        .mobile-nav-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .mobile-nav-item:active::after {
+            opacity: 1;
+        }
+
+        /* 文字漸層動畫 */
+        .animated-gradient-text {
+            background-size: 200% auto;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        /* 增強選取色 */
+        ::selection {
+            background: rgba(251, 191, 36, 0.35);
+            color: #2d2520;
+            text-shadow: none;
+        }
+
+        /* 載入畫面增強 */
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes loadingBar {
+            0% { width: 0; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        .loading-logo-glow {
+            animation: loadingPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.4));
+        }
+        .loading-bar {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #f5b942, #d4b483, transparent);
+            animation: loadingBar 2s ease-in-out infinite;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -1404,20 +1766,126 @@
             return null;
         };
 
-        const LoadingScreen = () => (
-            <motion.div 
-                initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}
-                className="fixed inset-0 z-[100] bg-[#fbf6e9] flex flex-col items-center justify-center text-stone-800"
-            >
-                <div className="w-20 h-20 mb-8 relative">
-                    <motion.div 
-                        animate={{ rotate: 360 }} 
-                        transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }} 
-                        className="w-full h-full border-4 border-sand-200 border-t-gold-500 rounded-full"
-                    />
+        // ===== 大改版：捲動揭示 Hook =====
+        const useScrollReveal = (options = {}) => {
+            const ref = useRef(null);
+            const [isVisible, setIsVisible] = useState(false);
+            useEffect(() => {
+                const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (prefersReduced) { setIsVisible(true); return; }
+                const observer = new IntersectionObserver(
+                    ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect(); } },
+                    { threshold: options.threshold || 0.15, rootMargin: options.rootMargin || '0px 0px -60px 0px' }
+                );
+                if (ref.current) observer.observe(ref.current);
+                return () => observer.disconnect();
+            }, []);
+            return [ref, isVisible];
+        };
+
+        // 捲動揭示包裝器
+        const ScrollReveal = ({ children, direction = 'up', delay = 0, className = '' }) => {
+            const [ref, isVisible] = useScrollReveal();
+            const dirClass = {
+                up: 'scroll-reveal',
+                left: 'scroll-reveal-left',
+                right: 'scroll-reveal-right',
+                scale: 'scroll-reveal-scale'
+            }[direction] || 'scroll-reveal';
+            const staggerClass = delay > 0 ? `stagger-${Math.min(Math.round(delay * 10), 6)}` : '';
+            return (
+                <div ref={ref} className={`${dirClass} ${staggerClass} ${isVisible ? 'revealed' : ''} ${className}`}>
+                    {children}
                 </div>
-                <h2 className="text-xl md:text-2xl font-display font-bold tracking-widest text-stone-600">正在前往尼斯大陸...</h2>
-                <p className="text-stone-400 text-sm mt-2 font-medium">請稍候</p>
+            );
+        };
+
+        // Hero 粒子系統
+        const HeroParticles = () => {
+            const particles = useMemo(() => {
+                const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+                const count = isMobile ? 12 : 22;
+                return Array.from({ length: count }, (_, i) => ({
+                    id: i,
+                    x: Math.random() * 100,
+                    y: Math.random() * 100,
+                    size: 2 + Math.random() * 4,
+                    duration: 8 + Math.random() * 12,
+                    delay: Math.random() * 8,
+                    opacity: 0.15 + Math.random() * 0.35,
+                    color: ['#fbbf24', '#f59e0b', '#d97706', '#fcd34d', '#fde68a'][Math.floor(Math.random() * 5)]
+                }));
+            }, []);
+            return (
+                <div className="absolute inset-0 z-[12] pointer-events-none overflow-hidden">
+                    {particles.map(p => (
+                        <div
+                            key={p.id}
+                            className="hero-particle"
+                            style={{
+                                left: `${p.x}%`,
+                                top: `${p.y}%`,
+                                width: `${p.size}px`,
+                                height: `${p.size}px`,
+                                background: `radial-gradient(circle, ${p.color} 0%, transparent 70%)`,
+                                animation: `particleFloat ${p.duration}s ease-in-out ${p.delay}s infinite`,
+                                opacity: p.opacity
+                            }}
+                        />
+                    ))}
+                    {/* 閃爍星光 */}
+                    {Array.from({ length: 6 }, (_, i) => (
+                        <div
+                            key={`sparkle-${i}`}
+                            className="sparkle-dot"
+                            style={{
+                                left: `${15 + Math.random() * 70}%`,
+                                top: `${10 + Math.random() * 80}%`,
+                                animationDelay: `${i * 0.8}s`,
+                                animationDuration: `${2.5 + Math.random() * 2}s`
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        };
+
+        // Hero 動態光效
+        const HeroLightEffect = () => (
+            <div className="absolute inset-0 z-[13] pointer-events-none overflow-hidden">
+                <div
+                    className="absolute w-[600px] h-[600px] md:w-[900px] md:h-[900px] rounded-full"
+                    style={{
+                        left: '50%',
+                        top: '40%',
+                        background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%)',
+                        animation: 'heroLight 6s ease-in-out infinite'
+                    }}
+                />
+            </div>
+        );
+
+        const LoadingScreen = () => (
+            <motion.div
+                initial={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.02 }} transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="fixed inset-0 z-[100] bg-gradient-to-b from-[#1a1614] via-[#2d2520] to-[#1a1614] flex flex-col items-center justify-center text-stone-200"
+            >
+                <div className="absolute inset-0 opacity-20" style={{backgroundImage: "url('https://www.transparenttextures.com/patterns/concrete-wall.png')"}}></div>
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="relative z-10 flex flex-col items-center"
+                >
+                    <div className="w-28 h-28 md:w-36 md:h-36 mb-8 loading-logo-glow">
+                        <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="w-full h-full object-contain" alt="蘇打石器" />
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-display font-bold tracking-widest text-amber-200/90 mb-4">正在前往尼斯大陸...</h2>
+                    <div className="w-48 h-[3px] bg-stone-700/50 rounded-full overflow-hidden">
+                        <div className="loading-bar"></div>
+                    </div>
+                    <p className="text-stone-500 text-sm mt-4 font-medium">冒險即將開始</p>
+                </motion.div>
             </motion.div>
         );
 
@@ -1756,11 +2224,11 @@
 
         // 按鈕樣式調整：更圓潤、陰影更柔和
         const BUTTON_VARIANTS = {
-            primary: "bg-fire-500 text-white shadow-lg shadow-fire-200 hover:bg-fire-600 border-2 border-transparent",
-            secondary: "bg-stone-100 text-stone-600 hover:bg-stone-200 border-2 border-stone-200",
-            gold: "bg-gradient-to-br from-gold-400 to-gold-500 text-white shadow-lg shadow-gold-200 hover:to-gold-600 border-2 border-transparent",
-            discord: "bg-[#5865F2] text-white shadow-lg shadow-indigo-200 hover:bg-[#4752C4] border-2 border-transparent",
-            line: "bg-[#06C755] text-white shadow-lg shadow-green-200 hover:bg-[#05B34C] border-2 border-transparent"
+            primary: "bg-fire-500 text-white shadow-lg shadow-fire-200 hover:bg-fire-600 hover:shadow-[0_0_25px_rgba(255,107,107,0.3)] border-2 border-transparent transition-all duration-300",
+            secondary: "bg-stone-100 text-stone-600 hover:bg-stone-200 border-2 border-stone-200 transition-all duration-300",
+            gold: "bg-gradient-to-br from-gold-400 to-gold-500 text-white shadow-lg shadow-gold-200 hover:to-gold-600 hover:shadow-[0_0_30px_rgba(251,191,36,0.35)] border-2 border-transparent transition-all duration-300",
+            discord: "bg-[#5865F2] text-white shadow-lg shadow-indigo-200 hover:bg-[#4752C4] hover:shadow-[0_0_25px_rgba(88,101,242,0.35)] border-2 border-transparent transition-all duration-300",
+            line: "bg-[#06C755] text-white shadow-lg shadow-green-200 hover:bg-[#05B34C] hover:shadow-[0_0_25px_rgba(6,199,85,0.35)] border-2 border-transparent transition-all duration-300"
         };
 
         const Button = ({ children, className = "", onClick, variant = "primary", disabled = false, icon: Icon, ...props }) => {
@@ -3422,7 +3890,7 @@
             }, []);
 
             return (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+                <motion.div initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, y: -10, filter: 'blur(2px)' }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
                     <section className="relative min-h-[100dvh] min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-tribal z-10 pt-[max(5.75rem,calc(3.75rem+env(safe-area-inset-top,0px)))] pb-10 md:pt-[max(6.75rem,calc(4.5rem+env(safe-area-inset-top,0px)))] md:pb-16">
                         <div className="absolute inset-0 z-0 opacity-100">
                             <motion.div initial={{ scale: 1.05 }} animate={{ scale: 1 }} transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }} className="w-full h-full">
@@ -3430,6 +3898,8 @@
                             </motion.div>
                             <div className="absolute inset-0 bg-gradient-to-b from-[#1a1510]/35 via-transparent to-[#2a2218]/55 z-10"></div>
                             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,8,6,0.45)_100%)] z-[11] pointer-events-none"></div>
+                            <HeroParticles />
+                            <HeroLightEffect />
                         </div>
 
                         <div className="relative z-20 text-center max-w-7xl px-6 w-full">
@@ -3454,12 +3924,12 @@
                                 </p>
                                 
                                 {/* 主要 CTA：遊戲 HUD 風格 */}
-                                <div className="game-hud-frame px-5 py-6 md:py-8 max-w-md mx-auto relative z-10">
+                                <div className="game-hud-frame game-hud-frame-animated px-5 py-6 md:py-8 max-w-md mx-auto relative z-10">
                                     <div className="relative z-[2] flex flex-col items-center gap-5">
-                                        <Button 
-                                            variant="gold" 
-                                            className="w-full text-xl md:text-2xl py-5 px-8 rounded-2xl font-black shadow-xl shadow-black/20 hover:opacity-95 transition-opacity duration-200 text-white" 
-                                            icon={Download} 
+                                        <Button
+                                            variant="gold"
+                                            className="glow-btn w-full text-xl md:text-2xl py-5 px-8 rounded-2xl font-black shadow-xl shadow-black/20 hover:opacity-95 hover:scale-[1.02] transition-all duration-300 text-white"
+                                            icon={Download}
                                             onClick={handleDownload}
                                         >
                                             免費下載遊戲
@@ -3562,25 +4032,31 @@
                         </div>
                     </section>
 
-                    <section className="py-24 md:py-32 px-6 relative mb-20 md:mb-0">
+                    <section className="py-28 md:py-36 px-6 relative mb-20 md:mb-0">
                         <div className="max-w-7xl mx-auto">
-                            <div className="text-center mb-12 md:mb-16">
+                            <ScrollReveal>
+                            <div className="text-center mb-14 md:mb-20">
+                                <div className="tribal-divider mb-6"></div>
                                 <h2 className="text-2xl md:text-4xl font-display font-black text-stone-800 mb-3">部落生存法則</h2>
                                 <p className="text-stone-500 font-medium text-base md:text-lg">四大屬性加持，打造最平衡的尼斯大陸。</p>
+                                <div className="tribal-divider mt-6"></div>
                             </div>
+                            </ScrollReveal>
                             <div className="grid md:grid-cols-3 gap-8 md:gap-10">
                                 {[
                                     { t: "純淨環境", d: "拒絕台幣戰士，商城僅售便利道具，極品裝備全靠雙手獲得。", i: ShieldCheck, color: "text-wind-600", bg: "bg-wind-50", border: "border-wind-200" },
                                     { t: "經典設定", d: "完美復刻 2.5 版本數值。地水火風屬性相剋，策略才是王道。", i: Flame, color: "text-fire-500", bg: "bg-fire-50", border: "border-fire-200" },
                                     { t: "長久穩定", d: "採用商業級分佈式架構，數據異地備份，承諾永久保存。", i: Home, color: "text-earth-600", bg: "bg-earth-50", border: "border-earth-200" }
                                 ].map((item, idx) => (
-                                    <motion.div key={idx} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="stone-panel p-5 sm:p-8 md:p-10 text-center group bg-white cursor-default">
-                                        <div className={`w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl ${item.bg} flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform duration-300`}>
-                                            <item.i size={36} className={item.color} />
+                                    <ScrollReveal key={idx} delay={(idx + 1) * 0.1}>
+                                    <motion.div whileHover={{ y: -8, rotateX: 3 }} transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }} className="stone-panel p-5 sm:p-8 md:p-10 text-center group bg-white cursor-default">
+                                        <div className={`w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl ${item.bg} flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+                                            <item.i size={36} className={`${item.color} group-hover:drop-shadow-lg transition-all duration-300`} />
                                         </div>
                                         <h3 className="text-xl md:text-2xl font-bold mb-3 text-stone-700 tracking-wide">{item.t}</h3>
                                         <p className="text-stone-500 font-medium text-sm md:text-base leading-relaxed">{item.d}</p>
                                     </motion.div>
+                                    </ScrollReveal>
                                 ))}
                             </div>
                         </div>
@@ -13277,7 +13753,8 @@
                         </AnimatePresence>
                     </main>
 
-                    <footer className="site-footer bg-[#0f0d0b] py-10 md:py-14 px-4 sm:px-6 border-t-2 border-amber-900/40 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0">
+                    <div className="footer-tribal-border"></div>
+                    <footer className="site-footer bg-[#0f0d0b] py-10 md:py-14 px-4 sm:px-6 border-t-0 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0">
                         <div className="max-w-7xl mx-auto space-y-6">
                             {/* 免責聲明 */}
                             <div className="rounded-xl p-5 md:p-6 border border-stone-700/80 bg-stone-800/40">
