@@ -1055,7 +1055,8 @@
             Volume2, VolumeX, ArrowRight, Lock, LogOut, Copy, Clipboard, Trash2, Search, Key, Check, Plus, Megaphone,
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
-            BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2, Gift
+            BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2, Gift,
+            Laptop, QrCode
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -1274,14 +1275,29 @@
         };
 
         const PAYMENT_METHODS = [
-            { 
-                id: 'shopline', 
-                name: 'SHOPLINE 整合支付', 
-                subLabel: '刷卡 / ATM / Apple Pay / 街口支付', 
+            {
+                id: 'shopline',
+                name: 'SHOPLINE 整合支付',
+                tagline: '信用卡、ATM、行動支付 · 同一頁完成',
+                subLabel: '刷卡 / ATM / Apple Pay / 街口支付',
+                badge: '桌機／手機瀏覽器',
+                badgeIcon: Laptop,
+                bullets: ['信用卡／簽帳金融卡', 'ATM 虛擬帳號', 'Apple Pay、Google Pay', '街口支付等'],
+                footnote: '按下「前往支付」後會開啟 SHOPLINE 安全結帳頁，再依畫面選擇實際付款方式。',
                 icons: [CreditCard, Landmark],
-                imgs: [ASSETS.APPLE_PAY_LOGO, ASSETS.JKOPAY_LOGO]
+                imgs: [ASSETS.APPLE_PAY_LOGO, ASSETS.JKOPAY_LOGO],
             },
-            { id: 'linepay', name: 'LINE Pay 掃碼', subLabel: '手機掃描 QR Code', img: ASSETS.LINE_PAY_LOGO }
+            {
+                id: 'linepay',
+                name: 'LINE Pay 掃碼支付',
+                tagline: '開啟 LINE 掃碼 · 錢包扣款',
+                subLabel: '掃描畫面 QR Code',
+                badge: '需手機＋LINE',
+                badgeIcon: Smartphone,
+                bullets: ['手機開啟 LINE 掃碼', '於 LINE Pay 確認金額', '自訂金額請輸入與訂單相同台幣'],
+                footnote: '付款彈窗會顯示 QR；若為自訂贊助，掃碼後請手動輸入與訂單一致的 NT$ 金額。',
+                img: ASSETS.LINE_PAY_LOGO,
+            },
         ];
 
         const EVENT_TAGS = [
@@ -6668,57 +6684,96 @@
                                         <h3 className="text-lg sm:text-xl md:text-2xl font-black text-stone-800 leading-tight">1. 選擇支付方式</h3>
                                 </div>
                                 {formErrors.method && <p className="text-fire-500 font-bold mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.method}</p>}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-                                    {PAYMENT_METHODS.map((method, i) => {
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+                                    {PAYMENT_METHODS.map((method) => {
                                         let ShoplineIcon1, ShoplineIcon2;
                                         if (method.id === 'shopline') {
                                             ShoplineIcon1 = method.icons[0];
                                             ShoplineIcon2 = method.icons[1];
                                         }
                                         const isSelected = selectedMethod === method.id;
+                                        const isLine = method.id === 'linepay';
+                                        const BadgeIcon = method.badgeIcon;
 
                                         return (
-                                            <div 
-                                                key={i} 
+                                            <div
+                                                key={method.id}
                                                 onClick={() => {
                                                     setSelectedMethod(method.id);
                                                     setFormErrors(prev => ({ ...prev, method: '' }));
                                                 }}
                                                 role="button"
                                                 tabIndex={0}
+                                                aria-pressed={isSelected}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
-                                                className={`relative flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border-2 cursor-pointer transition-all duration-300 min-h-[118px] sm:min-h-[132px] md:min-h-[140px] motion-safe:sm:hover:scale-[1.01] active:scale-[0.99]
-                                                ${isSelected
-                                                    ? (method.id === 'linepay'
-                                                        ? 'border-green-500 bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg sm:shadow-xl shadow-green-300/40 ring-2 sm:ring-4 ring-green-200/80 sm:scale-[1.02]'
-                                                        : 'border-amber-500 bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg sm:shadow-xl shadow-amber-300/40 ring-2 sm:ring-4 ring-amber-200/80 sm:scale-[1.02]')
-                                                    : (method.id === 'linepay'
-                                                        ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 hover:border-green-400 hover:shadow-md'
-                                                        : 'border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 hover:border-amber-400 hover:shadow-md')
+                                                className={`group relative flex flex-col items-stretch text-left rounded-2xl border-2 cursor-pointer transition-all duration-300 overflow-hidden motion-safe:sm:hover:scale-[1.01] active:scale-[0.99] shadow-sm ${
+                                                    isSelected
+                                                        ? (isLine
+                                                            ? 'border-emerald-400 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-800 shadow-lg shadow-emerald-400/25 ring-2 ring-emerald-200/90 sm:scale-[1.02]'
+                                                            : 'border-amber-400 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-700 shadow-lg shadow-amber-400/30 ring-2 ring-amber-200/90 sm:scale-[1.02]')
+                                                        : (isLine
+                                                            ? 'border-emerald-200/90 bg-gradient-to-b from-white via-emerald-50/50 to-white hover:border-emerald-400 hover:shadow-md'
+                                                            : 'border-amber-200/90 bg-gradient-to-b from-white via-amber-50/40 to-white hover:border-amber-400 hover:shadow-md')
                                                 }`}
                                             >
-                                                {isSelected && <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/30 flex items-center justify-center"><CheckCircle size={20} className="text-white" strokeWidth={3}/></div>}
-                                                {method.id === 'shopline' ? (
-                                                    <>
-                                                        <div className={`flex items-center justify-center gap-2 flex-wrap mb-3 px-3 py-2 rounded-xl w-full border ${isSelected ? 'bg-white/20 border-white/30' : 'bg-white border-amber-100'}`}>
-                                                            <ShoplineIcon1 size={16} className={isSelected ? 'text-white shrink-0' : 'text-stone-500 shrink-0'}/>
-                                                            <ShoplineIcon2 size={16} className={isSelected ? 'text-white shrink-0' : 'text-stone-500 shrink-0'}/>
+                                                <div className={`h-1.5 w-full shrink-0 ${isSelected ? (isLine ? 'bg-emerald-300/40' : 'bg-amber-200/40') : (isLine ? 'bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500' : 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400')}`} />
+
+                                                <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-black tracking-wide ${
+                                                            isSelected ? 'bg-white/20 text-white' : isLine ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-950'
+                                                        }`}>
+                                                            <BadgeIcon size={14} className="shrink-0 opacity-95" aria-hidden />
+                                                            {method.badge}
+                                                        </span>
+                                                        {isSelected ? (
+                                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/25 shrink-0 ring-2 ring-white/30">
+                                                                <CheckCircle size={18} className="text-white" strokeWidth={2.5} />
+                                                            </span>
+                                                        ) : (
+                                                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${isLine ? 'border-emerald-200 text-emerald-600 bg-emerald-50/80' : 'border-amber-200 text-amber-700 bg-amber-50/80'}`}>點選</span>
+                                                        )}
+                                                    </div>
+
+                                                    {method.id === 'shopline' ? (
+                                                        <div className={`rounded-xl px-3 py-2.5 border flex flex-wrap items-center gap-2 sm:gap-2.5 ${isSelected ? 'bg-white/15 border-white/25' : 'bg-white border-amber-100 shadow-inner'}`}>
+                                                            <ShoplineIcon1 size={18} className={isSelected ? 'text-white' : 'text-amber-600'} />
+                                                            <ShoplineIcon2 size={18} className={isSelected ? 'text-white' : 'text-amber-600'} />
                                                             {method.imgs?.map((logo, idx) => (
-                                                                <img key={idx} src={getAssetUrl(logo)} alt="" className={`h-4 w-auto object-contain ${isSelected ? 'brightness-0 invert' : ''}`} />
+                                                                <img key={idx} src={getAssetUrl(logo)} alt="" className={`h-5 w-auto object-contain ${isSelected ? 'brightness-0 invert opacity-95' : ''}`} />
                                                             ))}
+                                                            <span className={`ml-auto text-[10px] font-bold hidden sm:inline ${isSelected ? 'text-white/80' : 'text-amber-700/90'}`}>{method.subLabel}</span>
                                                         </div>
-                                                        <span className={`font-black text-base mb-0.5 text-center leading-tight ${isSelected ? 'text-white' : 'text-stone-800'}`}>{method.name}</span>
-                                                        <span className={`text-xs font-bold text-center ${isSelected ? 'text-white/80' : 'text-stone-500'}`}>{method.subLabel}</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div className={`h-14 flex items-center justify-center mb-3 p-2 rounded-xl w-full ${isSelected ? 'bg-white/20' : 'bg-white border border-green-100'}`}>
-                                                            <img src={getAssetUrl(method.img)} alt={method.name} className={`h-full w-auto object-contain drop-shadow-sm ${isSelected ? 'brightness-0 invert' : ''}`} />
+                                                    ) : (
+                                                        <div className={`rounded-xl px-3 py-2.5 border flex items-center gap-3 ${isSelected ? 'bg-white/15 border-white/25' : 'bg-white border-emerald-100 shadow-inner'}`}>
+                                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#06C755]/15 border border-[#06C755]/20 shrink-0">
+                                                                <img src={getAssetUrl(method.img)} alt="LINE Pay" className="h-8 w-auto object-contain" />
+                                                            </div>
+                                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                <QrCode size={22} className={isSelected ? 'text-white shrink-0' : 'text-emerald-600 shrink-0'} aria-hidden />
+                                                                <span className={`text-xs font-bold leading-snug ${isSelected ? 'text-white/95' : 'text-emerald-800'}`}>掃描 QR 後於 LINE Pay 錢包完成付款</span>
+                                                            </div>
                                                         </div>
-                                                        <span className={`font-black text-base mb-0.5 ${isSelected ? 'text-white' : 'text-stone-800'}`}>{method.name}</span>
-                                                        {method.subLabel && <span className={`text-xs font-bold ${isSelected ? 'text-white/80' : 'text-stone-500'}`}>{method.subLabel}</span>}
-                                                    </>
-                                                )}
+                                                    )}
+
+                                                    <div className="min-w-0">
+                                                        <h4 className={`font-black text-base sm:text-lg leading-tight ${isSelected ? 'text-white' : 'text-stone-900'}`}>{method.name}</h4>
+                                                        <p className={`text-xs sm:text-sm font-semibold mt-1 leading-snug ${isSelected ? 'text-white/90' : 'text-stone-500'}`}>{method.tagline}</p>
+                                                    </div>
+
+                                                    <ul className={`space-y-1.5 text-[11px] sm:text-xs font-medium leading-snug ${isSelected ? 'text-white/95' : 'text-stone-600'}`}>
+                                                        {method.bullets.map((line, bi) => (
+                                                            <li key={bi} className="flex gap-2">
+                                                                <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${isSelected ? 'bg-white/90' : isLine ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                                <span>{line}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+
+                                                    <p className={`mt-1 pt-2.5 text-[10px] sm:text-[11px] leading-relaxed border-t font-medium ${isSelected ? 'border-white/25 text-white/80' : isLine ? 'border-emerald-100 text-emerald-900/75' : 'border-amber-100 text-amber-950/75'}`}>
+                                                        {method.footnote}
+                                                    </p>
+                                                </div>
                                             </div>
                                         );
                                     })}
