@@ -12932,13 +12932,13 @@
                                                                 ];
                                                                 const { error: e2 } = await supabase.rpc('update_user_game_binding', {
                                                                     target_user_id: editingUser.id,
-                                                                    new_game_master: editUserForm.game_master.trim() || null,
-                                                                    new_game_master2: editUserForm.game_master2.trim() || null,
+                                                                    new_game_master: (editUserForm.game_master ?? '').trim(),
+                                                                    new_game_master2: (editUserForm.game_master2 ?? '').trim(),
                                                                     new_game_accounts: newGameAccounts
                                                                 });
                                                                 if (e2) {
-                                                                    console.warn('game_binding RPC 失敗（可能未建立）：', e2.message);
-                                                                    showToast('基本資料已儲存，但遊戲綁定更新失敗（請確認 Supabase RPC 是否已建立）', 'error');
+                                                                    console.warn('update_user_game_binding 失敗：', e2.message, e2);
+                                                                    showToast(`基本資料已儲存；遊戲綁定未同步：${e2.message || 'RPC 錯誤'}。請在 Supabase SQL 執行 migrations/049_update_user_game_binding_master2.sql`, 'warning');
                                                                 } else {
                                                                     showToast('已儲存用戶資料及遊戲綁定', 'success');
                                                                 }
