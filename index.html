@@ -6559,11 +6559,11 @@
                                 <div ref={accountRef} className="p-6 sm:p-8 md:p-10">
                                 <div className="mb-7 flex flex-wrap items-end justify-between gap-3 border-b border-stone-200/50 pb-6">
                                     <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-200/50 ring-2 ring-white">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-sm shadow-amber-900/10 ring-1 ring-white/60">
                                             <span className="font-black tabular-nums text-sm">01</span>
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">Step</p>
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Step</p>
                                             <h3 className="font-display text-lg font-black leading-snug text-stone-800 sm:text-xl">贊助帳號</h3>
                                             <p className="mt-1 text-xs text-stone-500 sm:text-sm">選擇接收金幣的遊戲帳號（CDKEY）<span className="font-bold text-amber-700">必填</span></p>
                                         </div>
@@ -6702,14 +6702,14 @@
 
                             <div className="h-px bg-gradient-to-r from-transparent via-stone-200/80 to-transparent" aria-hidden />
 
-                            <div ref={methodRef} className="bg-gradient-to-b from-amber-50/40 to-transparent px-6 pb-0 pt-7 sm:px-8 sm:pt-8 md:px-10">
-                                <div className="mb-7 flex flex-wrap items-end justify-between gap-3 border-b border-amber-200/40 pb-6">
+                            <div ref={methodRef} className="bg-gradient-to-b from-stone-50/50 via-amber-50/20 to-transparent px-6 pb-0 pt-7 sm:px-8 sm:pt-8 md:px-10">
+                                <div className="mb-7 flex flex-wrap items-end justify-between gap-3 border-b border-stone-200/55 pb-6">
                                     <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-amber-200/50 ring-2 ring-white">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-sm shadow-amber-900/10 ring-1 ring-white/60">
                                             <span className="font-black tabular-nums text-sm">02</span>
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">Step</p>
+                                            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Step</p>
                                             <h3 className="font-display text-lg font-black leading-snug text-stone-800 sm:text-xl">付款與方案</h3>
                                             <p className="mt-1 text-xs text-stone-500 sm:text-sm">選擇金流後，再挑檔位或自訂台幣金額</p>
                                         </div>
@@ -6738,76 +6738,76 @@
                                                 tabIndex={0}
                                                 aria-pressed={isSelected}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
-                                                className={`group relative flex cursor-pointer flex-col items-stretch overflow-hidden rounded-2xl border-2 text-left shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isLine ? 'focus-visible:ring-emerald-500/40' : 'focus-visible:ring-amber-500/40'} active:scale-[0.99] ${
+                                                className={`group relative flex cursor-pointer flex-col items-stretch overflow-hidden rounded-2xl border text-left shadow-sm transition-[box-shadow,border-color,background-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isLine ? 'focus-visible:ring-emerald-500/30' : 'focus-visible:ring-amber-500/30'} active:scale-[0.99] ${
                                                     isSelected
                                                         ? (isLine
-                                                            ? 'border-emerald-400 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-800 shadow-md shadow-emerald-500/20 ring-2 ring-emerald-200/80'
-                                                            : 'border-amber-400 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-700 shadow-md shadow-amber-500/25 ring-2 ring-amber-200/80')
-                                                        : (isLine
-                                                            ? 'border-emerald-200/90 bg-gradient-to-b from-white via-emerald-50/40 to-white hover:border-emerald-300 hover:shadow-md'
-                                                            : 'border-amber-200/90 bg-gradient-to-b from-white via-amber-50/35 to-white hover:border-amber-300 hover:shadow-md')
+                                                            ? 'border-emerald-400/80 bg-gradient-to-b from-emerald-50/90 to-white shadow-md ring-1 ring-emerald-200/60'
+                                                            : 'border-amber-400/80 bg-gradient-to-b from-amber-50/90 to-white shadow-md ring-1 ring-amber-200/60')
+                                                        : 'border-stone-200/90 bg-white hover:border-stone-300 hover:shadow'
                                                 }`}
                                             >
-                                                <div className={`h-1.5 w-full shrink-0 ${isSelected ? (isLine ? 'bg-emerald-300/40' : 'bg-amber-200/40') : (isLine ? 'bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500' : 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400')}`} />
+                                                <div className={`absolute left-0 top-0 h-full w-1 ${isSelected ? (isLine ? 'bg-emerald-500/80' : 'bg-amber-500/80') : 'bg-stone-200/60 group-hover:bg-stone-300/80'}`} aria-hidden />
 
-                                                <div className="flex min-w-0 flex-1 flex-col gap-3.5 p-4 sm:p-5">
+                                                <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 pl-5 sm:gap-3.5 sm:p-5 sm:pl-6">
                                                     <div className="flex items-start justify-between gap-2">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-black tracking-wide ${
-                                                            isSelected ? 'bg-white/20 text-white' : isLine ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-950'
+                                                        <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide sm:text-[11px] ${
+                                                            isSelected
+                                                                ? (isLine ? 'bg-emerald-100/90 text-emerald-900' : 'bg-amber-100/90 text-amber-950')
+                                                                : 'bg-stone-100 text-stone-600'
                                                         }`}>
-                                                            <BadgeIcon size={14} className="shrink-0 opacity-95" aria-hidden />
+                                                            <BadgeIcon size={14} className="shrink-0 opacity-90" aria-hidden />
                                                             {method.badge}
                                                         </span>
                                                         {isSelected ? (
-                                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/25 shrink-0 ring-2 ring-white/30">
-                                                                <CheckCircle size={18} className="text-white" strokeWidth={2.5} />
+                                                            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isLine ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                <CheckCircle size={18} strokeWidth={2.5} />
                                                             </span>
                                                         ) : (
-                                                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${isLine ? 'border-emerald-200 text-emerald-600 bg-emerald-50/80' : 'border-amber-200 text-amber-700 bg-amber-50/80'}`}>點選</span>
+                                                            <span className="rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-500">選擇</span>
                                                         )}
                                                     </div>
 
                                                     {method.id === 'shopline' ? (
-                                                        <div className={`rounded-xl px-2.5 py-2 border flex flex-wrap items-center gap-1.5 sm:gap-2 ${isSelected ? 'bg-white/15 border-white/25' : 'bg-white border-amber-100 shadow-inner'}`}>
-                                                            <ShoplineIcon1 size={15} className={isSelected ? 'text-white' : 'text-amber-600'} />
-                                                            <ShoplineIcon2 size={15} className={isSelected ? 'text-white' : 'text-amber-600'} />
+                                                        <div className={`flex flex-wrap items-center gap-1.5 rounded-xl border px-2.5 py-2.5 sm:gap-2 ${isSelected ? 'border-amber-200/80 bg-white/70' : 'border-stone-200/80 bg-stone-50/80'}`}>
+                                                            <ShoplineIcon1 size={15} className="text-amber-700/90" />
+                                                            <ShoplineIcon2 size={15} className="text-amber-700/90" />
                                                             {method.imgs?.map((logo, idx) => (
                                                                 <img
                                                                     key={idx}
                                                                     src={getAssetUrl(logo)}
                                                                     alt=""
-                                                                    className={`h-3.5 w-auto max-h-3.5 max-w-[3.25rem] object-contain object-left sm:max-w-[3.75rem] ${isSelected ? 'brightness-0 invert opacity-95' : ''}`}
+                                                                    className="h-3.5 w-auto max-h-3.5 max-w-[3.25rem] object-contain object-left opacity-90 sm:max-w-[3.75rem]"
                                                                 />
                                                             ))}
-                                                            <span className={`ml-auto text-[10px] font-bold hidden sm:inline ${isSelected ? 'text-white/80' : 'text-amber-700/90'}`}>{method.subLabel}</span>
+                                                            <span className="ml-auto hidden text-[10px] font-semibold text-stone-500 sm:inline">{method.subLabel}</span>
                                                         </div>
                                                     ) : (
-                                                        <div className={`rounded-xl px-2.5 py-2 border flex items-center gap-2.5 ${isSelected ? 'bg-white/15 border-white/25' : 'bg-white border-emerald-100 shadow-inner'}`}>
-                                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#06C755]/15 border border-[#06C755]/20 sm:h-10 sm:w-10">
+                                                        <div className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 ${isSelected ? 'border-emerald-200/80 bg-white/70' : 'border-stone-200/80 bg-stone-50/80'}`}>
+                                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-stone-200/80 sm:h-10 sm:w-10">
                                                                 <img src={getAssetUrl(method.img)} alt="LINE Pay" className="h-5 w-auto max-h-5 max-w-[4rem] object-contain object-center" />
                                                             </div>
                                                             <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                                <QrCode size={18} className={isSelected ? 'text-white shrink-0' : 'text-emerald-600 shrink-0'} aria-hidden />
-                                                                <span className={`text-xs font-bold leading-snug ${isSelected ? 'text-white/95' : 'text-emerald-800'}`}>掃描 QR 後於 LINE Pay 錢包完成付款</span>
+                                                                <QrCode size={17} className="shrink-0 text-emerald-700/80" aria-hidden />
+                                                                <span className="text-xs font-semibold leading-snug text-stone-700">掃描 QR 後於 LINE Pay 錢包完成付款</span>
                                                             </div>
                                                         </div>
                                                     )}
 
                                                     <div className="min-w-0">
-                                                        <h4 className={`font-black text-base sm:text-lg leading-tight ${isSelected ? 'text-white' : 'text-stone-900'}`}>{method.name}</h4>
-                                                        <p className={`text-xs sm:text-sm font-semibold mt-1 leading-snug ${isSelected ? 'text-white/90' : 'text-stone-500'}`}>{method.tagline}</p>
+                                                        <h4 className="font-display text-base font-black leading-tight text-stone-900 sm:text-lg">{method.name}</h4>
+                                                        <p className="mt-1 text-xs font-medium leading-snug text-stone-500 sm:text-sm">{method.tagline}</p>
                                                     </div>
 
-                                                    <ul className={`space-y-1.5 text-[11px] sm:text-xs font-medium leading-snug ${isSelected ? 'text-white/95' : 'text-stone-600'}`}>
+                                                    <ul className="space-y-2 text-[11px] font-medium leading-snug text-stone-600 sm:text-xs">
                                                         {method.bullets.map((line, bi) => (
-                                                            <li key={bi} className="flex gap-2">
-                                                                <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${isSelected ? 'bg-white/90' : isLine ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                            <li key={bi} className="flex gap-2.5">
+                                                                <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${isLine ? 'bg-emerald-400/90' : 'bg-amber-400/90'}`} />
                                                                 <span>{line}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
 
-                                                    <p className={`mt-1 pt-2.5 text-[10px] sm:text-[11px] leading-relaxed border-t font-medium ${isSelected ? 'border-white/25 text-white/80' : isLine ? 'border-emerald-100 text-emerald-900/75' : 'border-amber-100 text-amber-950/75'}`}>
+                                                    <p className={`mt-0.5 border-t pt-3 text-[10px] font-medium leading-relaxed text-stone-500 sm:text-[11px] ${isLine ? 'border-emerald-100/80' : 'border-amber-100/80'}`}>
                                                         {method.footnote}
                                                     </p>
                                                 </div>
@@ -6816,13 +6816,13 @@
                                     })}
                                 </div>
                                 
-                                <div ref={planRef} className="mt-8 -mx-6 border-t border-amber-200/45 bg-gradient-to-b from-amber-50/50 to-amber-50/15 px-6 pb-7 pt-8 sm:-mx-8 sm:px-8 md:-mx-10 md:px-10">
-                                    <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/35 pb-5">
+                                <div ref={planRef} className="mt-8 -mx-6 border-t border-stone-200/70 bg-gradient-to-b from-stone-50/40 to-transparent px-6 pb-7 pt-8 sm:-mx-8 sm:px-8 md:-mx-10 md:px-10">
+                                    <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/60 pb-5">
                                         <div className="flex items-center gap-2.5">
-                                            <Coins className="h-5 w-5 text-amber-600" aria-hidden />
+                                            <Coins className="h-5 w-5 text-amber-700/90" aria-hidden />
                                             <h3 className="font-display text-base font-black text-stone-800 sm:text-lg">贊助檔位</h3>
                                         </div>
-                                        <span className="rounded-full bg-white/80 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 ring-1 ring-amber-200/80">選一個金額</span>
+                                        <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-[10px] font-semibold text-stone-600 ring-1 ring-stone-200/80">選一個金額</span>
                                     </div>
                                     {formErrors.plan && <p className="text-fire-500 font-bold mb-3 sm:mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.plan}</p>}
                                     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
@@ -6835,35 +6835,36 @@
                                                 role="button"
                                                 tabIndex={0}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlan(plan); setIsCustomPlan(false); setFormErrors(prev => ({ ...prev, plan: '' })); } }}
-                                                className={`relative min-h-[92px] cursor-pointer overflow-hidden rounded-2xl border transition-[box-shadow,transform,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 focus-visible:ring-offset-2 active:scale-[0.99] sm:min-h-0 ${
+                                                className={`relative min-h-[88px] cursor-pointer overflow-hidden rounded-2xl border transition-[box-shadow,transform,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 active:scale-[0.99] sm:min-h-0 ${
                                                     isSelected
-                                                        ? 'border-amber-400 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-700 shadow-md shadow-amber-400/30 ring-2 ring-amber-300/70'
-                                                        : 'border-stone-200/90 bg-white shadow-sm ring-1 ring-stone-100/80 hover:-translate-y-0.5 hover:border-amber-300/70 hover:shadow-md hover:ring-amber-200/40'
+                                                        ? 'border-amber-400/90 bg-gradient-to-b from-amber-50 to-white shadow-md ring-1 ring-amber-200/70'
+                                                        : 'border-stone-200/90 bg-white shadow-sm hover:-translate-y-0.5 hover:border-amber-300/60 hover:shadow'
                                                 }`}
                                             >
+                                                <div className={`absolute left-0 top-0 h-full w-1 ${isSelected ? 'bg-amber-500' : 'bg-stone-200/70'}`} aria-hidden />
                                                 {plan.popular && (
-                                                    <div className="absolute left-3 top-3 z-10 rounded-full bg-gradient-to-r from-rose-500 to-amber-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
+                                                    <div className="absolute left-3 top-2.5 z-10 rounded-full bg-amber-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
                                                         熱門
                                                     </div>
                                                 )}
                                                 {isSelected && (
-                                                    <div className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/25 ring-1 ring-white/40">
-                                                        <CheckCircle size={18} className="text-white" strokeWidth={2.5} />
+                                                    <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/80">
+                                                        <CheckCircle size={16} strokeWidth={2.5} />
                                                     </div>
                                                 )}
 
                                                 {plan.bonus > 0 && !isSelected && (
-                                                    <div className="absolute right-2 top-2 z-10 max-w-[calc(100%-0.75rem)] truncate rounded-md bg-stone-900/[0.06] px-1.5 py-0.5 text-[9px] font-black text-amber-800 ring-1 ring-amber-200/60">
+                                                    <div className="absolute right-2 top-2 z-10 max-w-[calc(100%-0.75rem)] truncate rounded-md bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 ring-1 ring-amber-200/70">
                                                         +{getGmBonusPercentDisplay(plan)}
                                                     </div>
                                                 )}
-                                                <div className={`relative z-10 pr-1 ${plan.popular ? 'pt-7 sm:pt-8' : 'mt-0.5 pt-1 sm:mt-1'}`}>
-                                                    <div className={`text-base sm:text-2xl md:text-3xl font-black mb-1.5 sm:mb-3 leading-tight ${isSelected ? 'text-white' : 'text-stone-800'}`}>NT$ {plan.amount.toLocaleString()}</div>
-                                                    <div className="space-y-0.5 sm:space-y-2">
-                                                        <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0 sm:gap-2">
-                                                            <span className={`text-[11px] sm:text-sm font-bold shrink-0 ${isSelected ? 'text-white/70' : 'text-stone-400'}`}>實拿</span>
-                                                            <span className={`text-sm sm:text-xl md:text-2xl font-black tabular-nums leading-none ${isSelected ? 'text-white' : 'text-amber-600'}`}>{plan.total.toLocaleString()}</span>
-                                                            <span className={`text-[10px] sm:text-xs font-black uppercase ${isSelected ? 'text-white/80' : 'text-amber-600'}`}>Gold</span>
+                                                <div className={`relative z-10 px-3.5 py-3.5 pl-4 sm:px-4 sm:py-4 ${plan.popular ? 'pt-7 sm:pt-8' : ''}`}>
+                                                    <div className="font-display text-base font-black leading-tight text-stone-900 sm:text-2xl md:text-3xl">NT$ {plan.amount.toLocaleString()}</div>
+                                                    <div className="mt-1.5 space-y-0.5 sm:mt-2">
+                                                        <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0 sm:gap-2">
+                                                            <span className="text-[11px] font-semibold text-stone-400 sm:text-xs">實拿</span>
+                                                            <span className={`text-sm font-black tabular-nums leading-none sm:text-xl md:text-2xl ${isSelected ? 'text-amber-800' : 'text-amber-700'}`}>{plan.total.toLocaleString()}</span>
+                                                            <span className={`text-[10px] font-bold uppercase tracking-wide sm:text-xs ${isSelected ? 'text-amber-700/90' : 'text-amber-700/80'}`}>Gold</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -6878,8 +6879,8 @@
                                         const customPlanObj = { amount: customAmt, base: customCoins, bonus: 0, total: customCoins, popular: false, url: 'https://pl.sl-pay.com/pTlaiLOe', isCustom: true };
                                         return (
                                             <div
-                                                className={`relative col-span-2 cursor-pointer rounded-2xl border-2 bg-white p-4 transition-[box-shadow,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 sm:p-5 md:p-6 ${
-                                                    isCustomPlan ? 'border-sky-400 bg-gradient-to-br from-sky-50/80 to-blue-50/50 shadow-md ring-2 ring-sky-200/40' : 'border-stone-200 hover:border-sky-300/80 hover:bg-sky-50/30 hover:shadow-md'
+                                                className={`relative col-span-2 cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 pl-5 transition-[box-shadow,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 sm:p-5 sm:pl-6 md:p-6 ${
+                                                    isCustomPlan ? 'border-amber-400/90 bg-gradient-to-b from-amber-50/80 to-white shadow-md ring-1 ring-amber-200/60' : 'border-stone-200 hover:border-amber-300/70 hover:bg-amber-50/20 hover:shadow-sm'
                                                 }`}
                                                 onClick={() => {
                                                     setIsCustomPlan(true);
@@ -6893,17 +6894,18 @@
                                                 role="button"
                                                 tabIndex={0}
                                             >
-                                                <div className="absolute top-0 left-0 bg-sky-400 text-white text-[10px] font-bold px-2.5 sm:px-3 py-1 rounded-br-lg sm:rounded-br-xl z-10 tracking-wider">自填</div>
+                                                <div className="absolute left-0 top-0 h-full w-1 bg-amber-400/90" aria-hidden />
+                                                <div className="absolute top-0 right-0 rounded-bl-lg bg-stone-800 px-2.5 py-1 text-[10px] font-bold tracking-wider text-white sm:px-3">自填金額</div>
                                                 {isCustomPlan && customAmt >= 100 && (
-                                                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none text-white">
-                                                        <CheckCircle className="w-[22px] h-[22px] sm:w-6 sm:h-6" strokeWidth={2.5} />
+                                                    <div className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-700 sm:top-4 sm:right-4 pointer-events-none ring-1 ring-amber-200/80">
+                                                        <CheckCircle className="w-[18px] h-[18px] sm:w-5 sm:h-5" strokeWidth={2.5} />
                                                     </div>
                                                 )}
-                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-1">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-stone-500 font-bold text-xs sm:text-sm mb-2 leading-snug">自訂贊助金額（請先選 SHOPLINE 或 LINE 支付）</p>
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <span className="text-stone-500 font-bold text-base sm:text-lg shrink-0">NT$</span>
+                                                <div className="mt-5 flex flex-col gap-4 sm:mt-1 sm:flex-row sm:items-center sm:gap-6">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="mb-2 text-xs font-semibold leading-snug text-stone-600 sm:text-sm">自訂贊助金額（請先選 SHOPLINE 或 LINE 支付）</p>
+                                                        <div className="flex min-w-0 items-center gap-2">
+                                                            <span className="shrink-0 text-base font-bold text-stone-600 sm:text-lg">NT$</span>
                                                             <input
                                                                 type="number"
                                                                 min="100"
@@ -6924,20 +6926,20 @@
                                                                     }
                                                                 }}
                                                                 placeholder="金額"
-                                                                className="min-w-0 flex-1 max-w-full sm:max-w-[11rem] text-xl sm:text-2xl font-black text-stone-700 border-b-2 border-sky-300 focus:border-sky-500 focus:outline-none bg-transparent py-1"
+                                                                className="min-w-0 flex-1 max-w-full border-b-2 border-amber-200/90 bg-transparent py-1 text-xl font-black text-stone-800 focus:border-amber-500 focus:outline-none sm:max-w-[11rem] sm:text-2xl"
                                                             />
                                                         </div>
                                                         {isCustomPlan && customAmountInput && customAmt < 100 && (
-                                                            <p className="text-red-500 text-xs font-bold mt-1">最低贊助金額為 NT$ 100</p>
+                                                            <p className="mt-1 text-xs font-bold text-red-500">最低贊助金額為 NT$ 100</p>
                                                         )}
                                                     </div>
-                                                    <div className="text-left sm:text-right shrink-0 pt-1 sm:pt-0 border-t border-stone-100 sm:border-0 sm:pl-0">
-                                                        <p className="text-stone-400 text-[11px] sm:text-xs font-bold mb-0.5 sm:mb-1">預估獲得金幣</p>
-                                                        <div className="flex items-baseline gap-1 flex-wrap">
-                                                            <span className="text-lg sm:text-xl md:text-2xl font-bold text-gold-600 tabular-nums">{customAmt >= 100 ? customCoins.toLocaleString() : '—'}</span>
-                                                            <span className="text-gold-600 text-[10px] sm:text-xs font-bold uppercase">Gold</span>
+                                                    <div className="shrink-0 border-t border-stone-100 pt-3 text-left sm:border-0 sm:pt-0 sm:text-right sm:pl-2">
+                                                        <p className="mb-0.5 text-[11px] font-semibold text-stone-500 sm:text-xs">預估獲得金幣</p>
+                                                        <div className="flex flex-wrap items-baseline gap-1">
+                                                            <span className="font-display text-lg font-black tabular-nums text-amber-800 sm:text-xl md:text-2xl">{customAmt >= 100 ? customCoins.toLocaleString() : '—'}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 sm:text-xs">Gold</span>
                                                         </div>
-                                                        <p className="text-stone-400 text-[11px] sm:text-xs mt-1">實際金幣由管理員確認</p>
+                                                        <p className="mt-1 text-[11px] text-stone-400 sm:text-xs">實際金幣由管理員確認</p>
                                                     </div>
                                                 </div>
                                             </div>
