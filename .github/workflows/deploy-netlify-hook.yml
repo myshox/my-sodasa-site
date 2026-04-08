@@ -1,0 +1,23 @@
+# 可選：若已在 Netlify「連接 GitHub 倉庫」做持續部署，則不必設定 Secret，也無需此 workflow。
+# 僅在「無法使用 Git 連線」時，到 Netlify → Site configuration → Build & deploy → Build hooks
+# 建立 hook，將完整 URL 存成 GitHub 倉庫 Secret：NETLIFY_BUILD_HOOK
+name: Trigger Netlify deploy (optional)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  hook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST Netlify build hook
+        env:
+          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          if [ -z "${HOOK}" ]; then
+            echo "::notice title=自動部署::已在 Netlify 連接 GitHub 時，push 即會自動部署。若未使用 Build Hook，可略過此步驟。"
+            exit 0
+          fi
+          curl -sS -f -X POST -d '{}' "$HOOK"
+          echo "::notice title=Netlify::已觸發 Build Hook，請到 Netlify 後台查看部署狀態。"

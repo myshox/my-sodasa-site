@@ -1,0 +1,8 @@
+# 靜態站：發佈倉庫根目錄（含 index.html、_redirects、manifest 等）
+# Netlify 後台連接 GitHub 後，每次 push 到 main 會自動建置並發佈，無需本機指令。
+[build]
+  publish = "."
+  command = "true"
+
+[build.environment]
+  NODE_VERSION = "20"
