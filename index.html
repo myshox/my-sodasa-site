@@ -5910,6 +5910,12 @@
                 showToast("正在開啟 Android 下載頁面...", "success");
             };
 
+            const handleAndroidDownloadBackup = () => {
+                // Android 備用載點
+                window.open('https://ped.pps3.com/dep85k', '_blank');
+                showToast("正在開啟 Android 備用下載載點...", "success");
+            };
+
             const handleIosDownload = () => {
                 // iOS 下載連結
                 window.open('https://z29.pps3.com/92zej6', '_blank');
@@ -6008,6 +6014,14 @@
                                         aria-label="下載 Android 版"
                                     >
                                         <Download size={20} /> 下載 Android
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAndroidDownloadBackup}
+                                        className="w-full py-2.5 rounded-xl border-2 border-wind-300 bg-white text-wind-700 hover:bg-wind-50 font-bold text-sm transition-all flex items-center justify-center gap-1.5 mt-2"
+                                        aria-label="Android 備用下載載點"
+                                    >
+                                        備用載點
                                     </button>
                                     <p className="text-stone-500 text-xs text-center mt-2">Android 5.0+</p>
                                 </div>
