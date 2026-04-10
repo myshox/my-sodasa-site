@@ -160,6 +160,7 @@
                         'noise': "url('https://www.transparenttextures.com/patterns/stardust.png')",
                         'gradient-tribal': 'linear-gradient(145deg, #fdf6e4 0%, #f5e4b8 45%, #e8cf8a 100%)',
                         'gradient-game-dark': 'linear-gradient(180deg, #1a1814 0%, #0f0e0c 100%)',
+                        'mesh-site': 'radial-gradient(ellipse 100% 80% at 10% -20%, rgba(45, 212, 191, 0.22) 0%, transparent 55%), radial-gradient(ellipse 80% 60% at 100% 0%, rgba(251, 191, 36, 0.18) 0%, transparent 50%), radial-gradient(ellipse 70% 50% at 50% 100%, rgba(180, 83, 9, 0.08) 0%, transparent 45%)',
                     },
                     animation: {
                         'float': 'float 8s ease-in-out infinite',
@@ -263,24 +264,19 @@
         html.game-site body { 
             position: relative;
             isolation: isolate;
-            background-color: #e8d4a8;
+            background-color: #e7f5f0;
             background-image:
-                radial-gradient(ellipse 90% 55% at 50% -18%, rgba(251, 191, 36, 0.28) 0%, transparent 55%),
-                radial-gradient(ellipse 55% 40% at 100% 100%, rgba(45, 168, 129, 0.09) 0%, transparent 50%),
-                radial-gradient(ellipse 50% 35% at 0% 85%, rgba(220, 140, 60, 0.1) 0%, transparent 48%),
-                repeating-linear-gradient(
-                    135deg,
-                    rgba(90, 60, 30, 0.03) 0px,
-                    rgba(90, 60, 30, 0.03) 1px,
-                    transparent 1px,
-                    transparent 10px
-                ),
-                linear-gradient(180deg,
-                    #fff9ec 0%,
-                    #f5e6c4 22%,
-                    #edd9a8 52%,
-                    #e0c88a 100%);
-            color: #3d3428;
+                repeating-linear-gradient(90deg, rgba(13, 148, 136, 0.04) 0px, rgba(13, 148, 136, 0.04) 1px, transparent 1px, transparent 24px),
+                repeating-linear-gradient(0deg, rgba(120, 53, 15, 0.03) 0px, rgba(120, 53, 15, 0.03) 1px, transparent 1px, transparent 24px),
+                radial-gradient(ellipse 100% 70% at 50% -30%, rgba(45, 212, 191, 0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 100% 100%, rgba(251, 191, 36, 0.2) 0%, transparent 50%),
+                linear-gradient(185deg,
+                    #ecfdf5 0%,
+                    #f7fee7 22%,
+                    #fffbeb 50%,
+                    #fef3c7 82%,
+                    #fde68a 100%);
+            color: #2d2520;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             font-size: 16px;
@@ -308,6 +304,9 @@
             z-index: 1;
             min-height: 100vh;
             min-height: 100dvh;
+        }
+        .site-app-shell {
+            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 32%);
         }
         /* 閱讀區塊：適合長文寬度與行高（手機／平板／電腦） */
         .reading-content {
@@ -414,7 +413,7 @@
             font-family: "Zen Maru Gothic", sans-serif;
         }
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f0e3bb; }
+        ::-webkit-scrollbar-track { background: #ecfdf5; }
         ::-webkit-scrollbar-thumb { 
             background: linear-gradient(180deg, #e0a830, #c48820); 
             border-radius: 4px; 
@@ -435,11 +434,11 @@
         .stone-panel {
             background-color: #fffefb;
             background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
-            border: 3px solid #b8892a;
+            border: 3px solid #0f766e;
             border-radius: 28px;
-            /* 左側琥珀色條：一眼辨識「石板卡」新版式 */
+            /* 左側青綠色條：與背景網格呼應，區塊一眼可辨 */
             box-shadow:
-                inset 6px 0 0 0 #f59e0b,
+                inset 6px 0 0 0 #14b8a6,
                 inset 0 1px 0 rgba(255, 255, 255, 0.75),
                 inset 0 -2px 0 rgba(160, 100, 30, 0.06),
                 0 0 0 1px rgba(90, 60, 20, 0.12),
@@ -450,7 +449,7 @@
         @media (hover: hover) and (pointer: fine) {
             .stone-panel:hover {
                 box-shadow:
-                    inset 6px 0 0 0 #fbbf24,
+                    inset 6px 0 0 0 #2dd4bf,
                     inset 0 1px 0 rgba(255, 255, 255, 0.85),
                     0 0 0 1px rgba(200, 140, 40, 0.25),
                     8px 8px 0 rgba(120, 75, 25, 0.45),
@@ -2355,30 +2354,35 @@
             );
         };
 
-        const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-amber-600" }) {
+        const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-teal-600" }) {
             const { pathname } = useLocation();
             const showBreadcrumb = pathname !== '/' && pathname !== '';
             return (
-                <header className="mb-10 md:mb-14 text-center max-w-2xl mx-auto px-1">
-                    {showBreadcrumb && (
-                        <nav className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm" aria-label="麵包屑導覽">
-                            <Link to="/" className="text-stone-500 hover:text-amber-800 font-semibold underline-offset-2 hover:underline">首頁</Link>
-                            <span className="text-stone-400 select-none" aria-hidden>/</span>
-                            <span className="text-stone-800 font-black">{title}</span>
-                        </nav>
-                    )}
-                    <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-4">
-                        {Icon && (
-                            <span className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-amber-50/90 border-2 border-amber-200/80 shadow-md shadow-amber-900/10 mx-auto sm:mx-0" aria-hidden>
-                                <Icon size={28} className={`${color} shrink-0 sm:w-[30px] sm:h-[30px]`} strokeWidth={1.75} />
-                            </span>
-                        )}
-                        <div className="min-w-0 text-center sm:text-left">
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
-                            <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-amber-600 mx-auto sm:mx-0 shadow-sm" aria-hidden />
+                <header className="mb-10 md:mb-16 max-w-3xl mx-auto px-1">
+                    <div className="rounded-3xl border-2 border-teal-600/35 bg-white/90 shadow-[0_20px_50px_-12px_rgba(13,148,136,0.25)] ring-1 ring-teal-500/20 overflow-hidden">
+                        <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-amber-400 to-amber-500" aria-hidden />
+                        <div className="px-5 py-7 md:px-10 md:py-9">
+                            {showBreadcrumb && (
+                                <nav className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm md:justify-center" aria-label="麵包屑導覽">
+                                    <Link to="/" className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-teal-800 hover:bg-teal-100 font-bold transition-colors">首頁</Link>
+                                    <span className="text-stone-400" aria-hidden>›</span>
+                                    <span className="font-black text-stone-900">{title}</span>
+                                </nav>
+                            )}
+                            <div className="flex flex-col items-center text-center gap-4 md:gap-5">
+                                {Icon && (
+                                    <span className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-100 to-amber-50 border-2 border-teal-300/80 shadow-lg" aria-hidden>
+                                        <Icon size={32} className={`${color} shrink-0`} strokeWidth={1.75} />
+                                    </span>
+                                )}
+                                <div>
+                                    <h1 className="text-3xl sm:text-4xl md:text-[2.35rem] font-black text-stone-900 tracking-tight font-display leading-[1.12]">{title}</h1>
+                                    <div className="mt-4 mx-auto h-1.5 w-28 rounded-full bg-gradient-to-r from-teal-500 via-amber-400 to-amber-500" aria-hidden />
+                                </div>
+                                {subtitle && <p className="text-stone-700 text-base md:text-lg leading-relaxed max-w-xl mx-auto font-semibold">{subtitle}</p>}
+                            </div>
                         </div>
                     </div>
-                    {subtitle && <p className="text-stone-600 text-sm md:text-base leading-relaxed max-w-xl mx-auto mt-1 font-medium">{subtitle}</p>}
                 </header>
             );
         });
@@ -2420,10 +2424,11 @@
             if (location.pathname === '/admin') return null;
 
             return (
-                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t-[3px] border-t-amber-500/90 bg-gradient-to-t from-[#070605] via-[#12100c] to-[#1a1510] backdrop-blur-xl backdrop-saturate-150 shadow-[0_-16px_48px_rgba(0,0,0,0.65)] ring-1 ring-amber-600/40">
-                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-600/20 via-amber-400 to-amber-600/20 pointer-events-none" aria-hidden />
+                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 z-50 pb-safe md:hidden pointer-events-none px-2 pb-2">
+                    <div className="pointer-events-auto mx-auto max-w-lg rounded-[1.35rem] border-2 border-teal-500/50 bg-gradient-to-t from-[#050807] via-[#0f172a] to-[#134e4a]/90 shadow-[0_-8px_40px_rgba(0,0,0,0.55)] ring-1 ring-teal-400/30 backdrop-blur-xl">
+                    <div className="h-[3px] w-full rounded-t-[1.25rem] bg-gradient-to-r from-teal-400 via-amber-400 to-teal-500" aria-hidden />
                     <p className="sr-only" id="mobile-nav-hint">圖示下方為功能名稱，點選可前往該頁</p>
-                    <div className="flex justify-between items-stretch min-h-[58px] max-w-lg mx-auto px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單" aria-describedby="mobile-nav-hint">
+                    <div className="flex justify-between items-stretch min-h-[56px] px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單" aria-describedby="mobile-nav-hint">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
                             return (
@@ -2434,13 +2439,14 @@
                                     className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-[0.97] active:opacity-90 ${isActive ? 'text-amber-200' : 'text-stone-500 active:text-stone-400'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <span className={`flex items-center justify-center w-11 h-11 rounded-2xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_4px_14px_rgba(251,191,36,0.45)] ring-1 ring-amber-300/50' : 'bg-stone-800/90 border border-stone-700/90'}`}>
-                                        <item.icon size={22} strokeWidth={isActive ? 2.35 : 2} className={isActive ? '' : 'text-stone-400'} aria-hidden />
+                                    <span className={`flex items-center justify-center w-11 h-11 rounded-2xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-teal-400 to-emerald-600 text-stone-950 shadow-[0_4px_14px_rgba(45,212,191,0.5)] ring-1 ring-white/30' : 'bg-slate-800/95 border border-slate-600/80'}`}>
+                                        <item.icon size={22} strokeWidth={isActive ? 2.35 : 2} className={isActive ? '' : 'text-slate-400'} aria-hidden />
                                     </span>
-                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-amber-100' : 'text-stone-500'}`}>{item.label}</span>
+                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-teal-100' : 'text-slate-500'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
+                    </div>
                     </div>
                 </div>
             );
@@ -4062,6 +4068,21 @@
                                         需要協助
                                     </Link>
                                 </nav>
+                                <div className="mb-6 grid max-w-lg mx-auto grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-3 text-left" aria-label="新玩家三步驟">
+                                    {[
+                                        { n: '1', t: '下載客戶端', d: '選 Windows／Android／iOS', to: '/download', c: 'border-teal-400/50 bg-teal-950/50' },
+                                        { n: '2', t: '註冊並登入', d: '官網帳號＝會員中心', to: '/auth', c: 'border-amber-400/50 bg-black/45' },
+                                        { n: '3', t: '進遊戲', d: '同主帳同伺服器', to: '/download', c: 'border-emerald-400/50 bg-emerald-950/45' },
+                                    ].map((step) => (
+                                        <Link key={step.n} to={step.to} className={`flex gap-3 rounded-2xl border-2 px-3 py-3 backdrop-blur-md shadow-lg transition hover:scale-[1.02] hover:brightness-110 ${step.c}`}>
+                                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 font-black text-lg text-white ring-1 ring-white/20">{step.n}</span>
+                                            <span className="min-w-0">
+                                                <span className="block font-black text-white text-sm leading-tight">{step.t}</span>
+                                                <span className="block text-[11px] md:text-xs text-white/75 mt-0.5 leading-snug">{step.d}</span>
+                                            </span>
+                                        </Link>
+                                    ))}
+                                </div>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
@@ -14022,7 +14043,7 @@
             }, [location.pathname]);
 
             return (
-                <div className="min-h-screen flex flex-col font-sans text-stone-800 relative">
+                <div className="site-app-shell min-h-screen flex flex-col font-sans text-stone-800 relative">
                     <a href="#main-content" className="skip-link">跳過至主內容</a>
                     <AnimatePresence>
                         {isLoading && <LoadingScreen key="loader" />}
@@ -14083,15 +14104,19 @@
 
                     <ScrollToTop />
                     <PageTitle />
-                    <nav className={`fixed top-0 w-full z-50 border-b border-amber-600/50 border-t-[4px] border-t-amber-400 bg-gradient-to-b from-[#1c1814] to-[#0e0c0a]/98 backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color] duration-300 ${isScrolled ? 'shadow-xl shadow-black/55 border-amber-500/60' : 'shadow-lg shadow-black/35'}`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-2 min-h-[3.35rem] md:min-h-[3.65rem]">
-                            <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0 shrink-0 rounded-xl focus-visible:ring-2 focus-visible:ring-amber-400/50">
-                                <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-[0_0_14px_rgba(251,191,36,0.35)]">
+                    <nav className={`fixed top-0 w-full z-50 border-b border-teal-700/40 border-t-[5px] border-t-teal-400 bg-gradient-to-b from-[#0f172a] via-[#1c1917] to-[#0c0a09] backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color] duration-300 ${isScrolled ? 'shadow-xl shadow-teal-900/40 border-teal-500/50' : 'shadow-lg shadow-black/40'}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-3 min-h-[3.5rem] md:min-h-[3.75rem]">
+                            <Link to="/" className="flex items-center gap-3 md:gap-4 min-h-[44px] min-w-0 shrink-0 rounded-xl focus-visible:ring-2 focus-visible:ring-teal-400/60">
+                                <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-[0_0_16px_rgba(45,212,191,0.35)]">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
+                                </div>
+                                <div className="hidden sm:flex flex-col items-start justify-center leading-tight min-w-0">
+                                    <span className="font-display font-black text-white text-base md:text-lg tracking-tight truncate max-w-[10rem] md:max-w-[14rem]">蘇打石器</span>
+                                    <span className="text-[10px] md:text-[11px] font-bold text-teal-300/95 uppercase tracking-[0.12em]">公益服 · 下載 → 登入 → 開玩</span>
                                 </div>
                             </Link>
 
-                            <nav className="hidden lg:flex items-center gap-0.5 px-1.5 py-1.5 rounded-2xl bg-stone-900/85 border border-amber-700/40 shadow-inner ring-1 ring-black/20" aria-label="主要選單">
+                            <nav className="hidden lg:flex items-center gap-1 px-2 py-2 rounded-full bg-emerald-950/50 border-2 border-teal-500/35 shadow-lg shadow-black/30" aria-label="主要選單">
                                 {[
                                     { path: '/', label: '首頁', icon: Home, title: '網站首頁' },
                                     { path: '/guides', label: '攻略', icon: BookOpen, title: '活動攻略' },
@@ -14106,7 +14131,7 @@
                                             key={path}
                                             to={path}
                                             title={navTitle}
-                                            className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[14px] font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}
+                                            className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[14px] font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-teal-400 to-emerald-600 text-stone-950 shadow-[0_4px_16px_rgba(45,212,191,0.45)] ring-1 ring-white/20' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}
                                         >
                                             <NavIcon size={18} className="shrink-0 opacity-90" strokeWidth={2.25} aria-hidden />
                                             {label}
