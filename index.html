@@ -4068,21 +4068,6 @@
                                         需要協助
                                     </Link>
                                 </nav>
-                                <div className="mb-6 grid max-w-lg mx-auto grid-cols-1 gap-2.5 sm:grid-cols-3 sm:gap-3 text-left" aria-label="新玩家三步驟">
-                                    {[
-                                        { n: '1', t: '下載客戶端', d: '選 Windows／Android／iOS', to: '/download', c: 'border-teal-400/50 bg-teal-950/50' },
-                                        { n: '2', t: '註冊並登入', d: '官網帳號＝會員中心', to: '/auth', c: 'border-amber-400/50 bg-black/45' },
-                                        { n: '3', t: '進遊戲', d: '同主帳同伺服器', to: '/download', c: 'border-emerald-400/50 bg-emerald-950/45' },
-                                    ].map((step) => (
-                                        <Link key={step.n} to={step.to} className={`flex gap-3 rounded-2xl border-2 px-3 py-3 backdrop-blur-md shadow-lg transition hover:scale-[1.02] hover:brightness-110 ${step.c}`}>
-                                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 font-black text-lg text-white ring-1 ring-white/20">{step.n}</span>
-                                            <span className="min-w-0">
-                                                <span className="block font-black text-white text-sm leading-tight">{step.t}</span>
-                                                <span className="block text-[11px] md:text-xs text-white/75 mt-0.5 leading-snug">{step.d}</span>
-                                            </span>
-                                        </Link>
-                                    ))}
-                                </div>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
