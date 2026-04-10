@@ -2335,27 +2335,33 @@
             );
         };
 
-        const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-amber-600" }) => (
-            <header className="relative mb-10 md:mb-20 text-center max-w-3xl mx-auto px-1">
-                <div className="relative rounded-[1.75rem] border-2 border-amber-300/70 bg-gradient-to-br from-white/95 via-amber-50/70 to-orange-50/50 px-5 py-8 md:px-10 md:py-10 shadow-[0_24px_56px_-16px_rgba(140,90,30,0.28)] ring-1 ring-amber-200/60">
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-emerald-900/30 md:text-xs" aria-hidden>
-                        新版介面
-                    </span>
-                    <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 sm:gap-5">
+        const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-amber-600" }) {
+            const { pathname } = useLocation();
+            const showBreadcrumb = pathname !== '/' && pathname !== '';
+            return (
+                <header className="mb-10 md:mb-14 text-center max-w-2xl mx-auto px-1">
+                    {showBreadcrumb && (
+                        <nav className="mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm" aria-label="麵包屑導覽">
+                            <Link to="/" className="text-stone-500 hover:text-amber-800 font-semibold underline-offset-2 hover:underline">首頁</Link>
+                            <span className="text-stone-400 select-none" aria-hidden>/</span>
+                            <span className="text-stone-800 font-black">{title}</span>
+                        </nav>
+                    )}
+                    <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-4">
                         {Icon && (
-                            <span className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 to-white border-2 border-amber-300/90 shadow-lg shadow-amber-900/15 mx-auto sm:mx-0">
-                                <Icon size={32} className={`${color} shrink-0 sm:w-[34px] sm:h-[34px]`} strokeWidth={1.75} aria-hidden />
+                            <span className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-amber-50/90 border-2 border-amber-200/80 shadow-md shadow-amber-900/10 mx-auto sm:mx-0" aria-hidden>
+                                <Icon size={28} className={`${color} shrink-0 sm:w-[30px] sm:h-[30px]`} strokeWidth={1.75} />
                             </span>
                         )}
                         <div className="min-w-0 text-center sm:text-left">
-                            <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black text-stone-800 tracking-tight font-display leading-[1.15]">{title}</h1>
-                            <div className="mt-4 h-1.5 w-24 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-orange-500 mx-auto sm:mx-0 shadow-sm" aria-hidden />
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
+                            <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-amber-600 mx-auto sm:mx-0 shadow-sm" aria-hidden />
                         </div>
                     </div>
-                    {subtitle && <p className="text-stone-700 text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6 font-semibold">{subtitle}</p>}
-                </div>
-            </header>
-        ));
+                    {subtitle && <p className="text-stone-600 text-sm md:text-base leading-relaxed max-w-xl mx-auto mt-1 font-medium">{subtitle}</p>}
+                </header>
+            );
+        });
 
         // --- Mobile Nav ---
         const MobileBottomNav = () => {
@@ -2376,17 +2382,17 @@
             
             const navItems = useMemo(() => {
                 const base = [
-                    { path: '/', label: '首頁', icon: Home },
-                    { path: '/download', label: '下載', icon: Download },
-                    { path: '/guides', label: '攻略', icon: BookOpen },
-                    { path: '/events', label: '活動', icon: Calendar },
-                    { path: '/recharge', label: '金幣', icon: Coins },
+                    { path: '/', label: '首頁', icon: Home, hint: '網站首頁' },
+                    { path: '/download', label: '下載', icon: Download, hint: '下載遊戲' },
+                    { path: '/guides', label: '攻略', icon: BookOpen, hint: '活動攻略' },
+                    { path: '/events', label: '活動', icon: Calendar, hint: '最新活動' },
+                    { path: '/recharge', label: '儲值', icon: Coins, hint: '金幣贊助' },
                 ];
                 const role = user?.user_metadata?.role;
                 if (role === 'admin' || role === 'super_admin') {
-                    base.push({ path: '/admin', label: '後台', icon: Settings });
+                    base.push({ path: '/admin', label: '後台', icon: Settings, hint: '管理後台' });
                 }
-                base.push({ path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User });
+                base.push({ path: user ? '/member' : '/auth', label: user ? '會員' : '登入', icon: User, hint: user ? '會員中心' : '登入或註冊' });
                 return base;
             }, [user]);
 
@@ -2396,13 +2402,15 @@
             return (
                 <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t-[3px] border-t-amber-500/90 bg-gradient-to-t from-[#070605] via-[#12100c] to-[#1a1510] backdrop-blur-xl backdrop-saturate-150 shadow-[0_-16px_48px_rgba(0,0,0,0.65)] ring-1 ring-amber-600/40">
                     <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-600/20 via-amber-400 to-amber-600/20 pointer-events-none" aria-hidden />
-                    <div className="flex justify-between items-stretch min-h-[58px] max-w-lg mx-auto px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單">
+                    <p className="sr-only" id="mobile-nav-hint">圖示下方為功能名稱，點選可前往該頁</p>
+                    <div className="flex justify-between items-stretch min-h-[58px] max-w-lg mx-auto px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單" aria-describedby="mobile-nav-hint">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
                             return (
                                 <Link 
                                     key={item.path} 
                                     to={item.path} 
+                                    title={item.hint || item.label}
                                     className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-[0.97] active:opacity-90 ${isActive ? 'text-amber-200' : 'text-stone-500 active:text-stone-400'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
@@ -4011,12 +4019,29 @@
 
                         <div className="relative z-20 text-center max-w-7xl px-6 w-full">
                             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }}>
-                                <div className="mb-4 flex justify-center px-2">
-                                    <span className="inline-flex items-center gap-2 rounded-full border-2 border-emerald-400/60 bg-gradient-to-r from-emerald-950/95 to-teal-950/90 px-4 py-2 text-[11px] sm:text-sm font-black text-emerald-100 shadow-[0_0_28px_rgba(52,211,153,0.35)] tracking-wide ring-1 ring-emerald-500/30">
-                                        <Sparkles className="text-emerald-300 shrink-0" size={16} strokeWidth={2.5} aria-hidden />
-                                        2026 新版視覺 · 全站體驗升級
-                                    </span>
-                                </div>
+                                <nav className="mb-5 flex flex-wrap items-center justify-center gap-2 px-2 sm:gap-3" aria-label="常用捷徑">
+                                    <Link
+                                        to="/download"
+                                        className="inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-black/50 px-4 py-2.5 text-sm font-black text-amber-100 shadow-lg backdrop-blur-sm transition hover:bg-black/65 hover:border-amber-300"
+                                    >
+                                        <Download size={18} className="text-amber-300 shrink-0" aria-hidden />
+                                        下載遊戲
+                                    </Link>
+                                    <Link
+                                        to="/auth"
+                                        className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/40 px-4 py-2.5 text-sm font-black text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55"
+                                    >
+                                        <User size={18} className="text-gold-300 shrink-0" aria-hidden />
+                                        登入／註冊
+                                    </Link>
+                                    <Link
+                                        to="/support"
+                                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-4 py-2.5 text-sm font-black text-emerald-100 shadow-lg backdrop-blur-sm transition hover:bg-emerald-950/90"
+                                    >
+                                        <MessageCircle size={18} className="text-emerald-300 shrink-0" aria-hidden />
+                                        需要協助
+                                    </Link>
+                                </nav>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
@@ -4045,9 +4070,9 @@
                                             icon={Download}
                                             onClick={handleDownload}
                                         >
-                                            免費下載遊戲
+                                            前往下載頁（免費）
                                         </Button>
-                                        <p className="text-white/95 text-base font-semibold drop-shadow-md">Windows / Android / iOS</p>
+                                        <p className="text-white/90 text-sm font-medium drop-shadow-md">選擇 Windows、Android 或 iOS 安裝檔</p>
                                     </div>
                                     <div className="relative z-[2] flex flex-wrap justify-center gap-3 mt-6 pt-5 border-t border-amber-700/30">
                                         <Button variant="line" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
@@ -14002,19 +14027,28 @@
                                 </div>
                             </Link>
 
-                            <nav className="hidden lg:flex items-center gap-1 px-1.5 py-1.5 rounded-2xl bg-stone-900/85 border border-amber-700/40 shadow-inner ring-1 ring-black/20" aria-label="主要選單">
-                                {['首頁', '攻略', '下載', '金幣', '客服'].map((label, i) => {
-                                    const path = i === 0 ? '/' : i === 1 ? '/guides' : i === 2 ? '/download' : i === 3 ? '/recharge' : '/support';
+                            <nav className="hidden lg:flex items-center gap-0.5 px-1.5 py-1.5 rounded-2xl bg-stone-900/85 border border-amber-700/40 shadow-inner ring-1 ring-black/20" aria-label="主要選單">
+                                {[
+                                    { path: '/', label: '首頁', icon: Home, title: '網站首頁' },
+                                    { path: '/guides', label: '攻略', icon: BookOpen, title: '活動攻略' },
+                                    { path: '/download', label: '下載', icon: Download, title: '下載遊戲（Windows／手機）' },
+                                    { path: '/recharge', label: '儲值', icon: Coins, title: '金幣贊助／儲值' },
+                                    { path: '/support', label: '客服', icon: MessageCircle, title: '官方客服與常見問題' },
+                                    { path: '/events', label: '活動', icon: Calendar, title: '最新活動公告' },
+                                ].map(({ path, label, icon: NavIcon, title: navTitle }) => {
                                     const isActive = location.pathname === path || (path === '/guides' && location.pathname.startsWith('/guides'));
                                     return (
-                                        <Link key={path} to={path} className={`px-3.5 py-2.5 rounded-xl text-[15px] font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
+                                        <Link
+                                            key={path}
+                                            to={path}
+                                            title={navTitle}
+                                            className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-[14px] font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}
+                                        >
+                                            <NavIcon size={18} className="shrink-0 opacity-90" strokeWidth={2.25} aria-hidden />
                                             {label}
                                         </Link>
                                     );
                                 })}
-                                <Link to="/events" className={`px-3.5 py-2.5 rounded-xl text-[15px] font-bold font-display tracking-wide transition-all ${location.pathname === '/events' ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
-                                    活動
-                                </Link>
                             </nav>
 
                             <div className="nav-top-actions flex items-center gap-1.5 md:gap-2.5 shrink-0">
