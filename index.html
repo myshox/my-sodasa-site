@@ -253,6 +253,8 @@
             --ui-radius: 0.75rem;
             --ui-radius-lg: 1.25rem;
             --ui-input-bg: rgba(255, 255, 255, 0.92);
+            --ui-content-max: 96rem;
+            --ui-nav-blur: 16px;
         }
         html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
         /* 遊戲官網：暖色紙紋＋頂光，略帶冒險感
@@ -323,15 +325,17 @@
         /* 全站頁面容器：固定頂欄、手機底欄、安全區（單一來源，勿再在 JSX 重複 pt/pb/px） */
         .page-content {
             width: 100%;
-            max-width: 100%;
+            max-width: min(100%, var(--ui-content-max));
+            margin-left: auto;
+            margin-right: auto;
             box-sizing: border-box;
             overflow-x: hidden;
             min-height: 100vh;
             min-height: 100dvh;
             padding-top: max(7rem, calc(3.25rem + env(safe-area-inset-top, 0px)));
             padding-bottom: max(5.5rem, calc(3.5rem + env(safe-area-inset-bottom, 0px)));
-            padding-left: max(1rem, env(safe-area-inset-left, 0px));
-            padding-right: max(1rem, env(safe-area-inset-right, 0px));
+            padding-left: max(1.125rem, env(safe-area-inset-left, 0px));
+            padding-right: max(1.125rem, env(safe-area-inset-right, 0px));
         }
         .page-content img,
         .page-content video,
@@ -384,6 +388,12 @@
                 padding-right: max(2rem, env(safe-area-inset-right, 0px));
             }
         }
+        @media (min-width: 1536px) {
+            .page-content {
+                padding-left: max(2.5rem, env(safe-area-inset-left, 0px));
+                padding-right: max(2.5rem, env(safe-area-inset-right, 0px));
+            }
+        }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
@@ -428,14 +438,16 @@
                 6px 6px 0 rgba(120, 75, 25, 0.38);
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
         }
-        
-        .stone-panel:hover {
-            box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.85),
-                0 0 0 1px rgba(200, 140, 40, 0.25),
-                8px 8px 0 rgba(120, 75, 25, 0.45),
-                0 20px 40px -12px rgba(160, 110, 40, 0.2);
-            transform: translateY(-6px) rotateX(2deg);
+        /* 僅在精細指標＋可 hover 時浮起，避免手機捲動誤觸晃動 */
+        @media (hover: hover) and (pointer: fine) {
+            .stone-panel:hover {
+                box-shadow:
+                    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+                    0 0 0 1px rgba(200, 140, 40, 0.25),
+                    8px 8px 0 rgba(120, 75, 25, 0.45),
+                    0 20px 40px -12px rgba(160, 110, 40, 0.2);
+                transform: translateY(-4px) rotateX(1deg);
+            }
         }
         /* 遊戲感裝飾框（首頁 CTA 等） */
         .game-hud-frame {
@@ -920,13 +932,7 @@
             animation: borderGlow 3s ease-in-out infinite;
         }
 
-        /* 增強石板卡片 hover */
-        .stone-panel {
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
-        }
-        .stone-panel:hover {
-            transform: translateY(-6px) rotateX(2deg);
-        }
+        /* 石板卡片 hover 已於上方 @media (hover:hover) 統一處理，避免重複 */
 
         /* 導航連結底線動畫 */
         .nav-link-animated {
@@ -2321,12 +2327,19 @@
         };
 
         const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-amber-600" }) => (
-            <header className="mb-10 md:mb-14 text-center max-w-2xl mx-auto px-1">
-                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-4">
-                    {Icon && <Icon size={30} className={`${color} shrink-0 mx-auto sm:mx-0`} strokeWidth={1.75} aria-hidden />}
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
+            <header className="mb-10 md:mb-16 text-center max-w-2xl mx-auto px-1">
+                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-5">
+                    {Icon && (
+                        <span className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-amber-50/90 border-2 border-amber-200/80 shadow-md shadow-amber-900/10 mx-auto sm:mx-0">
+                            <Icon size={28} className={`${color} shrink-0 sm:w-[30px] sm:h-[30px]`} strokeWidth={1.75} aria-hidden />
+                        </span>
+                    )}
+                    <div className="min-w-0 text-center sm:text-left">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
+                        <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-amber-600 mx-auto sm:mx-0 sm:ml-0 shadow-sm" aria-hidden />
+                    </div>
                 </div>
-                {subtitle && <p className="text-stone-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">{subtitle}</p>}
+                {subtitle && <p className="text-stone-600 text-sm md:text-base leading-relaxed max-w-xl mx-auto mt-1 font-medium">{subtitle}</p>}
             </header>
         ));
 
@@ -2367,21 +2380,22 @@
             if (location.pathname === '/admin') return null;
 
             return (
-                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t-2 border-amber-700/50 bg-[#12100e]/96 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)]">
-                    <div className="flex justify-between items-stretch min-h-[56px] max-w-lg mx-auto px-1 py-1.5 gap-0.5" role="navigation" aria-label="手機底部選單">
+                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t border-amber-600/40 bg-[#0c0a08]/97 backdrop-blur-xl backdrop-saturate-150 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] ring-1 ring-amber-900/30">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent pointer-events-none" aria-hidden />
+                    <div className="flex justify-between items-stretch min-h-[58px] max-w-lg mx-auto px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
                             return (
                                 <Link 
                                     key={item.path} 
                                     to={item.path} 
-                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-xl transition-colors active:opacity-90 ${isActive ? 'text-amber-300' : 'text-stone-500 active:text-stone-400'}`}
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-[0.97] active:opacity-90 ${isActive ? 'text-amber-200' : 'text-stone-500 active:text-stone-400'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <span className={`flex items-center justify-center w-10 h-10 rounded-xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_8px_rgba(251,191,36,0.35)]' : 'bg-stone-800/80 border border-stone-700/80'}`}>
-                                        <item.icon size={21} strokeWidth={isActive ? 2.25 : 2} className={isActive ? '' : 'text-stone-400'} aria-hidden />
+                                    <span className={`flex items-center justify-center w-11 h-11 rounded-2xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_4px_14px_rgba(251,191,36,0.45)] ring-1 ring-amber-300/50' : 'bg-stone-800/90 border border-stone-700/90'}`}>
+                                        <item.icon size={22} strokeWidth={isActive ? 2.35 : 2} className={isActive ? '' : 'text-stone-400'} aria-hidden />
                                     </span>
-                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-amber-200' : 'text-stone-500'}`}>{item.label}</span>
+                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-amber-100' : 'text-stone-500'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -6018,11 +6032,13 @@
                                     <button
                                         type="button"
                                         onClick={handleAndroidDownloadBackup}
-                                        className="w-full py-2.5 rounded-xl border-2 border-wind-300 bg-white text-wind-700 hover:bg-wind-50 font-bold text-sm transition-all flex items-center justify-center gap-1.5 mt-2"
+                                        className="w-full py-3.5 md:py-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 hover:from-amber-400 hover:via-amber-400 hover:to-orange-400 text-white font-black text-base md:text-lg shadow-lg shadow-amber-600/40 ring-2 ring-amber-200/90 ring-offset-2 ring-offset-sand-100/50 hover:ring-amber-100 hover:shadow-xl hover:shadow-amber-500/45 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2.5 mt-3 border border-amber-400/60"
                                         aria-label="Android 備用下載載點"
                                     >
+                                        <ExternalLink size={22} className="shrink-0" strokeWidth={2.5} aria-hidden />
                                         備用載點
                                     </button>
+                                    <p className="text-center text-xs font-bold text-amber-800/80 mt-1.5">主連結無法使用時請點此</p>
                                     <p className="text-stone-500 text-xs text-center mt-2">Android 5.0+</p>
                                 </div>
                             </motion.div>
@@ -13958,30 +13974,30 @@
 
                     <ScrollToTop />
                     <PageTitle />
-                    <nav className={`fixed top-0 w-full z-50 border-b-2 border-amber-600/45 bg-[#141210]/93 backdrop-blur-md transition-shadow duration-300 ${isScrolled ? 'shadow-lg shadow-black/40 border-amber-500/55' : 'shadow-md shadow-black/25'}`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-2">
-                            <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0 shrink-0">
+                    <nav className={`fixed top-0 w-full z-50 border-b border-amber-600/45 bg-[#141210]/95 backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color] duration-300 ${isScrolled ? 'shadow-xl shadow-black/50 border-amber-500/55' : 'shadow-md shadow-black/30'}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-2 min-h-[3.25rem] md:min-h-[3.5rem]">
+                            <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0 shrink-0 rounded-xl focus-visible:ring-2 focus-visible:ring-amber-400/50">
                                 <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-[0_0_14px_rgba(251,191,36,0.35)]">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
                                 </div>
                             </Link>
 
-                            <nav className="hidden lg:flex items-center gap-0.5 px-1 py-1 rounded-lg bg-stone-900/80 border border-amber-700/35 shadow-inner" aria-label="主要選單">
+                            <nav className="hidden lg:flex items-center gap-1 px-1.5 py-1.5 rounded-2xl bg-stone-900/85 border border-amber-700/40 shadow-inner ring-1 ring-black/20" aria-label="主要選單">
                                 {['首頁', '攻略', '下載', '金幣', '客服'].map((label, i) => {
                                     const path = i === 0 ? '/' : i === 1 ? '/guides' : i === 2 ? '/download' : i === 3 ? '/recharge' : '/support';
                                     const isActive = location.pathname === path || (path === '/guides' && location.pathname.startsWith('/guides'));
                                     return (
-                                        <Link key={path} to={path} className={`px-3 py-2 rounded-md text-sm font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_8px_rgba(251,191,36,0.35)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
+                                        <Link key={path} to={path} className={`px-3.5 py-2.5 rounded-xl text-[15px] font-bold font-display tracking-wide transition-all ${isActive ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
                                             {label}
                                         </Link>
                                     );
                                 })}
-                                <Link to="/events" className={`px-3 py-2 rounded-md text-sm font-bold font-display tracking-wide transition-all ${location.pathname === '/events' ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_8px_rgba(251,191,36,0.35)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
+                                <Link to="/events" className={`px-3.5 py-2.5 rounded-xl text-[15px] font-bold font-display tracking-wide transition-all ${location.pathname === '/events' ? 'bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 shadow-[0_2px_10px_rgba(251,191,36,0.4)]' : 'text-stone-400 hover:text-amber-200 hover:bg-stone-800/90'}`}>
                                     活動
                                 </Link>
                             </nav>
 
-                            <div className="nav-top-actions flex items-center gap-1.5 md:gap-2 shrink-0">
+                            <div className="nav-top-actions flex items-center gap-1.5 md:gap-2.5 shrink-0">
                                 <MusicPlayer />
                                 
                                 {user ? (
@@ -14028,10 +14044,10 @@
                     </main>
 
                     <div className="footer-tribal-border"></div>
-                    <footer className="site-footer bg-[#0f0d0b] py-10 md:py-14 px-4 sm:px-6 border-t-0 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0">
-                        <div className="max-w-7xl mx-auto space-y-6">
+                    <footer className="site-footer bg-gradient-to-b from-[#12100e] to-[#0a0908] py-10 md:py-16 px-4 sm:px-6 border-t border-amber-900/25 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0 shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
+                        <div className="max-w-7xl mx-auto space-y-7">
                             {/* 免責聲明 */}
-                            <div className="rounded-xl p-5 md:p-6 border border-stone-700/80 bg-stone-800/40">
+                            <div className="rounded-2xl p-5 md:p-7 border border-stone-700/70 bg-stone-800/35 backdrop-blur-sm">
                                 <h3 className="text-stone-200 font-bold text-base mb-3 flex items-center gap-2">
                                     <AlertCircle size={18} className="text-amber-500/90 shrink-0" />
                                     免責聲明
@@ -14063,18 +14079,18 @@
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-stone-800/80">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-5 pt-2 border-t border-stone-800/60">
                                 <div className="flex items-center gap-3 opacity-90">
                                     <div className="h-8 md:h-9 w-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-300">
                                         <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain brightness-0 invert" alt="蘇打石器" />
                                     </div>
                                     <span className="text-xs font-semibold tracking-wider text-stone-500">SODA STONE AGE</span>
                                 </div>
-                                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-xs">
-                                    <Link to="/download" className="hover:text-gold-400 transition-colors font-bold">遊戲下載</Link>
-                                    <Link to="/support" className="hover:text-gold-400 transition-colors font-bold">官方客服</Link>
-                                    <Link to="/terms" className="hover:text-gold-400 transition-colors font-bold">服務條款</Link>
-                                    <p className="font-mono tracking-wide opacity-60">© 2026 Fan-made Project</p>
+                                <div className="flex flex-wrap justify-center md:justify-end items-center gap-x-6 gap-y-3 text-sm">
+                                    <Link to="/download" className="font-bold text-stone-300 hover:text-gold-400 transition-colors underline-offset-4 hover:underline py-1">遊戲下載</Link>
+                                    <Link to="/support" className="font-bold text-stone-300 hover:text-gold-400 transition-colors underline-offset-4 hover:underline py-1">官方客服</Link>
+                                    <Link to="/terms" className="font-bold text-stone-300 hover:text-gold-400 transition-colors underline-offset-4 hover:underline py-1">服務條款</Link>
+                                    <p className="font-mono tracking-wide opacity-60 text-xs w-full text-center md:w-auto md:text-left">© 2026 Fan-made Project</p>
                                 </div>
                             </div>
                         </div>
