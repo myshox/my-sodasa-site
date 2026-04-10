@@ -10389,11 +10389,15 @@
                                 </button>
                             </form>
                             
-                            <div className="mt-5 pt-5 border-t border-slate-800">
+                            <div className="mt-5 pt-5 border-t border-slate-800 space-y-3">
                                 <div className="flex items-center justify-center gap-1.5 text-slate-600 text-xs">
                                     <Shield size={12} />
                                     <span>Supabase Auth 安全認證</span>
                                 </div>
+                                <Link to="/" className="flex items-center justify-center gap-2 text-sm font-bold text-slate-500 hover:text-amber-400 transition-colors">
+                                    <Home size={16} className="opacity-70" aria-hidden />
+                                    回到官網首頁
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -10407,13 +10411,27 @@
                     </div>
                 );
             }
+
+            const ADMIN_TAB_META = {
+                donations: { label: '贊助管理', hint: '檢視訂單、處理狀態、發放與匯出' },
+                guides: { label: '活動攻略', hint: '編輯前台攻略文章與內容' },
+                stats: { label: '報表統計', hint: '營收、圖表與數據分析' },
+                gm_give: { label: 'GM 發放', hint: '遊戲內發幣／水晶、批量操作' },
+                events: { label: '活動管理', hint: '公告橫幅、活動頁與跑馬燈' },
+                music: { label: '音樂', hint: '站台背景音樂與播放清單' },
+                settings: { label: '設定', hint: '站台參數與進階選項' },
+                registered_users: { label: '註冊用戶', hint: '會員資料與遊戲帳號綁定' },
+                super_admins: { label: '超管', hint: '管理員帳號與權限' },
+                game_players: { label: '遊戲玩家', hint: '遊戲內角色與查詢' },
+            };
+            const tabInfo = ADMIN_TAB_META[currentTab] || { label: '後台', hint: '請選擇上方分頁' };
             
             return (
                 <div className="admin-content pt-20 md:pt-32 pb-24 md:pb-20 px-4 md:px-6 min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white" style={{ touchAction: 'manipulation' }}>
                     <div className="max-w-7xl mx-auto">
                         {/* 頁面標題 - 管理後台 Header */}
                         <div className="mb-6 md:mb-8">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-slate-800/60 rounded-2xl border border-amber-500/25 ring-1 ring-amber-500/10 backdrop-blur-sm shadow-lg shadow-black/20">
                                 {/* 左：Logo + 標題 */}
                                 <div className="flex items-center gap-3">
                                     <div className="w-11 h-11 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-900/40 flex-shrink-0">
@@ -10442,6 +10460,17 @@
                             </div>
                             {/* 分隔線 */}
                             <div className="h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mt-4"></div>
+                            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" aria-label="後台位置">
+                                    <Link to="/" className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-800/80 hover:text-amber-400 font-bold transition-colors">
+                                        <Home size={15} className="shrink-0 opacity-80" aria-hidden />
+                                        返回官網
+                                    </Link>
+                                    <span className="text-slate-600 select-none" aria-hidden>/</span>
+                                    <span className="font-black text-amber-400">{tabInfo.label}</span>
+                                </nav>
+                                <p className="text-xs text-slate-500 sm:text-right sm:max-w-md leading-relaxed border-l-2 border-amber-500/40 pl-3 sm:border-l-0 sm:pl-0 sm:border-0">{tabInfo.hint}</p>
+                            </div>
                         </div>
                         
                         {/* 統計卡片 */}
