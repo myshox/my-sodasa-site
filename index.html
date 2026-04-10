@@ -263,17 +263,23 @@
         html.game-site body { 
             position: relative;
             isolation: isolate;
-            background-color: #f0e3bb;
+            background-color: #e8d4a8;
             background-image:
-                radial-gradient(ellipse 100% 60% at 50% -15%, rgba(212, 165, 55, 0.18) 0%, transparent 52%),
-                radial-gradient(ellipse 70% 45% at 100% 80%, rgba(180, 120, 40, 0.08) 0%, transparent 45%),
+                radial-gradient(ellipse 90% 55% at 50% -18%, rgba(251, 191, 36, 0.28) 0%, transparent 55%),
+                radial-gradient(ellipse 55% 40% at 100% 100%, rgba(45, 168, 129, 0.09) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 35% at 0% 85%, rgba(220, 140, 60, 0.1) 0%, transparent 48%),
+                repeating-linear-gradient(
+                    135deg,
+                    rgba(90, 60, 30, 0.03) 0px,
+                    rgba(90, 60, 30, 0.03) 1px,
+                    transparent 1px,
+                    transparent 10px
+                ),
                 linear-gradient(180deg,
-                    #faf3df 0%,
-                    #faf2de 14%,
-                    #f6edd4 28%,
-                    #f3e4c4 42%,
-                    #efe0bc 58%,
-                    #e9d5a8 100%);
+                    #fff9ec 0%,
+                    #f5e6c4 22%,
+                    #edd9a8 52%,
+                    #e0c88a 100%);
             color: #3d3428;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
@@ -431,7 +437,9 @@
             background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
             border: 3px solid #b8892a;
             border-radius: 28px;
+            /* 左側琥珀色條：一眼辨識「石板卡」新版式 */
             box-shadow:
+                inset 6px 0 0 0 #f59e0b,
                 inset 0 1px 0 rgba(255, 255, 255, 0.75),
                 inset 0 -2px 0 rgba(160, 100, 30, 0.06),
                 0 0 0 1px rgba(90, 60, 20, 0.12),
@@ -442,6 +450,7 @@
         @media (hover: hover) and (pointer: fine) {
             .stone-panel:hover {
                 box-shadow:
+                    inset 6px 0 0 0 #fbbf24,
                     inset 0 1px 0 rgba(255, 255, 255, 0.85),
                     0 0 0 1px rgba(200, 140, 40, 0.25),
                     8px 8px 0 rgba(120, 75, 25, 0.45),
@@ -2327,19 +2336,24 @@
         };
 
         const PageHeader = memo(({ title, subtitle, icon: Icon, color = "text-amber-600" }) => (
-            <header className="mb-10 md:mb-16 text-center max-w-2xl mx-auto px-1">
-                <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 mb-5">
-                    {Icon && (
-                        <span className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-amber-50/90 border-2 border-amber-200/80 shadow-md shadow-amber-900/10 mx-auto sm:mx-0">
-                            <Icon size={28} className={`${color} shrink-0 sm:w-[30px] sm:h-[30px]`} strokeWidth={1.75} aria-hidden />
-                        </span>
-                    )}
-                    <div className="min-w-0 text-center sm:text-left">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight font-display leading-tight">{title}</h1>
-                        <div className="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-amber-600 mx-auto sm:mx-0 sm:ml-0 shadow-sm" aria-hidden />
+            <header className="relative mb-10 md:mb-20 text-center max-w-3xl mx-auto px-1">
+                <div className="relative rounded-[1.75rem] border-2 border-amber-300/70 bg-gradient-to-br from-white/95 via-amber-50/70 to-orange-50/50 px-5 py-8 md:px-10 md:py-10 shadow-[0_24px_56px_-16px_rgba(140,90,30,0.28)] ring-1 ring-amber-200/60">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-emerald-900/30 md:text-xs" aria-hidden>
+                        新版介面
+                    </span>
+                    <div className="inline-flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 sm:gap-5">
+                        {Icon && (
+                            <span className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 to-white border-2 border-amber-300/90 shadow-lg shadow-amber-900/15 mx-auto sm:mx-0">
+                                <Icon size={32} className={`${color} shrink-0 sm:w-[34px] sm:h-[34px]`} strokeWidth={1.75} aria-hidden />
+                            </span>
+                        )}
+                        <div className="min-w-0 text-center sm:text-left">
+                            <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-black text-stone-800 tracking-tight font-display leading-[1.15]">{title}</h1>
+                            <div className="mt-4 h-1.5 w-24 rounded-full bg-gradient-to-r from-amber-400 via-gold-500 to-orange-500 mx-auto sm:mx-0 shadow-sm" aria-hidden />
+                        </div>
                     </div>
+                    {subtitle && <p className="text-stone-700 text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-6 font-semibold">{subtitle}</p>}
                 </div>
-                {subtitle && <p className="text-stone-600 text-sm md:text-base leading-relaxed max-w-xl mx-auto mt-1 font-medium">{subtitle}</p>}
             </header>
         ));
 
@@ -2380,8 +2394,8 @@
             if (location.pathname === '/admin') return null;
 
             return (
-                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t border-amber-600/40 bg-[#0c0a08]/97 backdrop-blur-xl backdrop-saturate-150 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] ring-1 ring-amber-900/30">
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent pointer-events-none" aria-hidden />
+                <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 w-full z-50 pb-safe md:hidden border-t-[3px] border-t-amber-500/90 bg-gradient-to-t from-[#070605] via-[#12100c] to-[#1a1510] backdrop-blur-xl backdrop-saturate-150 shadow-[0_-16px_48px_rgba(0,0,0,0.65)] ring-1 ring-amber-600/40">
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-600/20 via-amber-400 to-amber-600/20 pointer-events-none" aria-hidden />
                     <div className="flex justify-between items-stretch min-h-[58px] max-w-lg mx-auto px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單">
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path || (item.path === '/guides' && location.pathname.startsWith('/guides'));
@@ -3997,6 +4011,12 @@
 
                         <div className="relative z-20 text-center max-w-7xl px-6 w-full">
                             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }}>
+                                <div className="mb-4 flex justify-center px-2">
+                                    <span className="inline-flex items-center gap-2 rounded-full border-2 border-emerald-400/60 bg-gradient-to-r from-emerald-950/95 to-teal-950/90 px-4 py-2 text-[11px] sm:text-sm font-black text-emerald-100 shadow-[0_0_28px_rgba(52,211,153,0.35)] tracking-wide ring-1 ring-emerald-500/30">
+                                        <Sparkles className="text-emerald-300 shrink-0" size={16} strokeWidth={2.5} aria-hidden />
+                                        2026 新版視覺 · 全站體驗升級
+                                    </span>
+                                </div>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
@@ -13974,8 +13994,8 @@
 
                     <ScrollToTop />
                     <PageTitle />
-                    <nav className={`fixed top-0 w-full z-50 border-b border-amber-600/45 bg-[#141210]/95 backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color] duration-300 ${isScrolled ? 'shadow-xl shadow-black/50 border-amber-500/55' : 'shadow-md shadow-black/30'}`}>
-                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-2 min-h-[3.25rem] md:min-h-[3.5rem]">
+                    <nav className={`fixed top-0 w-full z-50 border-b border-amber-600/50 border-t-[4px] border-t-amber-400 bg-gradient-to-b from-[#1c1814] to-[#0e0c0a]/98 backdrop-blur-xl backdrop-saturate-150 transition-[box-shadow,border-color] duration-300 ${isScrolled ? 'shadow-xl shadow-black/55 border-amber-500/60' : 'shadow-lg shadow-black/35'}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 xl:px-8 flex justify-between items-center gap-2 min-h-[3.35rem] md:min-h-[3.65rem]">
                             <Link to="/" className="flex items-center gap-4 min-h-[44px] min-w-[44px] md:min-w-0 shrink-0 rounded-xl focus-visible:ring-2 focus-visible:ring-amber-400/50">
                                 <div className="h-10 md:h-12 w-auto overflow-visible drop-shadow-[0_0_14px_rgba(251,191,36,0.35)]">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-full w-auto object-contain" alt="蘇打石器" />
