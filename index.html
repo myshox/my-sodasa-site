@@ -3150,11 +3150,18 @@
                         setGameMaster2(savedMaster2);
                         setMasterInput2(savedMaster2);
 
-                        const accounts = currentUser.user_metadata?.game_accounts ||
+                        let accounts = currentUser.user_metadata?.game_accounts ||
                             (currentUser.user_metadata?.game_account ? [{
                                 id: '1', name: currentUser.user_metadata.game_account,
                                 is_primary: true, created_at: Date.now()
                             }] : []);
+                        if (Array.isArray(accounts)) {
+                            accounts = accounts.map((a, i) => ({
+                                ...a,
+                                id: a.id != null ? String(a.id) : String(i),
+                                name: String((a && (a.name != null && a.name !== '' ? a.name : a.account)) || '').trim()
+                            }));
+                        }
                         setGameAccounts(accounts);
 
                         // ① 立即從快取顯示 GM 資料（不等 API）
@@ -3893,7 +3900,7 @@
                                             <div className="text-stone-600 text-sm space-y-1">
                                                 <p><span className="font-bold">方案名稱：</span>{item.plan_name}</p>
                                                 <p><span className="font-bold">獲得金幣：</span><span className="text-gold-600 font-bold">{item.coins ? item.coins.toLocaleString() : 0} Gold</span></p>
-                                                <p><span className="font-bold">遊戲帳號：</span>{item.game_account}</p>
+                                                <p><span className="font-bold">遊戲帳號（CDKEY）：</span>{item.game_account ? <span className="font-mono break-all">{item.game_account}</span> : <span className="text-amber-700">（未寫入，請聯絡客服補單或核對當下綁定）</span>}</p>
                                                 <p><span className="font-bold">支付方式：</span>{
                                                     item.payment_method === 'linepay' ? 'LINE Pay' : 
                                                     item.payment_method === 'shopline' ? 'SHOPLINE' : 
@@ -6003,7 +6010,7 @@
 
             const handleIosDownload = () => {
                 // iOS 下載連結
-                window.open('https://z29.pps3.com/92zej6', '_blank');
+                window.open('https://n4s.pps3.com/s4nzjt', '_blank');
                 showToast("正在開啟 iOS 下載頁面...", "success");
             };
 
@@ -6331,15 +6338,21 @@
                         const master = currentUser.user_metadata?.game_master || '';
                         setGameMasterBound(master);
 
-                        // 讀取遊戲帳號列表（支援舊格式和新格式）
-                        const accounts = currentUser.user_metadata?.game_accounts || 
+                        // 讀取遊戲帳號列表（支援舊格式和新格式；name / account 併用避免 CDKEY 寫不進 donations）
+                        let accounts = currentUser.user_metadata?.game_accounts ||
                                        (currentUser.user_metadata?.game_account ? [{
                                            id: '1',
                                            name: currentUser.user_metadata.game_account,
                                            is_primary: true,
                                            created_at: Date.now()
                                        }] : []);
-                        
+                        if (Array.isArray(accounts)) {
+                            accounts = accounts.map((a, i) => ({
+                                ...a,
+                                id: a.id != null ? String(a.id) : String(i),
+                                name: String((a && (a.name != null && a.name !== '' ? a.name : a.account)) || '').trim()
+                            }));
+                        }
                         console.log('遊戲帳號列表:', accounts);
                         setGameAccounts(accounts);
                         
@@ -6374,6 +6387,7 @@
 
             const saveSponsorshipRecord = async () => {
                 const selectedAccount = gameAccounts.find(acc => acc.id === selectedAccountId);
+                const cdkey = String((selectedAccount && (selectedAccount.name != null && selectedAccount.name !== '' ? selectedAccount.name : selectedAccount.account)) || '').trim();
                 
                 try {
                     // 取得 IP 位置資訊
@@ -6383,7 +6397,7 @@
                     const insertData = {
                         user_id: user.id,
                         email: user.email,
-                        game_account: selectedAccount?.name || '',
+                        game_account: cdkey,
                         line_name: (lineName || '').trim() || null,
                         amount: selectedPlan.amount,
                         coins: selectedPlan.total,
@@ -6683,7 +6697,7 @@
                         <PaymentModal 
                             method={selectedMethod}
                             plan={selectedPlan} 
-                            gameAccount={gameAccounts.find(acc => acc.id === selectedAccountId)?.name || ''}
+                            gameAccount={(() => { const s = gameAccounts.find(acc => acc.id === selectedAccountId); return (s && (s.name || s.account)) ? String(s.name || s.account).trim() : ''; })()}
                             lineName={lineName}
                             orderNumber={orderNumber}
                             onClose={() => setShowModal(false)}
@@ -6761,6 +6775,7 @@
                                                     {gameAccounts.map((account) => {
                                                         const isSelected = selectedAccountId === account.id;
                                                         const charLabel = account.charName || '';
+                                                        const cdkeyLabel = String((account.name != null && account.name !== '' ? account.name : account.account) || '').trim();
                                                         return (
                                                             <div
                                                                 key={account.id}
@@ -6780,7 +6795,7 @@
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                                        <span className="font-black text-stone-800 text-sm">{account.name}</span>
+                                                                        <span className="font-black text-stone-800 text-sm font-mono break-all">{cdkeyLabel || '（帳號欄位異常）'}</span>
                                                                         {account.is_primary && <span className="px-1.5 py-0.5 bg-gold-500 text-white text-[10px] font-bold rounded">主要</span>}
                                                                     </div>
                                                                     {charLabel && <span className="text-xs text-stone-500">👤 {charLabel}</span>}
@@ -7168,7 +7183,7 @@
                                     <div className="flex min-h-[52px] items-start justify-between gap-3 border-b border-dashed border-stone-200 px-4 py-3.5 sm:px-5 sm:py-4">
                                         <span className="pt-0.5 text-xs font-bold text-stone-400">遊戲帳號</span>
                                         <span className={`max-w-[58%] break-all text-right font-mono text-xs font-bold ${selectedAccountId ? 'text-stone-800' : 'text-amber-700/80'}`}>
-                                            {gameAccounts.find(acc => acc.id === selectedAccountId)?.name || '尚未選擇'}
+                                            {(() => { const s = gameAccounts.find(acc => acc.id === selectedAccountId); const k = s && (s.name || s.account) ? String(s.name || s.account).trim() : ''; return k || '尚未選擇'; })()}
                                         </span>
                                     </div>
                                     <div className="flex min-h-[52px] items-start justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
@@ -8380,7 +8395,7 @@
                         console.log('[DEBUG] unique CDKEYs to fetch:', unique);
 
                         // 讀 localStorage 快取（5 分鐘有效）
-                        const LS_KEY = 'gmPlayerCache_v1';
+                        const LS_KEY = 'gmPlayerCache_v2';
                         const CACHE_TTL = 5 * 60 * 1000;
                         let lsCache = {};
                         try { const raw = localStorage.getItem(LS_KEY); if (raw) { const parsed = JSON.parse(raw); const now = Date.now(); lsCache = Object.fromEntries(Object.entries(parsed).filter(([,v]) => now - (v._ts||0) < CACHE_TTL)); } } catch {}
@@ -8522,6 +8537,39 @@
 
             // 載入所有資料 + donations 即時同步（含手機版）；donations 先載入最近筆數以加快首屏
             const DONATIONS_INITIAL_LIMIT = 800;
+
+            // ───────── 單一帳號 GM 資料抓取 helper（INSERT/UPDATE 可即時補 cache） ─────────
+            const fetchGmForAccount = async (acc) => {
+                if (!acc) return null;
+                const WORKER = 'https://soda-recharge.myshoxisgood.workers.dev';
+                const bust   = `?t=${Date.now()}`;
+                try {
+                    const res = await fetch(`${WORKER}/player/${encodeURIComponent(acc)}${bust}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const d = await res.json();
+                        if (d.charName || d.gold > 0 || d.payTotal > 0) return d;
+                    }
+                    const mRes = await fetch(`${WORKER}/master/${encodeURIComponent(acc)}${bust}`, { cache: 'no-store' });
+                    if (mRes.ok) {
+                        const mData = await mRes.json();
+                        if (mData.chars && mData.chars.length > 0) {
+                            const first = mData.chars[0];
+                            return {
+                                account:     first.account,
+                                charName:    first.charName,
+                                masterName:  mData.masterName || acc,
+                                isOnline:    first.isOnline,
+                                gold:        first.gold,
+                                vipLevel:    first.payTotal >= 15000 ? 2 : first.payTotal >= 5000 ? 1 : 0,
+                                payTotal:    first.payTotal,
+                                paydataPoint: 0,
+                            };
+                        }
+                    }
+                } catch {}
+                return null;
+            };
+
             useEffect(() => {
                 if (!isLoggedIn) return;
 
@@ -8534,76 +8582,124 @@
                     setData(donationsRes.data || []);
                     setEvents((loadedEvents || []).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
                     setPlaylist(loadedPlaylist || []);
-                    
+
                     // 批次取得 GM 玩家資料（取唯一帳號，限50個避免過多請求）
-                    // 策略：先查 /player/{acc}，若找不到角色（可能填的是主帳號）
-                    //       再 fallback 查 /master/{acc} 取第一個子帳號資料
                     const uniqueAccounts = [...new Set((donationsRes.data || []).map(d => d.game_account).filter(Boolean))].slice(0, 50);
                     if (uniqueAccounts.length > 0) {
                         const cache = {};
-                        const WORKER = 'https://soda-recharge.myshoxisgood.workers.dev';
                         await Promise.all(uniqueAccounts.map(async (acc) => {
-                            try {
-                                // 1. 先嘗試查 CDKEY（子帳號）
-                                const res = await fetch(`${WORKER}/player/${encodeURIComponent(acc)}`);
-                                if (res.ok) {
-                                    const data = await res.json();
-                                    // 若有角色名或金幣 > 0 代表是有效 CDKEY，直接用
-                                    if (data.charName || data.gold > 0) {
-                                        cache[acc] = data;
-                                        return;
-                                    }
-                                }
-                                // 2. CDKEY 查不到或無資料 → 嘗試當主帳號查詢
-                                const mRes = await fetch(`${WORKER}/master/${encodeURIComponent(acc)}`);
-                                if (mRes.ok) {
-                                    const mData = await mRes.json();
-                                    // 取第一個子帳號資料合併主帳號名稱
-                                    if (mData.chars && mData.chars.length > 0) {
-                                        const first = mData.chars[0];
-                                        cache[acc] = {
-                                            account:     first.account,
-                                            charName:    first.charName,
-                                            masterName:  mData.masterName || acc,
-                                            isOnline:    first.isOnline,
-                                            gold:        first.gold,
-                                            vipLevel:    first.payTotal >= 15000 ? 2 : first.payTotal >= 5000 ? 1 : 0,
-                                            payTotal:    first.payTotal,
-                                            paydataPoint: 0,
-                                        };
-                                    }
-                                }
-                            } catch {}
+                            const gm = await fetchGmForAccount(acc);
+                            if (gm) cache[acc] = gm;
                         }));
-                        setGmPlayerCache(cache);
+                        setGmPlayerCache(prev => ({ ...prev, ...cache }));
                     }
                 };
 
                 loadData();
                 window.addEventListener('storage-update', loadData);
 
+                // 把漏接的新訂單補進 state：從目前最新 id 往後撈
+                const pullLatest = async () => {
+                    try {
+                        const { data: loaded } = await supabase
+                            .from('donations')
+                            .select('*')
+                            .order('created_at', { ascending: false })
+                            .limit(DONATIONS_INITIAL_LIMIT);
+                        if (loaded) {
+                            setData(prev => {
+                                const prevIds = new Set(prev.map(d => d.id));
+                                const newOnes = loaded.filter(d => !prevIds.has(d.id));
+                                if (newOnes.length === 0) return prev;
+                                // 順便補新玩家的 GM 資料
+                                (async () => {
+                                    const addCache = {};
+                                    for (const d of newOnes) {
+                                        if (d.game_account) {
+                                            const gm = await fetchGmForAccount(d.game_account);
+                                            if (gm) addCache[d.game_account] = gm;
+                                        }
+                                    }
+                                    if (Object.keys(addCache).length) {
+                                        setGmPlayerCache(prev => ({ ...prev, ...addCache }));
+                                    }
+                                })();
+                                return loaded;
+                            });
+                        }
+                    } catch {}
+                };
+
                 // Supabase Realtime：donations 有任何變更立即同步到管理員畫面
                 const channel = supabase
                     .channel('admin-donations-sync')
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'donations' }, payload => {
-                        setData(prev => [payload.new, ...prev].slice(0, DONATIONS_INITIAL_LIMIT));
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'donations' }, async payload => {
+                        setData(prev => {
+                            if (prev.some(d => d.id === payload.new.id)) return prev;
+                            return [payload.new, ...prev].slice(0, DONATIONS_INITIAL_LIMIT);
+                        });
                         showToast('🔔 新增一筆贊助紀錄', 'info');
+                        // 新訂單玩家的 GM 資料補到 cache
+                        const acc = payload.new.game_account;
+                        if (acc) {
+                            const gm = await fetchGmForAccount(acc);
+                            if (gm) setGmPlayerCache(prev => ({ ...prev, [acc]: gm }));
+                        }
                     })
-                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'donations' }, payload => {
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'donations' }, async payload => {
                         setData(prev => prev.map(d => d.id === payload.new.id ? { ...d, ...payload.new } : d));
+                        const acc = payload.new.game_account;
+                        // 只要訂單有 game_account 就重抓 GM 資料（包含金幣／VIP），
+                        // 確保「給予儲值」之後跨裝置（手機/桌面）卡片金幣同步刷新。
+                        if (acc) {
+                            const gm = await fetchGmForAccount(acc);
+                            if (gm) setGmPlayerCache(prev => ({ ...prev, [acc]: gm }));
+                        }
                     })
                     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'donations' }, payload => {
                         setData(prev => prev.filter(d => d.id !== payload.old.id));
                     })
                     .subscribe();
 
-                // 視窗重新取得焦點時重新整理 donations（GM平台操作後切回官網即更新）
-                const onFocusDonations = () => refreshDonations(false);
+                // 重抓「目前畫面上」最近 50 筆訂單的 GM 玩家資料，
+                // 用於手機背景回前景時把儲值後的金幣／VIP 同步刷新。
+                const refetchVisibleGm = async () => {
+                    try {
+                        const { data: loaded } = await supabase
+                            .from('donations').select('id, game_account')
+                            .order('created_at', { ascending: false })
+                            .limit(50);
+                        const accounts = [...new Set((loaded || []).map(d => d.game_account).filter(Boolean))];
+                        if (!accounts.length) return;
+                        const next = {};
+                        await Promise.all(accounts.map(async (acc) => {
+                            const gm = await fetchGmForAccount(acc);
+                            if (gm) next[acc] = gm;
+                        }));
+                        if (Object.keys(next).length) setGmPlayerCache(prev => ({ ...prev, ...next }));
+                    } catch {}
+                };
+
+                // 視窗重新取得焦點時：補抓漏掉的訂單 + 重抓最近 50 筆 GM 資料
+                const onFocusDonations = () => { pullLatest(); refetchVisibleGm(); };
                 window.addEventListener('focus', onFocusDonations);
+
+                // 頁面由背景切回前景時立刻同步（手機瀏覽器回切時觸發）
+                const onVisibility = () => {
+                    if (document.visibilityState === 'visible') { pullLatest(); refetchVisibleGm(); }
+                };
+                document.addEventListener('visibilitychange', onVisibility);
+
+                // 兜底輪詢：每 25 秒跟資料庫對一次（含 GM 玩家資料），確保手機背景回來後不會漏訂單／金幣
+                const pollTimer = setInterval(() => {
+                    if (document.visibilityState === 'visible') { pullLatest(); refetchVisibleGm(); }
+                }, 25000);
 
                 return () => {
                     window.removeEventListener('storage-update', loadData);
                     window.removeEventListener('focus', onFocusDonations);
+                    document.removeEventListener('visibilitychange', onVisibility);
+                    clearInterval(pollTimer);
                     supabase.removeChannel(channel);
                 };
             }, [isLoggedIn]);
@@ -8616,29 +8712,15 @@
                     const { data: loaded } = await q;
                     setData(loaded || []);
                     showToast(loadAll ? '已載入全部' : '已更新', 'success');
-                    // 同步更新 GM 玩家快取
-                    const WORKER = GM_WORKER;
+                    // 同步更新 GM 玩家快取（用共用 helper）
                     const uniqueAccounts = [...new Set((loaded || []).map(d => d.game_account).filter(Boolean))].slice(0, 50);
                     if (uniqueAccounts.length > 0) {
                         const cache = {};
                         await Promise.all(uniqueAccounts.map(async (acc) => {
-                            try {
-                                const res = await fetch(`${WORKER}/player/${encodeURIComponent(acc)}`);
-                                if (res.ok) {
-                                    const data = await res.json();
-                                    if (data.charName || data.gold > 0) { cache[acc] = data; return; }
-                                }
-                                const mRes = await fetch(`${WORKER}/master/${encodeURIComponent(acc)}`);
-                                if (mRes.ok) {
-                                    const mData = await mRes.json();
-                                    if (mData.chars && mData.chars.length > 0) {
-                                        const first = mData.chars[0];
-                                        cache[acc] = { account: first.account, charName: first.charName, masterName: mData.masterName || acc, isOnline: first.isOnline, gold: first.gold, vipLevel: first.payTotal >= 15000 ? 2 : first.payTotal >= 5000 ? 1 : 0, payTotal: first.payTotal, paydataPoint: 0 };
-                                    }
-                                }
-                            } catch {}
+                            const gm = await fetchGmForAccount(acc);
+                            if (gm) cache[acc] = gm;
                         }));
-                        setGmPlayerCache(cache);
+                        setGmPlayerCache(prev => ({ ...prev, ...cache }));
                     }
                 } catch (e) {
                     showToast('更新失敗', 'error');
@@ -9387,6 +9469,11 @@
                             if (gmRes.ok) {
                                 const bonusMsg = bonusPercent > 0 ? ` (含 +${bonusPercent}% 回饋 ${bonusGold.toLocaleString()})` : '';
                                 showToast(`✅ 已儲值：${chargeAccount} +${totalGold.toLocaleString()} 金幣${bonusMsg}`, 'success');
+                                // 立即重抓玩家資料，讓 UI（手機/桌面）卡片金幣即時刷新
+                                (async () => {
+                                    const fresh = await fetchGmForAccount(chargeAccount);
+                                    if (fresh) setGmPlayerCache(prev => ({ ...prev, [chargeAccount]: fresh }));
+                                })();
                             } else {
                                 showToast(`⚠️ 狀態已更新，但儲值失敗：${gmResult.message || '未知錯誤'}`, 'error');
                             }
@@ -10882,13 +10969,14 @@
                                                         </td>
                                                         <td className="px-2 py-2.5 min-w-0">
                                                             <div className="min-w-0 space-y-0.5">
-                                                                <div className="text-stone-100 font-bold text-sm truncate font-mono" title={donation.game_account}>{donation.game_account}</div>
+                                                                <div className="text-stone-100 font-bold text-sm truncate font-mono" title={donation.game_account || '未填 CDKEY'}>{donation.game_account || <span className="text-amber-400/90 font-sans">（未填 CDKEY）</span>}</div>
                                                                 {gmPlayerCache[donation.game_account] && (
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
                                                                         {gmPlayerCache[donation.game_account].charName && (
                                                                             <span className="text-[10px] text-sky-400/90 font-medium">👤 {gmPlayerCache[donation.game_account].charName}</span>
                                                                         )}
                                                                         <span className="text-[10px] text-amber-400/80 font-medium">VIP {gmPlayerCache[donation.game_account].vipLevel}</span>
+                                                                        <span className="text-[10px] text-amber-300/70 font-medium">💰 {(gmPlayerCache[donation.game_account].gold || 0).toLocaleString()}</span>
                                                                         {gmPlayerCache[donation.game_account].masterName && (
                                                                             <span className="text-[10px] text-purple-400/80 font-medium">🔑 {gmPlayerCache[donation.game_account].masterName}</span>
                                                                         )}
@@ -11106,7 +11194,7 @@
                                                         <span className="text-xs text-stone-100 font-semibold">玩家</span>
                                                     </div>
                                                     <div className="pl-5 space-y-0.5">
-                                                        {item.game_account && <div className="text-white font-bold text-sm font-mono">{item.game_account}</div>}
+                                                        <div className="text-white font-bold text-sm font-mono break-all">{item.game_account || '（未填 CDKEY）'}</div>
                                                         {gmPlayerCache[item.game_account] && (
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 {gmPlayerCache[item.game_account].charName && (

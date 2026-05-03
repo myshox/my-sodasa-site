@@ -15,72 +15,86 @@
 import mysql from 'mysql2/promise';
 
 // ─────────────────────────────────────────────
-// ★ 資料表名稱設定（如不符請修改後重新 deploy）
+// 蘇打石器 GM 資料庫表名（已對齊真實 schema）
 // ─────────────────────────────────────────────
 const TABLE = {
-  // 主帳號（登入帳號）
-  account:   'accounts',
-  // 角色資料（charName、gold、crystal…）
-  character: 'characters',
-  // 儲值/付費紀錄
+  master:    'csaloginmaster',
+  character: 'csalogin',
   paydata:   'paydata',
+  // recharge_orders：站內儲值訂單歷史
+  recharge:  'recharge_orders',
+  // vippointlog：VipPoint（=遊戲內金幣／元寶）變動紀錄
+  vipplog:   'vippointlog',
 };
 
-// ─────────────────────────────────────────────
-// ★ 欄位名稱對應（如資料庫欄位不同請修改）
-// ─────────────────────────────────────────────
 const COL = {
-  // accounts 表
-  acc_name:    'account_name',   // 主帳號名稱
-  acc_banned:  'is_banned',      // 封號旗標（0=正常 1=封禁）
-  acc_created: 'created_at',     // 建立時間
+  // csaloginmaster
+  m_id:        'Id',
+  m_name:      'Name',
+  m_created:   'created_at',
 
-  // characters 表
-  char_account:  'account_name', // 所屬主帳號名稱（外鍵）
-  char_cdkey:    'cdkey',        // 角色 CDKEY（儲值用）
-  char_name:     'char_name',    // 角色名稱
-  char_gold:     'gold',         // 金幣
-  char_crystal:  'crystal',      // 水晶
-  char_online:   'is_online',    // 是否在線（0/1）
-  char_banned:   'is_banned',    // 角色封號
+  // csalogin
+  c_id:        'Id',
+  c_master:    'MasterId',
+  c_cdkey:     'Name',
+  c_charname:  'OnlineName',
+  c_online:    'Online',
+  c_gold:      'VipPoint',   // ★ 遊戲內「金幣／元寶」實際存的欄位（vippointlog 也記錄這欄變動）
+  c_paytotal:  'PayTotal',
+  c_vippoint:  'VipPoint',
+  c_paypoint:  'PayPoint',
+  c_logintime: 'LoginTime',
+  c_regtime:   'RegTime',
 
-  // paydata 表
-  pay_account:   'account_name', // 對應主帳號
-  pay_cdkey:     'cdkey',        // 對應角色 CDKEY
-  pay_twd:       'twd_amount',   // 台幣金額
-  pay_gold:      'gold_given',   // 發放金幣
-  pay_order:     'order_no',     // 訂單號
-  pay_remark:    'remark',       // 備註
-  pay_created:   'created_at',   // 建立時間
+  // paydata
+  p_cdkey:     'cdkey',
+  p_point:     'point',
+  p_lifetime:  'lifetime_total',
+  p_time:      'time',
+};
+
+// GM 資料庫角色名是「以 latin1/binary 欄位儲存的 UTF-8 bytes」，
+// mysql2 連線拿出來會自動雙重轉碼變亂碼，所以改在 SQL 層轉成 HEX，
+// JS 端再用 Buffer 還原為真正的 UTF-8 字串。
+const u8 = (col) => `HEX(${col})`;
+const decodeU8 = (hex) => {
+  if (hex == null) return '';
+  try {
+    const buf = new Uint8Array(Math.floor(hex.length / 2));
+    for (let i = 0; i < buf.length; i++) buf[i] = parseInt(hex.substr(i * 2, 2), 16);
+    return new TextDecoder('utf-8', { fatal: false }).decode(buf);
+  } catch { return String(hex); }
 };
 
 // ─────────────────────────────────────────────
-let _pool = null;
-function getPool(env) {
-  if (!_pool) {
-    _pool = mysql.createPool({
-      host:            env.DB_HOST,
-      port:            parseInt(env.DB_PORT || '3306'),
-      database:        env.DB_NAME,
-      user:            env.DB_USER,
-      password:        env.DB_PASS,
-      waitForConnections: true,
-      connectionLimit: 5,
-      connectTimeout:  10000,
-      charset:         'utf8mb4',
-    });
-  }
-  return _pool;
+// Cloudflare Workers 禁止跨 request 共用 I/O 物件，
+// 因此每個 request 建立獨立的 connection，結束後關閉。
+async function openConn(env) {
+  return await mysql.createConnection({
+    host:           env.DB_HOST,
+    port:           parseInt(env.DB_PORT || '3306'),
+    database:       env.DB_NAME,
+    user:           env.DB_USER,
+    password:       env.DB_PASS,
+    connectTimeout: 10000,
+    charset:        'utf8mb4',
+    disableEval:    true,
+    decimalNumbers: true,
+    dateStrings:    true,
+  });
 }
 
+const WORKER_VERSION = 'v2026-04-19-hexutf8';
 function cors(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'X-Worker-Version': WORKER_VERSION,
     },
   });
 }
@@ -89,44 +103,142 @@ function cors(body, status = 200) {
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
-      return cors({}, 204);
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin':  '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key, Authorization',
+          'Access-Control-Max-Age':       '86400',
+        },
+      });
     }
 
     const url  = new URL(request.url);
     const path = url.pathname;
-    const pool = getPool(env);
+
+    let pool;
+    try {
+      pool = await openConn(env);
+    } catch (e) {
+      return cors({ message: '資料庫連線失敗：' + (e.message || e) }, 500);
+    }
 
     try {
-      // ── DEBUG: 列出所有資料表 ──────────────────────
+      // ── DEBUG: 列出所有資料表（用 information_schema，避開 SHOW TABLES 限制） ──
       if (path === '/debug/tables') {
-        const [rows] = await pool.query('SHOW TABLES');
-        return cors({ tables: rows.map(r => Object.values(r)[0]) });
+        const [rows] = await pool.execute(
+          'SELECT TABLE_NAME AS name, TABLE_ROWS AS rows FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME',
+          [env.DB_NAME]
+        );
+        return cors({
+          database: env.DB_NAME,
+          tables: rows.map(r => ({ name: r.name, rows: Number(r.rows) || 0 })),
+        });
       }
 
       // ── DEBUG: 查看資料表 schema ───────────────────
       const schemaMatch = path.match(/^\/debug\/schema\/(.+)$/);
       if (schemaMatch) {
         const table = schemaMatch[1].replace(/[^a-zA-Z0-9_]/g, '');
-        const [rows] = await pool.query(`DESCRIBE \`${table}\``);
+        const [rows] = await pool.execute(
+          'SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_DEFAULT, COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION',
+          [env.DB_NAME, table]
+        );
         return cors({ table, columns: rows });
       }
 
-      // ── GET /master/:name ─────────────────────────
+      // ── DEBUG: 看資料表前 5 筆樣本（幫助對應欄位） ──
+      const sampleMatch = path.match(/^\/debug\/sample\/(.+)$/);
+      if (sampleMatch) {
+        const table = sampleMatch[1].replace(/[^a-zA-Z0-9_]/g, '');
+        const [rows] = await pool.execute(`SELECT * FROM \`${table}\` LIMIT 5`);
+        return cors({ table, sample: rows });
+      }
+
+      // ── DEBUG: 任意 SELECT-only SQL ─────
+      if (path === '/debug/sql' && request.method === 'POST') {
+        const { sql, params } = await request.json().catch(() => ({}));
+        if (!sql || !/^\s*SELECT\b/i.test(sql)) return cors({ message: '只允許 SELECT' }, 400);
+        const [rows] = await pool.execute(sql, params || []);
+        return cors({ rows });
+      }
+
+      // ── DEBUG: 列出資料庫所有資料表 ─────
+      if (path === '/debug/tables') {
+        const [rows] = await pool.execute(`SHOW TABLES`);
+        return cors({ tables: rows });
+      }
+
+      // ── DEBUG: 顯示某表的欄位結構 ─────
+      const descMatch = path.match(/^\/debug\/desc\/(.+)$/);
+      if (descMatch) {
+        const t = descMatch[1].replace(/[^a-zA-Z0-9_]/g, '');
+        const [rows] = await pool.execute(`SHOW FULL COLUMNS FROM \`${t}\``);
+        return cors({ table: t, columns: rows });
+      }
+
+      // ── DEBUG: 在所有表搜尋特定 CDKEY（找儲值真正寫到哪裡） ─────
+      const findMatch = path.match(/^\/debug\/find\/(.+)$/);
+      if (findMatch) {
+        const cdkey = decodeURIComponent(findMatch[1]);
+        const [tables] = await pool.execute(`SHOW TABLES`);
+        const tablesKey = Object.keys(tables[0])[0];
+        const found = [];
+        for (const t of tables) {
+          const tname = t[tablesKey];
+          try {
+            const [cols] = await pool.execute(`SHOW COLUMNS FROM \`${tname}\``);
+            const matchCols = cols
+              .filter(c => /name|cdkey|account|user|player|char/i.test(c.Field))
+              .map(c => c.Field);
+            if (matchCols.length === 0) continue;
+            const where = matchCols.map(c => `\`${c}\` = ?`).join(' OR ');
+            const params = matchCols.map(() => cdkey);
+            const [hits] = await pool.execute(
+              `SELECT * FROM \`${tname}\` WHERE ${where} LIMIT 3`,
+              params
+            );
+            if (hits.length > 0) found.push({ table: tname, matchedColumns: matchCols, rows: hits });
+          } catch {}
+        }
+        return cors({ cdkey, found });
+      }
+
+      // ── DEBUG: 查特定玩家的 paydata 儲值記錄 ─────
+      const paydataMatch = path.match(/^\/debug\/paydata\/(.+)$/);
+      if (paydataMatch) {
+        const cdkey = decodeURIComponent(paydataMatch[1]);
+        const [rows] = await pool.execute(
+          `SELECT \`${COL.p_cdkey}\` AS cdkey,
+                  \`${COL.p_point}\` AS point,
+                  \`${COL.p_lifetime}\` AS lifetime_total,
+                  \`${COL.p_time}\` AS time
+           FROM \`${TABLE.paydata}\` WHERE \`${COL.p_cdkey}\` = ?`,
+          [cdkey]
+        );
+        return cors({ cdkey, paydata: rows });
+      }
+
+      // ── GET /master/:name → 查主帳號旗下所有角色 ──
       const masterMatch = path.match(/^\/master\/(.+)$/);
       if (masterMatch && request.method === 'GET') {
         const name = decodeURIComponent(masterMatch[1]);
-        const [chars] = await pool.query(
+        const [chars] = await pool.execute(
           `SELECT
-             c.\`${COL.char_cdkey}\`   AS \`account\`,
-             c.\`${COL.char_name}\`    AS \`charName\`,
-             c.\`${COL.char_online}\`  AS \`isOnline\`,
-             c.\`${COL.char_gold}\`    AS \`gold\`,
-             COALESCE(SUM(p.\`${COL.pay_twd}\`), 0) AS \`payTotal\`
+             c.\`${COL.c_cdkey}\`             AS \`account\`,
+             ${u8('c.`'+COL.c_charname+'`')}  AS \`charName\`,
+             c.\`${COL.c_online}\`            AS \`isOnline\`,
+             c.\`${COL.c_gold}\`              AS \`gold\`,
+             COALESCE(p.\`${COL.p_lifetime}\`, c.\`${COL.c_paytotal}\`, 0) AS \`payTotal\`,
+             c.\`${COL.c_vippoint}\`          AS \`vipPoint\`,
+             c.\`${COL.c_logintime}\`         AS \`lastLogin\`
            FROM \`${TABLE.character}\` c
+           INNER JOIN \`${TABLE.master}\` m
+             ON m.\`${COL.m_id}\` = c.\`${COL.c_master}\`
            LEFT JOIN \`${TABLE.paydata}\` p
-             ON p.\`${COL.pay_cdkey}\` = c.\`${COL.char_cdkey}\`
-           WHERE c.\`${COL.char_account}\` = ?
-           GROUP BY c.\`${COL.char_cdkey}\`
+             ON p.\`${COL.p_cdkey}\` = c.\`${COL.c_cdkey}\`
+           WHERE m.\`${COL.m_name}\` = ?
            ORDER BY \`payTotal\` DESC`,
           [name]
         );
@@ -136,153 +248,226 @@ export default {
         return cors({
           masterName: name,
           chars: chars.map(c => ({
-            account:  c.account,
-            charName: c.charName,
-            isOnline: !!c.isOnline,
-            gold:     Number(c.gold) || 0,
-            payTotal: Number(c.payTotal) || 0,
+            account:   c.account,
+            charName:  decodeU8(c.charName),
+            isOnline:  Number(c.isOnline) === 1,
+            gold:      Number(c.gold) || 0,
+            payTotal:  Number(c.payTotal) || 0,
+            vipPoint:  Number(c.vipPoint) || 0,
+            lastLogin: c.lastLogin || null,
           })),
         });
       }
 
-      // ── GET /player/:cdkey ────────────────────────
+      // ── GET /player/:cdkey → 查單一角色 ───────────
       const playerMatch = path.match(/^\/player\/(.+)$/);
       if (playerMatch && request.method === 'GET') {
         const cdkey = decodeURIComponent(playerMatch[1]);
-        const [[char]] = await pool.query(
+        const [rows] = await pool.execute(
           `SELECT
-             c.\`${COL.char_cdkey}\`    AS \`account\`,
-             c.\`${COL.char_name}\`     AS \`charName\`,
-             c.\`${COL.char_account}\`  AS \`masterName\`,
-             c.\`${COL.char_online}\`   AS \`isOnline\`,
-             c.\`${COL.char_gold}\`     AS \`gold\`,
-             COALESCE(SUM(p.\`${COL.pay_twd}\`), 0) AS \`payTotal\`
+             c.\`${COL.c_cdkey}\`             AS \`account\`,
+             ${u8('c.`'+COL.c_charname+'`')}  AS \`charName\`,
+             m.\`${COL.m_name}\`              AS \`masterName\`,
+             c.\`${COL.c_online}\`            AS \`isOnline\`,
+             c.\`${COL.c_gold}\`              AS \`gold\`,
+             COALESCE(p.\`${COL.p_lifetime}\`, c.\`${COL.c_paytotal}\`, 0) AS \`payTotal\`,
+             c.\`${COL.c_vippoint}\`          AS \`vipPoint\`,
+             c.\`${COL.c_paypoint}\`          AS \`payPoint\`,
+             c.\`${COL.c_logintime}\`         AS \`lastLogin\`,
+             c.\`${COL.c_regtime}\`           AS \`regTime\`
            FROM \`${TABLE.character}\` c
+           LEFT JOIN \`${TABLE.master}\` m
+             ON m.\`${COL.m_id}\` = c.\`${COL.c_master}\`
            LEFT JOIN \`${TABLE.paydata}\` p
-             ON p.\`${COL.pay_cdkey}\` = c.\`${COL.char_cdkey}\`
-           WHERE c.\`${COL.char_cdkey}\` = ?
-           GROUP BY c.\`${COL.char_cdkey}\`
+             ON p.\`${COL.p_cdkey}\` = c.\`${COL.c_cdkey}\`
+           WHERE c.\`${COL.c_cdkey}\` = ?
            LIMIT 1`,
           [cdkey]
         );
+        const char = rows && rows[0];
         if (!char) {
           return cors({ message: `找不到帳號「${cdkey}」` }, 404);
         }
         const payTotal = Number(char.payTotal) || 0;
         return cors({
           account:    char.account,
-          charName:   char.charName,
+          charName:   decodeU8(char.charName),
           masterName: char.masterName,
-          isOnline:   !!char.isOnline,
+          isOnline:   Number(char.isOnline) === 1,
           gold:       Number(char.gold) || 0,
           payTotal,
+          vipPoint:   Number(char.vipPoint) || 0,
+          payPoint:   Number(char.payPoint) || 0,
+          lastLogin:  char.lastLogin || null,
+          regTime:    char.regTime  || null,
           vipLevel:   payTotal >= 15000 ? 2 : payTotal >= 5000 ? 1 : 0,
         });
       }
 
-      // ── GET /stats ────────────────────────────────
+      // ── GET /stats → 整體統計 ─────────────────────
       if (path === '/stats') {
-        const [[totals]]  = await pool.query(`SELECT COUNT(*) AS total, SUM(\`${COL.acc_banned}\`) AS banned FROM \`${TABLE.account}\``);
-        const [[online]]  = await pool.query(`SELECT COUNT(*) AS cnt FROM \`${TABLE.character}\` WHERE \`${COL.char_online}\` = 1`);
-        const [[newToday]]= await pool.query(
-          `SELECT COUNT(*) AS cnt FROM \`${TABLE.account}\` WHERE DATE(\`${COL.acc_created}\`) = CURDATE()`
+        const [[totals]]   = await pool.execute(`SELECT COUNT(*) AS total FROM \`${TABLE.character}\``);
+        const [[online]]   = await pool.execute(`SELECT COUNT(*) AS cnt FROM \`${TABLE.character}\` WHERE \`${COL.c_online}\` = 1`);
+        const [[newToday]] = await pool.execute(
+          `SELECT COUNT(*) AS cnt FROM \`${TABLE.character}\` WHERE DATE(\`${COL.c_regtime}\`) = CURDATE()`
         );
-        const [[golds]]   = await pool.query(`SELECT COALESCE(SUM(\`${COL.char_gold}\`),0) AS total FROM \`${TABLE.character}\``);
-        const [[crystals]]= await pool.query(`SELECT COALESCE(SUM(\`${COL.char_crystal}\`),0) AS total FROM \`${TABLE.character}\``).catch(() => [[{ total: 0 }]]);
+        const [[golds]]    = await pool.execute(`SELECT COALESCE(SUM(\`${COL.c_gold}\`),0) AS total FROM \`${TABLE.character}\``);
+        const [[masters]]  = await pool.execute(`SELECT COUNT(*) AS total FROM \`${TABLE.master}\``);
 
         return cors({
           onlinePlayers: Number(online.cnt)     || 0,
           totalPlayers:  Number(totals.total)   || 0,
+          totalMasters:  Number(masters.total)  || 0,
           newToday:      Number(newToday.cnt)   || 0,
-          bannedPlayers: Number(totals.banned)  || 0,
           totalGold:     Number(golds.total)    || 0,
-          totalCrystal:  Number(crystals.total) || 0,
         });
       }
 
-      // ── GET /vip ──────────────────────────────────
+      // ── GET /vip → 儲值排行 TOP 10（用 paydata.lifetime_total） ──
       if (path === '/vip') {
-        const [rows] = await pool.query(
+        const [rows] = await pool.execute(
           `SELECT
-             c.\`${COL.char_cdkey}\`    AS \`account\`,
-             c.\`${COL.char_name}\`     AS \`charName\`,
-             c.\`${COL.char_account}\`  AS \`masterName\`,
-             c.\`${COL.char_online}\`   AS \`isOnline\`,
-             c.\`${COL.char_gold}\`     AS \`gold\`,
-             COALESCE(SUM(p.\`${COL.pay_twd}\`), 0) AS \`payTotal\`
+             c.\`${COL.c_cdkey}\`             AS \`account\`,
+             ${u8('c.`'+COL.c_charname+'`')}  AS \`charName\`,
+             m.\`${COL.m_name}\`              AS \`masterName\`,
+             c.\`${COL.c_online}\`            AS \`isOnline\`,
+             c.\`${COL.c_gold}\`              AS \`gold\`,
+             COALESCE(p.\`${COL.p_lifetime}\`, c.\`${COL.c_paytotal}\`, 0) AS \`payTotal\`,
+             c.\`${COL.c_vippoint}\`          AS \`vipPoint\`
            FROM \`${TABLE.character}\` c
+           LEFT JOIN \`${TABLE.master}\` m
+             ON m.\`${COL.m_id}\` = c.\`${COL.c_master}\`
            LEFT JOIN \`${TABLE.paydata}\` p
-             ON p.\`${COL.pay_cdkey}\` = c.\`${COL.char_cdkey}\`
-           GROUP BY c.\`${COL.char_cdkey}\`
+             ON p.\`${COL.p_cdkey}\` = c.\`${COL.c_cdkey}\`
            ORDER BY \`payTotal\` DESC
            LIMIT 10`
         );
         return cors(rows.map(r => ({
           account:    r.account,
-          charName:   r.charName,
+          charName:   decodeU8(r.charName),
           masterName: r.masterName,
-          isOnline:   !!r.isOnline,
+          isOnline:   Number(r.isOnline) === 1,
           gold:       Number(r.gold) || 0,
           payTotal:   Number(r.payTotal) || 0,
+          vipPoint:   Number(r.vipPoint) || 0,
         })));
       }
 
-      // ── POST / → 儲值 ─────────────────────────────
+      // ── POST / → 自動入帳 ────────────────────────
+      //   ★ csalogin.VipPoint  才是真正的「遊戲內金幣／元寶」
+      //   ★ vippointlog        是金幣變動歷史（有 old/new/buff）
+      //   流程：
+      //     1) UPDATE csalogin.VipPoint += goldAmount          ← 真正發金幣
+      //     2) INSERT vippointlog (point, oldpoint, newpoint)  ← 變動紀錄
+      //     3) UPDATE csalogin.PayTotal += twdAmount           ← VIP 等級
+      //     4) INSERT recharge_orders status='completed'       ← 站內儲值訂單
+      //     5) UPSERT paydata.lifetime_total                   ← 累計統計
       if (path === '/' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const { account, twdAmount, goldAmount, crystalAmount, orderNo, updatePaydata, remark } = body;
+        const account   = body.account;
+        const twd       = Number(body.twdAmount)  || 0;
+        const gold      = Number(body.goldAmount) || 0;
+        const planLabel = (body.planLabel || '').toString().slice(0, 60);
+        const updatePay = body.updatePaydata !== false;
 
         if (!account) return cors({ message: '缺少 account 參數' }, 400);
-        if (!goldAmount && !crystalAmount) return cors({ message: '金幣或水晶至少填一項' }, 400);
+        if (gold <= 0 && twd <= 0) return cors({ message: 'goldAmount 或 twdAmount 至少一項要 > 0' }, 400);
 
-        // 確認角色存在
-        const [[char]] = await pool.query(
-          `SELECT \`${COL.char_cdkey}\`, \`${COL.char_name}\`, \`${COL.char_account}\` FROM \`${TABLE.character}\` WHERE \`${COL.char_cdkey}\` = ? LIMIT 1`,
+        // 確認玩家存在 + 取得目前 VipPoint / PayTotal / MasterId
+        const [rows] = await pool.execute(
+          `SELECT \`${COL.c_cdkey}\`, ${u8('`'+COL.c_charname+'`')} AS \`charName\`,
+                  \`${COL.c_master}\`, \`${COL.c_vippoint}\`, \`${COL.c_paytotal}\`
+           FROM \`${TABLE.character}\` WHERE \`${COL.c_cdkey}\` = ? LIMIT 1`,
           [account]
         );
+        const char = rows && rows[0];
         if (!char) return cors({ message: `找不到帳號「${account}」，請確認 CDKEY 是否正確` }, 404);
 
-        // 發放金幣
-        if (goldAmount > 0) {
-          await pool.query(
-            `UPDATE \`${TABLE.character}\` SET \`${COL.char_gold}\` = \`${COL.char_gold}\` + ? WHERE \`${COL.char_cdkey}\` = ?`,
-            [goldAmount, account]
+        const masterId  = Number(char[COL.c_master])   || 0;
+        const vipBefore = Number(char[COL.c_vippoint]) || 0;
+        const payBefore = Number(char[COL.c_paytotal]) || 0;
+        const vipAfter  = vipBefore + gold;
+
+        // 1) ★★★ 真正發金幣：UPDATE VipPoint
+        if (gold > 0) {
+          await pool.execute(
+            `UPDATE \`${TABLE.character}\`
+             SET \`${COL.c_vippoint}\` = \`${COL.c_vippoint}\` + ?
+             WHERE \`${COL.c_cdkey}\` = ?`,
+            [gold, account]
+          );
+
+          // 2) 寫變動紀錄（遊戲後台「金幣紀錄」會看到）
+          const buffText = planLabel
+            ? `官網儲值 NT$${twd.toLocaleString()}（${planLabel}）`
+            : `官網儲值 NT$${twd.toLocaleString()} / ${gold.toLocaleString()}金幣`;
+          try {
+            await pool.execute(
+              `INSERT INTO \`${TABLE.vipplog}\`
+                 (\`cdkey\`, \`point\`, \`oldpoint\`, \`newpoint\`, \`buff\`, \`time\`)
+               VALUES (?, ?, ?, ?, ?, NOW())`,
+              [account, gold, vipBefore, vipAfter, buffText.slice(0, 128)]
+            );
+          } catch (e) { /* log 失敗不影響發放 */ }
+        }
+
+        // 3) 累加 PayTotal（VIP 等級用）
+        if (twd > 0) {
+          await pool.execute(
+            `UPDATE \`${TABLE.character}\`
+             SET \`${COL.c_paytotal}\` = \`${COL.c_paytotal}\` + ?
+             WHERE \`${COL.c_cdkey}\` = ?`,
+            [twd, account]
           );
         }
 
-        // 發放水晶
-        if (crystalAmount > 0) {
-          await pool.query(
-            `UPDATE \`${TABLE.character}\` SET \`${COL.char_crystal}\` = \`${COL.char_crystal}\` + ? WHERE \`${COL.char_cdkey}\` = ?`,
-            [crystalAmount, account]
-          );
+        // 4) INSERT recharge_orders（站內歷史，直接 completed）
+        let orderNo = '';
+        if (gold > 0) {
+          orderNo = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `WEB-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          const productName = planLabel
+            ? `官網充值 NT$${twd.toLocaleString()} / ${gold.toLocaleString()}元寶（${planLabel}）`
+            : `官網充值 NT$${twd.toLocaleString()} / ${gold.toLocaleString()}元寶`;
+          try {
+            await pool.execute(
+              `INSERT INTO \`${TABLE.recharge}\`
+                 (\`order_no\`, \`user_id\`, \`product_name\`, \`role_name\`, \`amount\`, \`status\`, \`created_at\`)
+               VALUES (?, ?, ?, ?, ?, 'completed', NOW())`,
+              [orderNo.slice(0, 32), masterId, productName.slice(0, 100), account, gold]
+            );
+          } catch (e) { /* 訂單記錄失敗不影響發放 */ }
         }
 
-        // 寫入儲值紀錄
-        if (updatePaydata !== false) {
-          await pool.query(
-            `INSERT INTO \`${TABLE.paydata}\`
-               (\`${COL.pay_account}\`, \`${COL.pay_cdkey}\`, \`${COL.pay_twd}\`,
-                \`${COL.pay_gold}\`, \`${COL.pay_order}\`, \`${COL.pay_remark}\`, \`${COL.pay_created}\`)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-            [
-              char[COL.char_account] || account,
-              account,
-              twdAmount || 0,
-              goldAmount || 0,
-              orderNo || `CF-${Date.now()}`,
-              remark || '系統儲值',
-            ]
-          );
+        // 5) UPSERT paydata
+        if (updatePay && twd > 0) {
+          try {
+            await pool.execute(
+              `INSERT INTO \`${TABLE.paydata}\`
+                 (\`${COL.p_cdkey}\`, \`${COL.p_point}\`, \`${COL.p_time}\`, \`${COL.p_lifetime}\`)
+               VALUES (?, ?, NOW(), ?)
+               ON DUPLICATE KEY UPDATE
+                 \`${COL.p_point}\`    = \`${COL.p_point}\` + VALUES(\`${COL.p_point}\`),
+                 \`${COL.p_lifetime}\` = \`${COL.p_lifetime}\` + VALUES(\`${COL.p_point}\`),
+                 \`${COL.p_time}\`     = NOW()`,
+              [account, twd, twd]
+            );
+          } catch (e) { /* paydata 失敗不影響發放 */ }
         }
 
         return cors({
-          success: true,
-          message: `✅ 儲值成功：${account} +${goldAmount || 0} 金幣${crystalAmount ? ` +${crystalAmount} 水晶` : ''}`,
+          success:    true,
+          message:    `✅ 入帳成功：${account} +${gold.toLocaleString()} 金幣${twd > 0 ? `（NT$${twd.toLocaleString()}）` : ''}`,
           account,
-          charName: char[COL.char_name] || account,
-          goldGiven:    goldAmount    || 0,
-          crystalGiven: crystalAmount || 0,
+          charName:   decodeU8(char.charName),
+          orderNo,
+          goldBefore: vipBefore,
+          goldAfter:  vipAfter,
+          goldGiven:  gold,
+          twdAmount:  twd,
+          payTotal:   payBefore + twd,
+          note:       '金幣已直接寫入玩家帳號（VipPoint）。在線玩家可能要重整商城／重新登入才會看到新數字。',
         });
       }
 
@@ -291,6 +476,8 @@ export default {
     } catch (err) {
       console.error('[Worker Error]', err);
       return cors({ message: err.message || '伺服器內部錯誤', stack: err.stack }, 500);
+    } finally {
+      try { await pool.end(); } catch {}
     }
   },
 };
