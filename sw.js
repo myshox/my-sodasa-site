@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
-// Version 1.0.2 - 首頁改為網路優先；更新快取名稱以清掉舊版 HTML
+// Version 2.0.3 - 更新封面圖（hero.png），bump 快取版本清掉舊圖
 
-const CACHE_NAME = 'soda-stone-v2.0.2';
+const CACHE_NAME = 'soda-stone-v2.0.3';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install
