@@ -4,7 +4,7 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-DB_HOST = "162.245.220.106"
+DB_HOST = "141.140.14.61"
 DB_PORT = "3306"
 DB_NAME = "sqsd"
 DB_USER = "sqsd"
