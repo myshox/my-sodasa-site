@@ -2521,30 +2521,60 @@
             });
         }
 
-        // ★ 回到頂部按鈕（捲動超過 480px 才顯示）
+        // ★ 回到頂部按鈕（捲動超過 300px 即顯示，提升 z-index、改用金色更醒目）
         const BackToTop = () => {
             const [show, setShow] = useState(false);
+            const [progress, setProgress] = useState(0);
             useEffect(() => {
-                const onScroll = () => setShow(window.scrollY > 480);
+                const onScroll = () => {
+                    const sy = window.scrollY;
+                    const docH = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+                    setShow(sy > 300);
+                    setProgress(Math.min(1, sy / docH));
+                };
                 window.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', onScroll);
                 onScroll();
-                return () => window.removeEventListener('scroll', onScroll);
+                return () => {
+                    window.removeEventListener('scroll', onScroll);
+                    window.removeEventListener('resize', onScroll);
+                };
             }, []);
-            if (!show) return null;
+            // 圓形進度環
+            const r = 26;
+            const c = 2 * Math.PI * r;
+            const dash = c * progress;
             return (
-                <button
-                    type="button"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="fixed z-40 w-12 h-12 rounded-full bg-stone-900/85 hover:bg-amber-500 text-white shadow-2xl backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
-                    style={{
-                        bottom: 'max(1.25rem, calc(1.25rem + env(safe-area-inset-bottom, 0)))',
-                        right: 'max(1rem, calc(1rem + env(safe-area-inset-right, 0)))'
-                    }}
-                    aria-label="回到頂部"
-                    title="回到頂部"
-                >
-                    <ChevronDown size={22} className="rotate-180" aria-hidden />
-                </button>
+                <AnimatePresence>
+                    {show && (
+                        <motion.button
+                            key="back-to-top"
+                            type="button"
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.6, y: 20 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.92 }}
+                            className="fixed z-[60] w-14 h-14 md:w-16 md:h-16 flex items-center justify-center group"
+                            style={{
+                                bottom: 'max(5.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0)))',
+                                right: 'max(1rem, calc(1.25rem + env(safe-area-inset-right, 0)))'
+                            }}
+                            aria-label="回到頂部"
+                            title="回到頂部（已閱讀 ' + Math.round(progress * 100) + '%）'"
+                        >
+                            <span aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 shadow-[0_8px_24px_rgba(245,158,11,0.45),0_0_0_3px_rgba(28,25,23,0.7)] group-hover:shadow-[0_8px_28px_rgba(245,158,11,0.7)] transition-shadow"></span>
+                            <svg aria-hidden className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 60 60">
+                                <circle cx="30" cy="30" r={r} stroke="rgba(255,255,255,0.25)" strokeWidth="3" fill="none" />
+                                <circle cx="30" cy="30" r={r} stroke="#1c1917" strokeWidth="3" fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - dash} style={{ transition: 'stroke-dashoffset 0.15s ease-out' }} />
+                            </svg>
+                            <ChevronDown size={26} className="relative rotate-180 text-stone-900 drop-shadow-sm" strokeWidth={3} aria-hidden />
+                            <span className="hidden md:block absolute right-full mr-3 px-2.5 py-1 rounded-md bg-stone-900 text-white text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">↑ 回到頂部</span>
+                        </motion.button>
+                    )}
+                </AnimatePresence>
             );
         };
 
