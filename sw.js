@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
-// Version 2.1.1 - 第二波優化：手機觸控、表單 iOS 修復、新手 3 步引導、回到頂部
+// Version 2.1.2 - 第三波優化：美觀確認對話框、CSV 匯出、視覺 token、btn utility
 
-const CACHE_NAME = 'soda-stone-v2.1.1';
+const CACHE_NAME = 'soda-stone-v2.1.2';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install

@@ -1194,6 +1194,62 @@
             border-radius: 0.25rem;
             box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 -1px 0 rgba(0,0,0,0.2) inset;
         }
+
+        /* ========================================================================== */
+        /* 第三波優化：視覺統一（按鈕／卡片／字型層級 utility）                       */
+        /* ========================================================================== */
+
+        /* 通用按鈕基底（後台、表單常用） */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.625rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            line-height: 1.2;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .btn-base:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-base:not(:disabled):active { transform: scale(0.97); }
+        .btn-stone   { background: #44403c; color: #fff; }
+        .btn-stone:hover:not(:disabled) { background: #57534e; }
+        .btn-amber   { background: #f59e0b; color: #1c1917; }
+        .btn-amber:hover:not(:disabled) { background: #fbbf24; }
+        .btn-emerald { background: #10b981; color: #fff; }
+        .btn-emerald:hover:not(:disabled) { background: #34d399; }
+        .btn-danger  { background: #dc2626; color: #fff; }
+        .btn-danger:hover:not(:disabled) { background: #ef4444; }
+        .btn-ghost   { background: transparent; color: inherit; border-color: rgba(255,255,255,0.15); }
+        .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.06); }
+
+        /* 統一卡片 token */
+        .card-base {
+            border-radius: 1rem;
+            background: rgba(255,255,255,0.96);
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 4px 20px -4px rgba(0,0,0,0.08);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .card-base:hover { box-shadow: 0 8px 30px -4px rgba(0,0,0,0.12); }
+        .card-dark {
+            border-radius: 1rem;
+            background: rgba(28,25,23,0.92);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 4px 20px -4px rgba(0,0,0,0.4);
+        }
+
+        /* 字型層級（Type scale）：給 prose 內容統一行高與字距 */
+        .h-display { font-size: clamp(1.875rem, 4vw, 2.5rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.15; }
+        .h-section { font-size: clamp(1.375rem, 2.5vw, 1.75rem); font-weight: 800; letter-spacing: -0.015em; line-height: 1.25; }
+        .h-card    { font-size: 1.125rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
+        .text-meta { font-size: 0.8125rem; color: rgba(120, 113, 108, 1); }
     </style>
 </head>
 <body>
@@ -2396,6 +2452,75 @@
             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
         };
 
+        // ★ 全站美觀確認對話框：window.sodaConfirm({ title, message, variant, confirmText, cancelText }) → Promise<bool>
+        const ConfirmDialog = () => {
+            const [state, setState] = useState(null);
+            useEffect(() => {
+                const handler = (e) => setState(e.detail);
+                window.addEventListener('soda:confirm', handler);
+                return () => window.removeEventListener('soda:confirm', handler);
+            }, []);
+            useEffect(() => {
+                if (!state) return;
+                const onKey = (e) => {
+                    if (e.key === 'Escape') close(false);
+                    if (e.key === 'Enter') close(true);
+                };
+                window.addEventListener('keydown', onKey);
+                return () => window.removeEventListener('keydown', onKey);
+            }, [state]);
+            const close = (val) => {
+                if (state?.resolve) state.resolve(val);
+                setState(null);
+            };
+            if (!state) return null;
+            const variant = state.variant || 'default';
+            const palette = {
+                danger:  { ring: 'border-red-400/60',     iconBg: 'bg-red-500/15',     iconColor: 'text-red-400',     btn: 'bg-red-600 hover:bg-red-500',     icon: AlertCircle },
+                warning: { ring: 'border-amber-400/60',   iconBg: 'bg-amber-500/15',   iconColor: 'text-amber-400',   btn: 'bg-amber-500 hover:bg-amber-400 text-stone-900', icon: AlertCircle },
+                info:    { ring: 'border-sky-400/60',     iconBg: 'bg-sky-500/15',     iconColor: 'text-sky-400',     btn: 'bg-sky-600 hover:bg-sky-500',     icon: Bell },
+                default: { ring: 'border-stone-500/60',   iconBg: 'bg-stone-500/15',   iconColor: 'text-stone-300',   btn: 'bg-emerald-600 hover:bg-emerald-500', icon: CheckCircle }
+            }[variant] || {};
+            const Icon = palette.icon;
+            return (
+                <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm modal-scroll" onClick={() => close(false)}>
+                    <div onClick={(e) => e.stopPropagation()} className={`bg-stone-900 border-2 ${palette.ring} rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-2xl overflow-hidden`}>
+                        <div className="px-6 py-5 flex gap-4 items-start">
+                            <div className={`shrink-0 w-12 h-12 rounded-2xl ${palette.iconBg} flex items-center justify-center`}>
+                                <Icon size={26} className={palette.iconColor} aria-hidden />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-black text-white mb-1.5">{state.title || '確認操作'}</h3>
+                                {state.message && <div className="text-sm text-stone-300 leading-relaxed whitespace-pre-line">{state.message}</div>}
+                                {state.detail && <div className="mt-2 text-xs text-stone-400 bg-stone-800/60 rounded-lg p-2 border border-stone-700">{state.detail}</div>}
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 bg-stone-800/40 flex flex-col-reverse sm:flex-row gap-2.5 sm:justify-end border-t border-stone-700/60">
+                            <button
+                                type="button"
+                                data-soda-close
+                                onClick={() => close(false)}
+                                className="px-5 py-2.5 rounded-xl bg-stone-700 hover:bg-stone-600 text-white font-bold text-sm transition-colors min-h-[44px]"
+                            >{state.cancelText || '取消'}</button>
+                            <button
+                                type="button"
+                                onClick={() => close(true)}
+                                autoFocus
+                                className={`px-5 py-2.5 rounded-xl text-white font-black text-sm transition-colors min-h-[44px] shadow-lg ${palette.btn}`}
+                            >{state.confirmText || '確認'}</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 全域 Promise 風格 API：const ok = await window.sodaConfirm({ title, message, variant: 'danger'|'warning'|'info' });
+        if (typeof window !== 'undefined') {
+            window.sodaConfirm = (opts = {}) => new Promise((resolve) => {
+                window.dispatchEvent(new CustomEvent('soda:confirm', { detail: { ...opts, resolve } }));
+            });
+        }
+
         // ★ 回到頂部按鈕（捲動超過 480px 才顯示）
         const BackToTop = () => {
             const [show, setShow] = useState(false);
@@ -3401,7 +3526,14 @@
             }, []);
             
             const handleLogout = async () => {
-                if (confirm('確定要登出嗎？')) {
+                const ok = await window.sodaConfirm({
+                    title: '確定要登出嗎？',
+                    message: '登出後需要重新輸入 Email 與密碼才能繼續操作。',
+                    variant: 'warning',
+                    confirmText: '登出',
+                    cancelText: '取消'
+                });
+                if (ok) {
                     await authHelpers.signOut();
                     showToast('已登出', 'info');
                     window.location.href = window.location.origin + (window.location.pathname.replace(/\/$/, '') || '') + '/#/';
@@ -3648,9 +3780,14 @@
                     return;
                 }
                 
-                if (!confirm(`確定要刪除遊戲帳號「${account?.name}」嗎？`)) {
-                    return;
-                }
+                const ok = await window.sodaConfirm({
+                    title: '確定刪除遊戲帳號？',
+                    message: `將永久移除「${account?.name}」這組綁定。\n刪除後此帳號將無法繼續關聯到您。`,
+                    variant: 'danger',
+                    confirmText: '刪除',
+                    cancelText: '保留'
+                });
+                if (!ok) return;
                 
                 try {
                     const updatedAccounts = gameAccounts.filter(acc => acc.id !== accountId);
@@ -3862,7 +3999,14 @@
                                         {gameMaster2 && (
                                             <button
                                                 onClick={async () => {
-                                                    if (!confirm(`確定解除第二組主帳號「${gameMaster2}」的綁定？`)) return;
+                                                    const ok = await window.sodaConfirm({
+                                                        title: '解除第二組主帳號綁定？',
+                                                        message: `主帳號「${gameMaster2}」將從您的會員資料移除。\n相關的遊戲角色也會一併解除綁定。`,
+                                                        variant: 'warning',
+                                                        confirmText: '確定解除',
+                                                        cancelText: '保留'
+                                                    });
+                                                    if (!ok) return;
                                                     const kept = gameAccounts.filter(a => !a.master2);
                                                     await supabase.auth.updateUser({ data: { game_master2: null, game_accounts: kept } });
                                                     setGameMaster2(''); setMasterInput2(''); setMasterLookup2(null);
@@ -6014,7 +6158,14 @@
             };
 
             const handleDelete = async (guideId) => {
-                if (!confirm('確定要刪除這篇攻略嗎？')) return;
+                const ok = await window.sodaConfirm({
+                    title: '確定刪除這篇攻略？',
+                    message: '攻略內容、留言與閱讀數會一併移除，無法復原。',
+                    variant: 'danger',
+                    confirmText: '永久刪除',
+                    cancelText: '取消'
+                });
+                if (!ok) return;
 
                 try {
                     const { error } = await supabase
@@ -6062,7 +6213,14 @@
             };
 
             const handleCompressAllGuides = async () => {
-                if (!confirm('將批次壓縮所有攻略中的圖片，需時較久，確定繼續？')) return;
+                const ok = await window.sodaConfirm({
+                    title: '批次壓縮所有攻略圖片？',
+                    message: '會掃描每一篇攻略內的圖片並重新壓縮上傳。處理時間視圖片數量而定，過程中請勿關閉視窗。',
+                    variant: 'warning',
+                    confirmText: '開始壓縮',
+                    cancelText: '稍後再說'
+                });
+                if (!ok) return;
                 showToast('開始壓縮攻略圖片...', 'info');
                 let done = 0, updated = 0;
                 for (const guide of guides) {
@@ -8121,7 +8279,14 @@
             };
 
             const handleDeleteBanner = async (id) => {
-                if (!confirm('確定刪除此公告橫幅？')) return;
+                const ok = await window.sodaConfirm({
+                    title: '確定刪除此公告橫幅？',
+                    message: '橫幅將立即從首頁移除，可重新建立但已關聯的點擊統計會一併消失。',
+                    variant: 'danger',
+                    confirmText: '刪除橫幅',
+                    cancelText: '保留'
+                });
+                if (!ok) return;
                 try {
                     const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).delete().eq('id', id);
                     if (error) throw error;
@@ -9454,7 +9619,14 @@
             };
 
             const handleCompressAllEvents = async () => {
-                if (!confirm('將批次壓縮所有活動中的圖片，需時較久，確定繼續？')) return;
+                const ok = await window.sodaConfirm({
+                    title: '批次壓縮所有活動圖片？',
+                    message: '會掃描每一篇活動內的圖片並重新壓縮上傳。處理時間視圖片數量而定，過程中請勿關閉視窗。',
+                    variant: 'warning',
+                    confirmText: '開始壓縮',
+                    cancelText: '稍後再說'
+                });
+                if (!ok) return;
                 showToast('開始壓縮活動圖片...', 'info');
                 let done = 0, updated = 0;
                 for (const ev of events) {
@@ -12652,14 +12824,57 @@
                                         <button
                                             onClick={() => { setLastGmSyncAt(0); setGmSyncTrigger(t => t + 1); showToast('正在同步 GM 後台金幣…', 'info'); }}
                                             disabled={gmSyncing}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold text-sm transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold text-sm transition-colors min-h-[44px]"
                                             title="立即重新同步所有玩家的金幣與 VIP（從 GM 後台抓最新）"
                                         >
                                             <span className={gmSyncing ? 'animate-spin' : ''}>🔄</span> 重新同步
                                         </button>
                                         <button
+                                            onClick={async () => {
+                                                if (!allUsers || allUsers.length === 0) { showToast('沒有可匯出的資料', 'warning'); return; }
+                                                const ok = await window.sodaConfirm({
+                                                    title: '匯出註冊用戶 CSV？',
+                                                    message: `將匯出 ${allUsers.length} 筆會員資料，包含 Email、角色、累計儲值、CDKEY、註冊時間。請妥善保管，不要外流個資。`,
+                                                    variant: 'warning',
+                                                    confirmText: '下載 CSV',
+                                                    cancelText: '取消'
+                                                });
+                                                if (!ok) return;
+                                                const esc = (v) => {
+                                                    if (v == null) return '';
+                                                    const s = String(v);
+                                                    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+                                                };
+                                                const headers = ['Email', '顯示名稱', '角色', '主帳號', '副主帳號', '累積儲值(NTD)', 'CDKEYs', '註冊時間', '使用者ID'];
+                                                const rows = allUsers.map(u => [
+                                                    u.email || '',
+                                                    u.display_name || '',
+                                                    u.role === 'super_admin' ? '超級管理員' : u.role === 'admin' ? '管理員' : '一般用戶',
+                                                    u.user_metadata?.game_master || '',
+                                                    u.user_metadata?.game_master2 || '',
+                                                    u.total_amount || 0,
+                                                    (u.game_accounts || []).map(a => a.cdkey || a.id).filter(Boolean).join(' / '),
+                                                    u.created_at ? new Date(u.created_at).toLocaleString('zh-TW') : '',
+                                                    u.id || ''
+                                                ].map(esc).join(','));
+                                                const csv = '\ufeff' + headers.join(',') + '\n' + rows.join('\n');
+                                                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `sodasa_users_${new Date().toISOString().slice(0,10)}.csv`;
+                                                document.body.appendChild(a); a.click(); a.remove();
+                                                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                                                showToast(`已匯出 ${allUsers.length} 筆會員資料`, 'success');
+                                            }}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-colors min-h-[44px]"
+                                            title="將目前列表匯出為 CSV（Excel 可直接打開）"
+                                        >
+                                            📥 匯出 CSV
+                                        </button>
+                                        <button
                                             onClick={() => { setShowCreateUserModal(true); setCreateUserMsg(null); }}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-colors min-h-[44px]"
                                         >
                                             <span className="text-lg leading-none">＋</span> 新增用戶
                                         </button>
@@ -14119,8 +14334,18 @@
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => {
-                                                    if (d.status === 'completed' && !rechargeSkipGold && !window.confirm('⚠️ 此訂單已儲值過！\n確定要再次發放金幣嗎？\n（重複操作可能造成重複發放）')) return;
+                                                onClick={async () => {
+                                                    if (d.status === 'completed' && !rechargeSkipGold) {
+                                                        const ok = await window.sodaConfirm({
+                                                            title: '此訂單已儲值過！',
+                                                            message: '再次點擊將會重複發放金幣到玩家帳號，請務必確認後再執行。',
+                                                            detail: `訂單 ID：${d.id}　·　目標主帳號：${rechargeTargetAccount || d.game_account}`,
+                                                            variant: 'danger',
+                                                            confirmText: '確認再次發放',
+                                                            cancelText: '取消'
+                                                        });
+                                                        if (!ok) return;
+                                                    }
                                                     const bonus = rechargeBonus;
                                                     const syncPaydata = rechargeUpdatePaydata;
                                                     const skip = rechargeSkipGold;
@@ -14574,6 +14799,7 @@
                     </AnimatePresence>
 
                     <ToastContainer />
+                    <ConfirmDialog />
                     <GlobalRealtimeSync />
                     <BackToTop />
 
