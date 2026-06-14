@@ -1,37 +1,67 @@
-# Netlify Headers Configuration
-# For Soda Stone Age PWA
+# Cloudflare Pages Headers
+# 重要：Cloudflare Pages 的 _headers 是「先匹配先贏」，越精確的規則要寫越前面
 
-# Apply to all pages
+# ──────────────────────────────────────────────────────────────
+# 不快取的關鍵入口（必須最先匹配，避免被 /* 蓋掉）
+# ──────────────────────────────────────────────────────────────
+
+# 首頁（HashRouter SPA 入口）：永遠取最新版，避免使用者看到舊版本
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Service Worker：永遠取最新，否則新版部署後使用者拿不到
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Service-Worker-Allowed: /
+
+# robots.txt 與 sitemap：搜尋引擎友善
+/robots.txt
+  Cache-Control: public, max-age=3600
+  Content-Type: text/plain; charset=utf-8
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+  Content-Type: application/xml; charset=utf-8
+
+# offline 備援頁：可長快取
+/offline.html
+  Cache-Control: public, max-age=86400, must-revalidate
+
+# ──────────────────────────────────────────────────────────────
+# 長快取：圖片、音樂、字型等不會改變的靜態資源
+# ──────────────────────────────────────────────────────────────
+
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/music/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Manifest：中等快取（更新頻率低）
+/manifest.json
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=86400
+
+# ──────────────────────────────────────────────────────────────
+# 全站預設安全標頭（不含 Cache-Control，避免覆蓋上方規則）
+# ──────────────────────────────────────────────────────────────
+
 /*
-  # Security Headers
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
-  
-  # Cache Control
-  Cache-Control: public, max-age=3600, must-revalidate
-
-# Service Worker (no cache)
-/sw.js
-  Cache-Control: no-cache, no-store, must-revalidate
-
-# Manifest
-/manifest.json
-  Content-Type: application/manifest+json
-  Cache-Control: public, max-age=604800
-
-# Static Assets (long cache)
-/images/*
-  Cache-Control: public, max-age=31536000, immutable
-
-/music/*
-  Cache-Control: public, max-age=31536000, immutable
-
-# HTML (短快取，避免舊版造成白畫面)
-/index.html
-  Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache
-/*.html
-  Cache-Control: public, max-age=300, must-revalidate
+  X-Robots-Tag: index, follow

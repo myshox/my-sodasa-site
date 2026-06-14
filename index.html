@@ -15186,29 +15186,79 @@
 
     <!-- Service Worker Registration for PWA -->
     <script>
-        // Register Service Worker for PWA functionality
+        // ★ 自動更新機制：偵測新版本 → 跳通知 → 一鍵套用
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('❌ Service Worker registration failed:', error);
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+                    console.log('✅ Service Worker registered:', registration.scope);
+
+                    // 立即檢查是否有新版本
+                    registration.update().catch(() => {});
+
+                    // 每 60 秒在背景檢查一次新版本（使用者開著 tab 不關時）
+                    setInterval(() => registration.update().catch(() => {}), 60_000);
+
+                    // 偵測到新版本時，提示使用者重新整理
+                    const showUpdateBanner = (newWorker) => {
+                        if (document.getElementById('soda-update-banner')) return;
+                        const banner = document.createElement('div');
+                        banner.id = 'soda-update-banner';
+                        banner.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:max(1rem,env(safe-area-inset-bottom,0));z-index:99999;display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:linear-gradient(180deg,#fbbf24,#f59e0b);color:#1c1917;border-radius:9999px;box-shadow:0 12px 32px rgba(0,0,0,.4);font-weight:800;font-size:0.875rem;font-family:"Noto Sans TC",system-ui,sans-serif;animation:soda-slide-up .35s ease-out;max-width:calc(100vw - 2rem)';
+                        banner.innerHTML = '<span style="font-size:1.1em">🎉</span><span>網站有新版本</span><button id="soda-update-btn" style="border:none;background:#1c1917;color:#fbbf24;padding:0.4rem 0.9rem;border-radius:9999px;font-weight:900;cursor:pointer;white-space:nowrap;font-size:0.85em">立即更新</button><button id="soda-update-close" style="border:none;background:transparent;color:#1c1917;cursor:pointer;font-size:1.25em;padding:0 0.25em;font-weight:900">×</button>';
+                        document.body.appendChild(banner);
+                        if (!document.getElementById('soda-update-anim')) {
+                            const st = document.createElement('style');
+                            st.id = 'soda-update-anim';
+                            st.textContent = '@keyframes soda-slide-up{from{transform:translate(-50%,150%);opacity:0}to{transform:translate(-50%,0);opacity:1}}';
+                            document.head.appendChild(st);
+                        }
+                        document.getElementById('soda-update-btn').onclick = () => {
+                            if (newWorker) newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            // 等 controllerchange 觸發後再 reload
+                            setTimeout(() => window.location.reload(), 200);
+                        };
+                        document.getElementById('soda-update-close').onclick = () => banner.remove();
+                    };
+
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('🆕 偵測到新版本，等待使用者套用');
+                                showUpdateBanner(newWorker);
+                            }
+                        });
                     });
+
+                    // 切換 controller 時自動 reload（避免新舊混用）
+                    let refreshing = false;
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        if (refreshing) return;
+                        refreshing = true;
+                        window.location.reload();
+                    });
+
+                    // 視窗回到前景時順便檢查更新
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            registration.update().catch(() => {});
+                        }
+                    });
+                } catch (error) {
+                    console.log('❌ Service Worker registration failed:', error);
+                }
             });
         }
 
-        // PWA Install Prompt
+        // PWA 安裝提示
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Optional: Show custom install button
             console.log('💡 PWA can be installed');
         });
-
-        // Track PWA installation
         window.addEventListener('appinstalled', () => {
             console.log('✅ PWA installed successfully');
             deferredPrompt = null;
