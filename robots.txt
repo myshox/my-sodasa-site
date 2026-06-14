@@ -1,23 +1,25 @@
-# robots.txt for Soda Stone Age
+# robots.txt for 蘇打石器 (Soda Stone Age)
+# Last updated: 2026-06-14
 
-# Allow all crawlers
+# 預設規則：允許所有爬蟲收錄首頁與公開內容
 User-agent: *
 Allow: /
-
-# Disallow admin pages
-Disallow: /#/admin
 Disallow: /admin
+Disallow: /admin/
+Disallow: /#/admin
 Disallow: /api/
-
-# Crawl delay (optional, adjust if needed)
+Disallow: /worker/
+Disallow: /*?token=
+Disallow: /*?reset_password
 Crawl-delay: 1
 
-# Sitemap location
-Sitemap: https://sodasa.org/sitemap.xml
-
-# Specific bot rules
+# 主流搜尋引擎：完全允許
 User-agent: Googlebot
 Allow: /
+Allow: /images/
+
+User-agent: Googlebot-Image
+Allow: /images/
 
 User-agent: Bingbot
 Allow: /
@@ -25,7 +27,26 @@ Allow: /
 User-agent: Slurp
 Allow: /
 
-# Block bad bots
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# AI 爬蟲：允許收錄供 AI 工具引用
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# 過於積極的 SEO 工具爬蟲：完全封鎖
 User-agent: AhrefsBot
 Disallow: /
 
@@ -34,3 +55,12 @@ Disallow: /
 
 User-agent: MJ12bot
 Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Sitemap 位置
+Sitemap: https://sodasa.org/sitemap.xml

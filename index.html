@@ -1077,6 +1077,123 @@
             animation: loadingBar 2s ease-in-out infinite;
             border-radius: 2px;
         }
+
+        /* ========================================================================== */
+        /* 第二波優化：行動裝置 / 觸控 / 表單                                          */
+        /* ========================================================================== */
+
+        /* iOS 防止輸入時自動縮放：input/select/textarea 字體必須 ≥ 16px */
+        input, select, textarea {
+            font-size: 16px;
+            font-family: inherit;
+        }
+        /* 桌面版恢復可調整字體（不影響 iOS，因為 iOS 只看實際 px） */
+        @media (min-width: 768px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select, textarea { font-size: 0.95rem; }
+        }
+        /* 確保 input 在淺色背景下游標可見、文字清楚 */
+        input, textarea, select {
+            color: inherit;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        input[type="checkbox"], input[type="radio"] {
+            -webkit-appearance: auto;
+            -moz-appearance: auto;
+            appearance: auto;
+            width: 1.1rem;
+            height: 1.1rem;
+            min-width: 1.1rem;
+            min-height: 1.1rem;
+            cursor: pointer;
+            accent-color: #fbbf24;
+        }
+        /* 觸控目標：所有可點互動元件最少 44×44 */
+        @media (hover: none) and (pointer: coarse) {
+            button, [role="button"], a.btn, .touch-target,
+            input[type="submit"], input[type="button"] {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            /* 表單欄位手機高度 48px 更好按 */
+            input:not([type="checkbox"]):not([type="radio"]),
+            select, textarea {
+                min-height: 48px;
+                padding: 0.75rem 1rem;
+            }
+            textarea { min-height: 96px; }
+            /* 連結之間最小間距，避免誤觸 */
+            li > a + a, nav a + a { margin-left: 0.25rem; }
+        }
+        /* 表單群組：標籤與欄位垂直排版，方便手機填寫 */
+        .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+        .form-group label { font-weight: 600; font-size: 0.9rem; }
+        /* iOS Safari Modal 卷動修復 */
+        .modal-scroll {
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+        /* 防止 body 在 modal 開啟時連動捲動（藉 JSX 加 no-scroll class） */
+        body.no-scroll {
+            overflow: hidden;
+            position: fixed;
+            inset: 0;
+        }
+        /* 點擊回饋（手機沒有 hover，提供 active 狀態） */
+        @media (hover: none) {
+            button:active, a:active, [role="button"]:active {
+                transform: scale(0.97);
+                transition: transform 0.06s ease;
+            }
+        }
+        /* 焦點狀態：所有互動元件可鍵盤可達 */
+        :focus-visible {
+            outline: 2px solid #2dd4bf;
+            outline-offset: 2px;
+            border-radius: 0.5rem;
+        }
+        /* 禁用文字選取的元件（按鈕、icon 標題等） */
+        button, [role="button"], .btn, .nav-item {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        /* 行動裝置橫向溢出修復（部分 iOS 會破版） */
+        html, body { max-width: 100vw; }
+        /* 高 DPI / Retina 上字型描邊更乾淨 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        }
+        /* 大寬度表格在手機水平卷動更好操作 */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
+        }
+        /* 數字欄位（金額、CDKEY）統一 tabular figures，對齊更好看 */
+        .num-tab, .font-mono { font-variant-numeric: tabular-nums; }
+        /* 減少動畫使用者偏好：尊重系統設定 */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+        /* 鍵盤快捷鍵提示：監視器上顯示鍵帽 */
+        kbd {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 0.75rem;
+            padding: 0.125rem 0.375rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0.25rem;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.1) inset, 0 -1px 0 rgba(0,0,0,0.2) inset;
+        }
     </style>
 </head>
 <body>
@@ -1120,7 +1237,7 @@
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
             BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2, Gift,
-            Laptop, QrCode, Circle
+            Laptop, QrCode, Circle, Zap
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -2277,6 +2394,33 @@
         // Toast 通知（取代 alert）
         const showToast = (message, type = 'info') => {
             window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+        };
+
+        // ★ 回到頂部按鈕（捲動超過 480px 才顯示）
+        const BackToTop = () => {
+            const [show, setShow] = useState(false);
+            useEffect(() => {
+                const onScroll = () => setShow(window.scrollY > 480);
+                window.addEventListener('scroll', onScroll, { passive: true });
+                onScroll();
+                return () => window.removeEventListener('scroll', onScroll);
+            }, []);
+            if (!show) return null;
+            return (
+                <button
+                    type="button"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="fixed z-40 w-12 h-12 rounded-full bg-stone-900/85 hover:bg-amber-500 text-white shadow-2xl backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                    style={{
+                        bottom: 'max(1.25rem, calc(1.25rem + env(safe-area-inset-bottom, 0)))',
+                        right: 'max(1rem, calc(1rem + env(safe-area-inset-right, 0)))'
+                    }}
+                    aria-label="回到頂部"
+                    title="回到頂部"
+                >
+                    <ChevronDown size={22} className="rotate-180" aria-hidden />
+                </button>
+            );
         };
 
         const ToastContainer = () => {
@@ -4242,6 +4386,72 @@
                                         <span className="text-stone-400">暫無最新公告...</span>
                                     )}
                                 </Link>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ★ 新手 3 步開玩引導：下載 → 註冊 → 進遊戲 */}
+                    <section className="py-12 md:py-20 px-4 md:px-6 relative bg-gradient-to-b from-amber-50/70 via-white to-emerald-50/40 border-y border-amber-200/50">
+                        <div className="max-w-6xl mx-auto">
+                            <ScrollReveal>
+                                <div className="text-center mb-8 md:mb-14">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-3">
+                                        <Zap size={14} /> 新手必看
+                                    </div>
+                                    <h2 className="text-2xl md:text-4xl font-display font-black text-stone-800 mb-2">3 步驟，3 分鐘進入遊戲</h2>
+                                    <p className="text-stone-500 font-medium text-sm md:text-base">完全免費，不用信用卡，不用實名</p>
+                                </div>
+                            </ScrollReveal>
+                            <div className="grid md:grid-cols-3 gap-5 md:gap-6 relative">
+                                {/* 連接線（桌面版） */}
+                                <div className="hidden md:block absolute top-12 left-[16.66%] right-[16.66%] h-0.5 bg-gradient-to-r from-amber-300 via-emerald-300 to-teal-300 opacity-50 z-0"></div>
+                                {[
+                                    {
+                                        n: '01', t: '下載安裝檔', d: '選擇 Windows、Android 或 iOS 版本，一鍵下載',
+                                        i: Download, color: 'amber', cta: '前往下載', to: '/download',
+                                        time: '約 1 分鐘'
+                                    },
+                                    {
+                                        n: '02', t: '註冊主帳號', d: 'Email 註冊免認證，可建立多個遊戲角色',
+                                        i: User, color: 'emerald', cta: '建立帳號', to: '/auth',
+                                        time: '約 30 秒'
+                                    },
+                                    {
+                                        n: '03', t: '進入尼斯大陸', d: '創建角色、選擇起始寵物，開始你的冒險',
+                                        i: Sparkles, color: 'teal', cta: '查看新手攻略', to: '/guides',
+                                        time: '即刻開玩'
+                                    }
+                                ].map((s, idx) => {
+                                    const colorMap = {
+                                        amber:   { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-300',   btn: 'bg-amber-500 hover:bg-amber-600' },
+                                        emerald: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', btn: 'bg-emerald-500 hover:bg-emerald-600' },
+                                        teal:    { bg: 'bg-teal-100',    text: 'text-teal-700',    border: 'border-teal-300',    btn: 'bg-teal-500 hover:bg-teal-600' }
+                                    }[s.color];
+                                    return (
+                                        <ScrollReveal key={idx} delay={idx * 0.1}>
+                                            <div className={`relative bg-white rounded-2xl p-5 md:p-6 shadow-md hover:shadow-xl border-2 ${colorMap.border} transition-all duration-300 group hover:-translate-y-1 flex flex-col h-full z-10`}>
+                                                <div className={`absolute -top-3 left-5 px-3 py-1 rounded-full ${colorMap.bg} ${colorMap.text} text-xs font-black tracking-widest`}>STEP {s.n}</div>
+                                                <div className={`w-14 h-14 mx-auto rounded-2xl ${colorMap.bg} flex items-center justify-center mb-4 mt-2 group-hover:scale-110 transition-transform`}>
+                                                    <s.i size={28} className={colorMap.text} aria-hidden />
+                                                </div>
+                                                <h3 className="text-lg md:text-xl font-black text-stone-800 mb-1.5 text-center">{s.t}</h3>
+                                                <p className="text-stone-500 text-sm text-center leading-relaxed mb-2 flex-1">{s.d}</p>
+                                                <div className="text-center text-xs text-stone-400 mb-4 font-medium">⏱ {s.time}</div>
+                                                <Link to={s.to} className={`block text-center text-white font-bold ${colorMap.btn} px-4 py-3 rounded-xl text-sm shadow-md transition-all`}>
+                                                    {s.cta} →
+                                                </Link>
+                                            </div>
+                                        </ScrollReveal>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-8 md:mt-12 text-center">
+                                <p className="text-stone-500 text-sm md:text-base">
+                                    遇到問題？
+                                    <Link to="/support" className="text-emerald-600 font-bold hover:underline ml-1">聯絡客服</Link>
+                                    ・
+                                    <Link to="/guides" className="text-amber-600 font-bold hover:underline ml-1">查看 FAQ</Link>
+                                </p>
                             </div>
                         </div>
                     </section>
@@ -14251,6 +14461,49 @@
                 setTimeout(() => setIsLoading(false), 1500);
                 return () => window.removeEventListener('scroll', handleScroll);
             }, []);
+
+            // ★ 全站快捷鍵：ESC 關 modal、Ctrl/Cmd+/ 顯示快捷鍵說明
+            useEffect(() => {
+                const onKey = (e) => {
+                    if (e.key === 'Escape') {
+                        // 廣播給所有 Modal 自行關閉（modal 可選擇監聽）
+                        window.dispatchEvent(new CustomEvent('soda:esc'));
+                        // 預設行為：點掉手機 menu / 任何 [data-soda-close] 按鈕
+                        const btn = document.querySelector('[data-soda-close]:not([disabled])');
+                        if (btn) btn.click();
+                    }
+                };
+                window.addEventListener('keydown', onKey);
+                return () => window.removeEventListener('keydown', onKey);
+            }, []);
+
+            // ★ 網路狀態提示（離線重試 UX）
+            useEffect(() => {
+                let toast = null;
+                const showOffline = () => {
+                    if (document.getElementById('soda-net-banner')) return;
+                    toast = document.createElement('div');
+                    toast.id = 'soda-net-banner';
+                    toast.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:0.625rem 1rem;background:#dc2626;color:#fff;text-align:center;font-weight:700;font-size:0.875rem;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+                    toast.textContent = '⚠️ 網路連線中斷，部分功能暫停。連線恢復後會自動重新載入';
+                    document.body.appendChild(toast);
+                };
+                const hideOffline = () => {
+                    const el = document.getElementById('soda-net-banner');
+                    if (el) {
+                        el.style.background = '#16a34a';
+                        el.textContent = '✅ 網路已恢復';
+                        setTimeout(() => el.remove(), 2000);
+                    }
+                };
+                if (!navigator.onLine) showOffline();
+                window.addEventListener('online', hideOffline);
+                window.addEventListener('offline', showOffline);
+                return () => {
+                    window.removeEventListener('online', hideOffline);
+                    window.removeEventListener('offline', showOffline);
+                };
+            }, []);
             
             // 檢查舊有贊助者是否需要補綁定主帳號
             const checkBindingRequired = async (u) => {
@@ -14322,6 +14575,7 @@
 
                     <ToastContainer />
                     <GlobalRealtimeSync />
+                    <BackToTop />
 
                     {/* 強制補綁主帳號彈窗（有過往捐款但未綁定者） */}
                     {bindingModal && (
