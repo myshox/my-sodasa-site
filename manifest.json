@@ -51,27 +51,39 @@
   "categories": ["games", "entertainment"],
   "shortcuts": [
     {
-      "name": "贊助",
-      "short_name": "贊助",
-      "description": "快速前往贊助頁面",
-      "url": "/support",
+      "name": "下載遊戲",
+      "short_name": "下載",
+      "description": "立刻下載 PC / Android / iOS 安裝檔",
+      "url": "/#/download",
       "icons": [
-        {
-          "src": "/images/icon-192.png",
-          "sizes": "192x192"
-        }
+        { "src": "/images/icon-192.png", "sizes": "192x192" }
       ]
     },
     {
-      "name": "下載",
-      "short_name": "下載",
-      "description": "下載遊戲客戶端",
-      "url": "/download",
+      "name": "金幣贊助",
+      "short_name": "贊助",
+      "description": "快速前往金幣贊助頁面",
+      "url": "/#/recharge",
       "icons": [
-        {
-          "src": "/images/icon-192.png",
-          "sizes": "192x192"
-        }
+        { "src": "/images/icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "活動公告",
+      "short_name": "活動",
+      "description": "查看最新活動",
+      "url": "/#/events",
+      "icons": [
+        { "src": "/images/icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "客服中心",
+      "short_name": "客服",
+      "description": "聯絡官方客服與常見問答",
+      "url": "/#/support",
+      "icons": [
+        { "src": "/images/icon-192.png", "sizes": "192x192" }
       ]
     }
   ],

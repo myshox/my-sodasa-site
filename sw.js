@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
-// Version 2.0.3 - 更新封面圖（hero.png），bump 快取版本清掉舊圖
+// Version 2.1.0 - 性能優化：移除 no-cache meta、preload hero、SEO 強化、PWA shortcuts
 
-const CACHE_NAME = 'soda-stone-v2.0.3';
+const CACHE_NAME = 'soda-stone-v2.1.0';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install
@@ -12,7 +12,8 @@ const STATIC_ASSETS = [
   '/offline.html',
   '/images/icon-192.png',
   '/images/icon-512.png',
-  '/images/logo.jpg'
+  '/images/logo.jpg',
+  '/images/hero.png'
 ];
 
 // CDN resources to cache
