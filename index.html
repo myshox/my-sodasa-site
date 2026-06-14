@@ -7752,6 +7752,16 @@
             const [createUserPassword, setCreateUserPassword] = useState('');
             const [createUserDisplayName, setCreateUserDisplayName] = useState('');
             const [createUserRole, setCreateUserRole] = useState('');
+            // 後台幫玩家重設密碼用
+            const [resetPwModal, setResetPwModal] = useState(null); // { id, email } 或 null
+            const [resetPwInput, setResetPwInput] = useState('');
+            const [resetPwInput2, setResetPwInput2] = useState('');
+            const [resetPwLoading, setResetPwLoading] = useState(false);
+            // GM 玩家金幣最後同步時間（讓管理員一眼看出資料新鮮度）
+            const [lastGmSyncAt, setLastGmSyncAt] = useState(0);
+            const [gmSyncTick, setGmSyncTick] = useState(0); // 用來驅動「N 秒前」的 re-render
+            const [gmSyncTrigger, setGmSyncTrigger] = useState(0); // 手動觸發強制重抓
+            const [gmSyncing, setGmSyncing] = useState(false);
             const [createUserGameMaster, setCreateUserGameMaster] = useState('');
             const [createUserLoading, setCreateUserLoading] = useState(false);
             const [createUserMsg, setCreateUserMsg] = useState(null);
@@ -8434,36 +8444,39 @@
                         const unique = [...new Set(toFetch)];
                         console.log('[DEBUG] unique CDKEYs to fetch:', unique);
 
-                        // 讀 localStorage 快取（5 分鐘有效）
+                        // localStorage cache 僅做 first-paint 加速（60 秒 TTL），
+                        // 之後永遠背景重抓最新資料以同步 GM 後台金幣。
                         const LS_KEY = 'gmPlayerCache_v2';
-                        const CACHE_TTL = 5 * 60 * 1000;
+                        const CACHE_TTL = 60 * 1000; // 60 秒
                         let lsCache = {};
                         try { const raw = localStorage.getItem(LS_KEY); if (raw) { const parsed = JSON.parse(raw); const now = Date.now(); lsCache = Object.fromEntries(Object.entries(parsed).filter(([,v]) => now - (v._ts||0) < CACHE_TTL)); } } catch {}
 
-                        // 只查還沒快取的 CDKEY
-                        const needFetch = unique.filter(k => !lsCache[k]);
-                        const cache = { ...lsCache };
-
-                        // 先把快取資料立即塞入 state，頁面馬上顯示
+                        // 先把快取資料立即塞入 state，頁面馬上顯示（first paint）
                         if (Object.keys(lsCache).length > 0) setUserGmCache(prev => ({ ...prev, ...lsCache }));
 
-                        // 分批 20 並發（不加延遲），背景抓剩餘資料
-                        if (needFetch.length > 0) {
+                        // ★ 永遠重抓「所有」CDKEY，不論 cache 有無——確保金幣與 GM 後台即時一致
+                        if (unique.length > 0) {
+                            setGmSyncing(true);
                             (async () => {
                                 const newData = {};
-                                for (let i = 0; i < needFetch.length; i += 20) {
-                                    const batch = needFetch.slice(i, i + 20);
-                                    await Promise.all(batch.map(async (cdkey) => {
-                                        try {
-                                            const res = await fetch(`${GM_WORKER}/player/${encodeURIComponent(cdkey)}`);
-                                            if (res.ok) { const d = await res.json(); newData[cdkey] = { ...d, _ts: Date.now() }; }
-                                        } catch {}
-                                    }));
-                                    // 每批結果即時更新畫面
-                                    setUserGmCache(prev => ({ ...prev, ...newData }));
+                                try {
+                                    for (let i = 0; i < unique.length; i += 20) {
+                                        const batch = unique.slice(i, i + 20);
+                                        await Promise.all(batch.map(async (cdkey) => {
+                                            try {
+                                                // 加 cache buster + no-store，繞過 CDN 邊緣快取
+                                                const res = await fetch(`${GM_WORKER}/player/${encodeURIComponent(cdkey)}?t=${Date.now()}`, { cache: 'no-store' });
+                                                if (res.ok) { const d = await res.json(); newData[cdkey] = { ...d, _ts: Date.now() }; }
+                                            } catch {}
+                                        }));
+                                        // 每批結果即時更新畫面
+                                        setUserGmCache(prev => ({ ...prev, ...newData }));
+                                    }
+                                    try { localStorage.setItem(LS_KEY, JSON.stringify(newData)); } catch {}
+                                    setLastGmSyncAt(Date.now());
+                                } finally {
+                                    setGmSyncing(false);
                                 }
-                                // 寫回 localStorage
-                                try { localStorage.setItem(LS_KEY, JSON.stringify({ ...lsCache, ...newData })); } catch {}
                             })();
                         }
                     } catch (err) {
@@ -8476,8 +8489,23 @@
                 // 視窗重新取得焦點時重新整理用戶列表（會員端改資料後管理員即時看到）
                 const onFocusUsers = () => { if (currentTab === 'registered_users') loadAllUsers(); };
                 window.addEventListener('focus', onFocusUsers);
-                return () => window.removeEventListener('focus', onFocusUsers);
-            }, [supabaseUser, currentTab]);
+
+                // 每 30 秒自動重抓 GM 玩家金幣，與 GM 後台保持同步
+                const gmAutoSyncTimer = setInterval(() => {
+                    if (currentTab === 'registered_users' && document.visibilityState === 'visible') {
+                        loadAllUsers();
+                    }
+                }, 30000);
+
+                // 每秒重新計算「N 秒前」顯示
+                const tickTimer = setInterval(() => setGmSyncTick(t => t + 1), 1000);
+
+                return () => {
+                    window.removeEventListener('focus', onFocusUsers);
+                    clearInterval(gmAutoSyncTimer);
+                    clearInterval(tickTimer);
+                };
+            }, [supabaseUser, currentTab, gmSyncTrigger]);
             
             // 登入處理
             const handleLogin = async (e) => {
@@ -8764,6 +8792,63 @@
                     }
                 } catch (e) {
                     showToast('更新失敗', 'error');
+                }
+            };
+
+            // 超管：直接幫玩家設定新密碼（透過 Worker + Supabase Admin API）
+            const handleAdminResetPassword = async () => {
+                if (!resetPwModal) return;
+                const target = resetPwModal;
+                if (!resetPwInput || !resetPwInput2) {
+                    showToast('請填寫新密碼與確認密碼', 'error');
+                    return;
+                }
+                if (resetPwInput.length < 6) {
+                    showToast('密碼至少需要 6 個字元', 'error');
+                    return;
+                }
+                if (resetPwInput !== resetPwInput2) {
+                    showToast('兩次密碼不一致', 'error');
+                    return;
+                }
+                if (!isSuperAdmin) {
+                    showToast('僅超級管理員可執行此操作', 'error');
+                    return;
+                }
+                setResetPwLoading(true);
+                try {
+                    const { data: sess } = await supabase.auth.getSession();
+                    const accessToken = sess?.session?.access_token;
+                    if (!accessToken) {
+                        showToast('登入逾期，請重新登入後再試', 'error');
+                        return;
+                    }
+                    const res = await fetch(`${GM_WORKER}/admin/reset-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email:       target.email,
+                            newPassword: resetPwInput,
+                            accessToken,
+                        }),
+                    });
+                    const result = await res.json().catch(() => ({}));
+                    if (!res.ok || !result.success) {
+                        const msg = result.message || `HTTP ${res.status}`;
+                        showToast('重設失敗：' + msg, 'error');
+                        console.error('[AdminResetPassword]', result);
+                        return;
+                    }
+                    showToast(`✅ 已為 ${target.email} 設定新密碼，請通知玩家用新密碼登入`, 'success');
+                    try { await logAction('update', 'user', target.id, `超管直接重設玩家 ${target.email} 密碼`); } catch {}
+                    setResetPwModal(null);
+                    setResetPwInput('');
+                    setResetPwInput2('');
+                } catch (err) {
+                    console.error('[AdminResetPassword] exception', err);
+                    showToast('重設失敗：' + (err.message || '網路錯誤'), 'error');
+                } finally {
+                    setResetPwLoading(false);
                 }
             };
 
@@ -12332,14 +12417,40 @@
                                 <div className="flex items-center justify-between flex-wrap gap-3">
                                     <div>
                                         <h2 className="text-2xl font-black text-white mb-2">註冊用戶列表</h2>
-                                        <p className="text-stone-400">共 {allUsers.length} 位註冊用戶 · 客人資源完整呈顯，累計儲值/金幣由贊助紀錄自動同步</p>
+                                        <p className="text-stone-400">
+                                            共 {allUsers.length} 位註冊用戶 · 玩家金幣／VIP 以 GM 後台為準，每 30 秒自動同步
+                                        </p>
+                                        {/* 同步狀態指示 */}
+                                        {(() => {
+                                            void gmSyncTick; // 觸發每秒重算
+                                            const sec = lastGmSyncAt ? Math.floor((Date.now() - lastGmSyncAt) / 1000) : null;
+                                            const fresh = sec !== null && sec < 35;
+                                            return (
+                                                <div className="mt-1.5 flex items-center gap-2 text-xs">
+                                                    <span className={`inline-block w-2 h-2 rounded-full ${gmSyncing ? 'bg-amber-400 animate-pulse' : fresh ? 'bg-emerald-400' : 'bg-stone-500'}`}></span>
+                                                    <span className={fresh ? 'text-emerald-400' : 'text-stone-500'}>
+                                                        {gmSyncing ? '正在同步 GM 後台…' : sec === null ? '尚未同步' : sec < 5 ? '剛剛已同步' : `${sec} 秒前已同步`}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
-                                    <button
-                                        onClick={() => { setShowCreateUserModal(true); setCreateUserMsg(null); }}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-colors"
-                                    >
-                                        <span className="text-lg leading-none">＋</span> 新增用戶
-                                    </button>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <button
+                                            onClick={() => { setLastGmSyncAt(0); setGmSyncTrigger(t => t + 1); showToast('正在同步 GM 後台金幣…', 'info'); }}
+                                            disabled={gmSyncing}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold text-sm transition-colors"
+                                            title="立即重新同步所有玩家的金幣與 VIP（從 GM 後台抓最新）"
+                                        >
+                                            <span className={gmSyncing ? 'animate-spin' : ''}>🔄</span> 重新同步
+                                        </button>
+                                        <button
+                                            onClick={() => { setShowCreateUserModal(true); setCreateUserMsg(null); }}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-colors"
+                                        >
+                                            <span className="text-lg leading-none">＋</span> 新增用戶
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* ── 新增用戶 Modal ─────────────────────────── */}
@@ -12428,6 +12539,40 @@
                                                 >
                                                     {createUserLoading ? '建立中…' : '確認新增'}
                                                 </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 後台重設玩家密碼 Modal（僅超管） */}
+                                {resetPwModal && (
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => !resetPwLoading && setResetPwModal(null)}>
+                                        <div className="bg-stone-900 border border-rose-600/40 rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                                            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
+                                                <h3 className="text-lg font-black text-white flex items-center gap-2">🔑 重設玩家密碼</h3>
+                                                <button onClick={() => !resetPwLoading && setResetPwModal(null)} className="text-stone-400 hover:text-white text-2xl leading-none">×</button>
+                                            </div>
+                                            <div className="px-6 py-5 space-y-4">
+                                                <div className="bg-rose-900/30 border border-rose-600/40 rounded-xl px-4 py-3 text-sm text-rose-200">
+                                                    ⚠️ 此操作會直接覆寫該玩家密碼，請只在玩家明確聯絡求助時使用，並透過官方管道告知玩家新密碼。
+                                                </div>
+                                                <div>
+                                                    <label className="block text-stone-300 text-sm font-bold mb-1">玩家 Email</label>
+                                                    <input type="text" value={resetPwModal.email} disabled className="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2 text-stone-300 text-sm" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-stone-300 text-sm font-bold mb-1">新密碼 <span className="text-red-400">*</span><span className="text-stone-500 font-normal ml-1">（至少 6 字元）</span></label>
+                                                    <input type="text" value={resetPwInput} onChange={e => setResetPwInput(e.target.value)} placeholder="設定新密碼（明文，方便傳給玩家）" className="w-full bg-stone-800 border border-stone-600 rounded-xl px-4 py-2 text-white text-sm font-mono focus:outline-none focus:border-rose-500" autoFocus />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-stone-300 text-sm font-bold mb-1">再次輸入新密碼 <span className="text-red-400">*</span></label>
+                                                    <input type="text" value={resetPwInput2} onChange={e => setResetPwInput2(e.target.value)} placeholder="再次輸入確認" className="w-full bg-stone-800 border border-stone-600 rounded-xl px-4 py-2 text-white text-sm font-mono focus:outline-none focus:border-rose-500" />
+                                                </div>
+                                                <button type="button" onClick={() => { const pw = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-2).toUpperCase(); setResetPwInput(pw); setResetPwInput2(pw); }} className="w-full py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold border border-stone-600">🎲 隨機產生 10 位密碼</button>
+                                            </div>
+                                            <div className="flex gap-3 px-6 pb-5">
+                                                <button onClick={() => setResetPwModal(null)} disabled={resetPwLoading} className="flex-1 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 disabled:opacity-50 text-white font-bold text-sm">取消</button>
+                                                <button onClick={handleAdminResetPassword} disabled={resetPwLoading} className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-sm">{resetPwLoading ? '更新中…' : '確認重設'}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -12696,6 +12841,10 @@
   setEditUserCharNames(names);
 }}>編輯資料／角色／遊戲綁定</button>
                                                                             <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-water-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setCurrentTab('donations'); setSearchTerm(user.email || ''); showToast(`已篩選：${user.email} 的贊助紀錄`, 'success'); setOpenUserActionId(null); }}>查看贊助</button>
+                                                                            {/* 超管直接幫玩家設新密碼（僅超管可見、本人不可重設自己） */}
+                                                                            {isSuperAdmin && user.id !== supabaseUser?.id && user.email && (
+                                                                                <button type="button" className="w-full text-left min-h-[44px] py-2.5 px-4 text-sm font-medium text-rose-400 hover:bg-stone-700 rounded-lg transition-colors" onClick={() => { setOpenUserActionId(null); setResetPwInput(''); setResetPwInput2(''); setResetPwModal({ id: user.id, email: user.email }); }}>🔑 重設玩家密碼</button>
+                                                                            )}
                                                                             {user.id === supabaseUser?.id ? (
                                                                                 <div className="py-2.5 px-4 text-stone-500 text-sm">（本人）</div>
                                                                             ) : user.role === 'super_admin' ? (

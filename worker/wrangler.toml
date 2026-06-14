@@ -9,3 +9,6 @@ DB_PORT = "3306"
 DB_NAME = "sqsd"
 DB_USER = "sqsd"
 DB_PASS = "sarFGSEKJdJrnaFc"
+SUPABASE_URL = "https://pheoswycciabslxpsjyw.supabase.co"
+# SUPABASE_SERVICE_ROLE_KEY 必須用 wrangler secret put 設定（敏感資料）：
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY

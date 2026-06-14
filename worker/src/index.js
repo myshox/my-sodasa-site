@@ -67,6 +67,91 @@ const decodeU8 = (hex) => {
 };
 
 // ─────────────────────────────────────────────
+// Supabase Admin API 操作（需 SUPABASE_SERVICE_ROLE_KEY）
+// 全部 /admin/* 端點必須驗證呼叫方為 super_admin。
+// ─────────────────────────────────────────────
+async function verifySuperAdmin(env, accessToken) {
+  if (!accessToken) return { ok: false, status: 401, msg: '缺少 access token' };
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, status: 500, msg: 'Worker 未設定 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY' };
+  }
+  // 用 access token 拿目前使用者
+  const meRes = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!meRes.ok) return { ok: false, status: 401, msg: 'access token 無效或已逾期' };
+  const me = await meRes.json();
+  const role = me?.user_metadata?.role || me?.app_metadata?.role;
+  if (role !== 'super_admin') {
+    return { ok: false, status: 403, msg: '僅超級管理員可執行此操作', user: me };
+  }
+  return { ok: true, user: me };
+}
+
+async function handleAdmin(request, env, path) {
+  // POST /admin/reset-password   body: { email, newPassword, accessToken }
+  if (path === '/admin/reset-password' && request.method === 'POST') {
+    let body;
+    try { body = await request.json(); } catch { return cors({ message: '無效的 JSON 內容' }, 400); }
+    const { email, newPassword, accessToken } = body || {};
+    if (!email || !newPassword) return cors({ message: '缺少 email 或 newPassword' }, 400);
+    if (String(newPassword).length < 6) return cors({ message: '密碼至少需要 6 個字元' }, 400);
+
+    const auth = await verifySuperAdmin(env, accessToken);
+    if (!auth.ok) return cors({ message: auth.msg }, auth.status);
+
+    // 用 email 找 user_id
+    const findRes = await fetch(
+      `${env.SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      }
+    );
+    if (!findRes.ok) {
+      const t = await findRes.text();
+      return cors({ message: `查詢使用者失敗：${t}` }, 500);
+    }
+    const findData = await findRes.json();
+    const target = (findData.users || []).find(u => (u.email || '').toLowerCase() === email.toLowerCase()) || findData.users?.[0];
+    if (!target) return cors({ message: `找不到此 Email 註冊的使用者：${email}` }, 404);
+
+    // 直接改密碼
+    const updRes = await fetch(
+      `${env.SUPABASE_URL}/auth/v1/admin/users/${target.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({ password: newPassword }),
+      }
+    );
+    if (!updRes.ok) {
+      const t = await updRes.text();
+      return cors({ message: `更新密碼失敗：${t}` }, 500);
+    }
+    return cors({
+      success: true,
+      message: `✅ 已為 ${email} 設定新密碼，請通知玩家用新密碼登入`,
+      adminEmail: auth.user?.email || '',
+      targetEmail: email,
+      targetId:    target.id,
+      changedAt:   new Date().toISOString(),
+    });
+  }
+
+  return cors({ message: '找不到此 admin 路徑' }, 404);
+}
+
+// ─────────────────────────────────────────────
 // Cloudflare Workers 禁止跨 request 共用 I/O 物件，
 // 因此每個 request 建立獨立的 connection，結束後關閉。
 async function openConn(env) {
@@ -116,6 +201,14 @@ export default {
 
     const url  = new URL(request.url);
     const path = url.pathname;
+
+    // ──────────────────────────────────────────────
+    // /admin/* 端點不需要 MySQL，直接走 Supabase Admin API
+    // 必須先驗證呼叫方是 super_admin
+    // ──────────────────────────────────────────────
+    if (path.startsWith('/admin/')) {
+      return await handleAdmin(request, env, path);
+    }
 
     let pool;
     try {
