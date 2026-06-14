@@ -2488,13 +2488,25 @@
                 }
             }, []);
             
-            // 檢測是否為密碼重設模式
+            // 檢測是否為密碼重設模式（多種觸發來源都接受）：
+            //   a) Layout 偵測到 PASSWORD_RECOVERY 事件後設的 sessionStorage 旗標
+            //   b) URL hash 中仍殘留 access_token + type=recovery（舊信件）
+            //   c) onAuthStateChange 即時收到 PASSWORD_RECOVERY 事件
             useEffect(() => {
-                const hash = window.location.hash;
-                // 檢查 URL 是否包含 access_token（密碼重設連結的標誌）
+                try {
+                    if (sessionStorage.getItem('sodaPasswordRecovery') === '1') {
+                        setIsRecoveryMode(true);
+                        sessionStorage.removeItem('sodaPasswordRecovery');
+                    }
+                } catch {}
+                const hash = window.location.hash || '';
                 if (hash.includes('access_token') && hash.includes('type=recovery')) {
                     setIsRecoveryMode(true);
                 }
+                const { data } = supabase.auth.onAuthStateChange((event) => {
+                    if (event === 'PASSWORD_RECOVERY') setIsRecoveryMode(true);
+                });
+                return () => { try { data?.subscription?.unsubscribe(); } catch {} };
             }, []);
             
             // 處理密碼更新
@@ -2525,18 +2537,31 @@
                     });
                     
                     if (error) {
-                        setError(error.message);
+                        const msg = error.message || '';
+                        let display = msg;
+                        if (/auth.*session|jwt.*expired|invalid.*token|no.*session/i.test(msg)) {
+                            display = '驗證連結已逾期或失效，請重新從信箱點擊最新一封重設信件，或回到「忘記密碼」重新申請';
+                        } else if (/same.*password|password.*same/i.test(msg)) {
+                            display = '新密碼不能與舊密碼相同';
+                        } else if (/weak|short|6.*char/i.test(msg)) {
+                            display = '密碼太弱，請設定至少 6 個字元並包含英數字';
+                        }
+                        setError(display);
+                        console.error('[UpdatePassword]', error);
                     } else {
                         showToast('密碼更新成功！請使用新密碼登入', 'success');
+                        // 登出舊 recovery session，避免使用者繼續用 recovery token 操作
+                        try { await supabase.auth.signOut(); } catch {}
                         setTimeout(() => {
                             setIsRecoveryMode(false);
                             setNewPassword('');
                             setNewPasswordConfirm('');
-                            navigate('/auth');
+                            navigate('/auth', { replace: true });
                         }, 2000);
                     }
                 } catch (err) {
-                    setError('發生錯誤，請稍後再試');
+                    console.error('[UpdatePassword Exception]', err);
+                    setError('發生錯誤，請稍後再試或聯絡客服');
                 } finally {
                     setLoading(false);
                 }
@@ -2620,22 +2645,37 @@
                 setResetMessage('');
                 
                 try {
+                    // ⚠️ HashRouter 下，redirectTo 不能帶 '#/auth'，因為 supabase 會把 token 接在
+                    // 第一個 '#' 後面導致 SPA 路由失效。改用 root URL，由 Layout 的
+                    // onAuthStateChange('PASSWORD_RECOVERY') 自動把使用者導到 /auth 進 recovery mode。
                     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-                        redirectTo: window.location.origin + '/#/auth'
+                        redirectTo: window.location.origin + '/'
                     });
                     
                     if (error) {
-                        setResetMessage('發送失敗：' + error.message);
+                        const msg = error.message || '';
+                        // 把常見錯誤翻成中文（特別是 rate limit）
+                        let display = msg;
+                        if (/rate.?limit|too many|exceed/i.test(msg)) {
+                            display = '系統正忙，請等 5-10 分鐘後再試一次（每小時最多 4 封信件，請查信箱與垃圾信匣）';
+                        } else if (/not.found|no.user|user.*not/i.test(msg)) {
+                            display = '此 Email 尚未註冊，請確認後再試';
+                        } else if (/network|fetch/i.test(msg)) {
+                            display = '網路連線失敗，請檢查網路後再試';
+                        }
+                        setResetMessage('發送失敗：' + display);
+                        console.error('[ForgotPassword]', error);
                     } else {
-                        setResetMessage('已發送密碼重設信件到您的信箱，請查收！');
+                        setResetMessage('✅ 已發送密碼重設信件到您的信箱（請同時檢查垃圾信匣，5 分鐘內如未收到請聯絡客服 LINE）');
                         setTimeout(() => {
                             setShowForgotPasswordModal(false);
                             setResetEmail('');
                             setResetMessage('');
-                        }, 3000);
+                        }, 5000);
                     }
                 } catch (err) {
-                    setResetMessage('發生錯誤，請稍後再試');
+                    console.error('[ForgotPassword Exception]', err);
+                    setResetMessage('發生錯誤，請稍後再試或聯絡客服');
                 } finally {
                     setResetLoading(false);
                 }
@@ -14097,6 +14137,12 @@
                     setUser(u);
                     if (event === 'SIGNED_IN') checkBindingRequired(u);
                     if (event === 'SIGNED_OUT') setBindingModal(false);
+                    // 密碼重設信點擊後 supabase 會自動建立 session 並觸發此事件，
+                    // 這裡攔截後立即送使用者進 /auth 的 recovery 模式設定新密碼。
+                    if (event === 'PASSWORD_RECOVERY') {
+                        try { sessionStorage.setItem('sodaPasswordRecovery', '1'); } catch {}
+                        navigate('/auth', { replace: true });
+                    }
                 });
                 
                 return () => {
