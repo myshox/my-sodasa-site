@@ -1,7 +1,7 @@
 // Service Worker for Soda Stone Age PWA
-// Version 2.2.1 - BackToTop 改為金色圓形進度環、z-index 拉高、閾值降到 300px
+// Version 2.2.2 - 更新安卓下載載點
 
-const CACHE_NAME = 'soda-stone-v2.2.1';
+const CACHE_NAME = 'soda-stone-v2.2.2';
 const RUNTIME_CACHE = 'soda-stone-runtime';
 
 // Assets to cache on install
