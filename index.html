@@ -6443,12 +6443,6 @@
                 showToast("正在開啟 Android 下載頁面...", "success");
             };
 
-            const handleAndroidDownloadBackup = () => {
-                // Android 備用載點
-                window.open('https://ped.pps3.com/dep85k', '_blank');
-                showToast("正在開啟 Android 備用下載載點...", "success");
-            };
-
             const handleIosDownload = () => {
                 // iOS 下載連結
                 window.open('https://n4s.pps3.com/s4nzjt', '_blank');
@@ -6548,16 +6542,6 @@
                                     >
                                         <Download size={20} /> 下載 Android
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleAndroidDownloadBackup}
-                                        className="w-full py-3.5 md:py-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-500 to-orange-500 hover:from-amber-400 hover:via-amber-400 hover:to-orange-400 text-white font-black text-base md:text-lg shadow-lg shadow-amber-600/40 ring-2 ring-amber-200/90 ring-offset-2 ring-offset-sand-100/50 hover:ring-amber-100 hover:shadow-xl hover:shadow-amber-500/45 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2.5 mt-3 border border-amber-400/60"
-                                        aria-label="Android 備用下載載點"
-                                    >
-                                        <ExternalLink size={22} className="shrink-0" strokeWidth={2.5} aria-hidden />
-                                        備用載點
-                                    </button>
-                                    <p className="text-center text-xs font-bold text-amber-800/80 mt-1.5">主連結無法使用時請點此</p>
                                     <p className="text-stone-500 text-xs text-center mt-2">Android 5.0+</p>
                                 </div>
                             </motion.div>
