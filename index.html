@@ -648,25 +648,46 @@
         .page-content select,
         .page-content textarea {
             border-radius: var(--ui-radius);
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         @media (max-width: 768px) {
             .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
             .page-content select {
                 min-height: var(--ui-touch);
                 box-sizing: border-box;
+                width: 100%;
             }
             .page-content textarea {
                 min-height: 6.5rem;
                 box-sizing: border-box;
+                width: 100%;
             }
             .admin-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
             .admin-content select {
                 min-height: var(--ui-touch);
                 box-sizing: border-box;
+                max-width: 100%;
+                min-width: 0;
             }
             .admin-content textarea {
                 min-height: 5rem;
                 box-sizing: border-box;
+                max-width: 100%;
+            }
+            /* 手機：避免 flex 列把輸入框／按鈕撐破版面 */
+            .page-content .stone-panel,
+            .page-content [id="game-binding-section"] {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            .page-content .stone-panel {
+                box-shadow:
+                    inset 4px 0 0 0 #14b8a6,
+                    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+                    0 0 0 1px rgba(90, 60, 20, 0.12),
+                    3px 3px 0 rgba(120, 75, 25, 0.28);
             }
         }
         /* 各頁寬內容不撐破版面 */
@@ -685,12 +706,16 @@
         }
         html.accessibility-large button,
         html.accessibility-large [role="button"],
-        html.accessibility-large input,
-        html.accessibility-large select,
-        html.accessibility-large textarea,
         html.accessibility-large a[href] {
             min-height: 48px;
             min-width: 48px;
+        }
+        html.accessibility-large input,
+        html.accessibility-large select,
+        html.accessibility-large textarea {
+            min-height: 48px;
+            min-width: 0;
+            max-width: 100%;
         }
         html.accessibility-large .mobile-bottom-nav a[href] {
             min-width: 0 !important;
@@ -3849,40 +3874,43 @@
             
             return (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-4xl mx-auto w-full min-w-0">
                         <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
 
                         {/* 未綁定主帳號警告橫幅 */}
                         {!gameMaster && (
-                            <div className="mb-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-5 flex items-center gap-4 shadow-lg shadow-red-200">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                    <AlertCircle size={24} className="text-white" />
+                            <div className="mb-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 shadow-lg shadow-red-200 max-w-full overflow-hidden">
+                                <div className="flex items-start gap-3 min-w-0 flex-1">
+                                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                                        <AlertCircle size={24} className="text-white" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-white font-black text-base">⚠️ 尚未綁定遊戲主帳號</p>
+                                        <p className="text-red-100 text-sm mt-0.5 break-words">請至下方「遊戲主帳號綁定」欄位完成綁定，否則無法使用儲值功能</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-white font-black text-base">⚠️ 尚未綁定遊戲主帳號</p>
-                                    <p className="text-red-100 text-sm mt-0.5">請至下方「遊戲主帳號綁定」欄位完成綁定，否則無法使用儲值功能</p>
-                                </div>
-                                <a href="#game-binding-section" className="shrink-0 px-4 py-2 bg-white text-red-600 font-black text-sm rounded-xl hover:bg-red-50 transition-colors">
+                                <a href="#game-binding-section" className="shrink-0 w-full sm:w-auto text-center px-4 py-2.5 bg-white text-red-600 font-black text-sm rounded-xl hover:bg-red-50 transition-colors">
                                     立即綁定
                                 </a>
                             </div>
                         )}
 
                         {/* 用戶資訊卡 */}
-                        <div className="stone-panel p-4 sm:p-6 md:p-8 mb-6">
+                        <div className="stone-panel p-3 sm:p-6 md:p-8 mb-6 max-w-full overflow-hidden">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
                                 <h2 className="text-xl sm:text-2xl font-black text-stone-800">個人資料</h2>
                                 <div className="flex gap-2 flex-wrap">
                                     {/* 管理員才顯示後台按鈕 */}
                                     {(user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'super_admin') && (
                                         <Link to="/admin">
-                                            <button className="px-4 py-2 bg-gradient-to-r from-gold-500 to-orange-500 hover:from-gold-600 hover:to-orange-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg">
+                                            <button type="button" className="px-4 py-2 bg-gradient-to-r from-gold-500 to-orange-500 hover:from-gold-600 hover:to-orange-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-lg">
                                                 <Settings size={18} />
                                                 <span>後台管理</span>
                                             </button>
                                         </Link>
                                     )}
                                     <button
+                                        type="button"
                                         onClick={handleLogout}
                                         className="px-4 py-2 bg-fire-500 hover:bg-fire-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2"
                                     >
@@ -3891,10 +3919,10 @@
                                     </button>
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <Mail size={20} className="text-stone-400" />
-                                    <span className="text-stone-700 font-bold">{user?.email}</span>
+                            <div className="space-y-4 min-w-0">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <Mail size={20} className="text-stone-400 shrink-0" />
+                                    <span className="text-stone-700 font-bold break-all min-w-0">{user?.email}</span>
                                 </div>
                                 
                                 {/* 管理員快速入口 - 手機版更明顯 */}
@@ -3920,64 +3948,67 @@
                                 )}
                                 
                                 {/* 遊戲主帳號綁定 */}
-                                <div id="game-binding-section" className={`rounded-xl p-4 mb-4 border-2 ${gameMaster ? 'bg-sky-50 border-sky-200' : 'bg-red-50 border-red-300'}`}>
+                                <div id="game-binding-section" className={`rounded-xl p-3 sm:p-4 mb-4 border-2 max-w-full overflow-hidden ${gameMaster ? 'bg-sky-50 border-sky-200' : 'bg-red-50 border-red-300'}`}>
                                     <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                        <User size={20} className={gameMaster ? 'text-sky-600' : 'text-red-500'} />
+                                        <User size={20} className={`shrink-0 ${gameMaster ? 'text-sky-600' : 'text-red-500'}`} />
                                         <span className="text-stone-700 font-bold">遊戲主帳號綁定</span>
                                         {gameMaster ? (
                                             <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-black rounded-full border border-emerald-300">✅ 已綁定</span>
                                         ) : (
                                             <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-black rounded-full border border-red-300 animate-pulse">⚠️ 必填 — 儲值需要此資料</span>
                                         )}
-                                        <span className="text-xs text-stone-500">（輸入主帳號後按查詢，系統自動同步角色）</span>
+                                        <span className="text-xs text-stone-500 w-full sm:w-auto">（輸入主帳號後按查詢，系統自動同步角色）</span>
                                     </div>
-                                    <p className="text-xs text-stone-600 leading-relaxed mb-3 rounded-lg border border-sky-100 bg-white/70 px-3 py-2">
+                                    <p className="text-xs text-stone-600 leading-relaxed mb-3 rounded-lg border border-sky-100 bg-white/70 px-3 py-2 break-words">
                                         換機或跨 <strong className="text-stone-800">iOS／Android</strong> 時，請在遊戲內使用<strong className="text-sky-800">與此處綁定相同的主帳號</strong>登入，並選同一伺服器，角色資料才會與伺服器一致。
                                         <span className="block mt-1.5 text-stone-500">
                                             若其中一邊（常見為 iOS）<strong className="text-stone-700">完全沒有角色</strong>，請先確認該裝置<strong className="text-stone-700">不是訪客登入</strong>、且<strong className="text-stone-700">伺服器名稱與另一台相同</strong>。
                                         </span>
                                     </p>
-                                    <div className="flex gap-2 mb-2">
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2 w-full min-w-0">
                                         <input
                                             type="text"
                                             value={masterInput}
                                             onChange={e => { setMasterInput(e.target.value); setMasterError(''); setMasterLookup(null); }}
                                             onKeyDown={e => e.key === 'Enter' && handleMasterLookup()}
                                             placeholder="輸入遊戲主帳號名稱（必填）"
-                                            className={`flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm ${!gameMaster ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-sky-300 focus:border-sky-500 bg-white'}`}
+                                            autoComplete="username"
+                                            inputMode="text"
+                                            className={`w-full min-w-0 max-w-full flex-1 px-3 py-3 sm:py-2 border-2 rounded-lg focus:outline-none font-bold text-base sm:text-sm box-border ${!gameMaster ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-sky-300 focus:border-sky-500 bg-white'}`}
                                         />
                                         <button
+                                            type="button"
                                             onClick={handleMasterLookup}
                                             disabled={masterLoading}
-                                            className="px-4 py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1"
+                                            className="w-full sm:w-auto shrink-0 px-4 py-3 sm:py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
                                         >
                                             {masterLoading ? <span className="animate-spin">⏳</span> : <Search size={14} />}
                                             查詢
                                         </button>
                                     </div>
                                     {masterError && (
-                                        <p className="text-fire-600 text-xs font-semibold mb-2">❌ {masterError}</p>
+                                        <p className="text-fire-600 text-xs font-semibold mb-2 break-words">❌ {masterError}</p>
                                     )}
                                     {gameMaster && !masterError && (
-                                        <p className="text-sky-700 text-xs font-semibold mb-2">
+                                        <p className="text-sky-700 text-xs font-semibold mb-2 break-words">
                                             ✅ 已綁定主帳號：<span className="font-black">{gameMaster}</span>
                                         </p>
                                     )}
                                     {/* 查詢結果 */}
                                     {masterLookup && !masterLookup.error && (
-                                        <div className="bg-white rounded-lg border border-sky-200 p-3 mt-2">
-                                            <p className="text-sky-800 font-bold text-sm mb-2">
+                                        <div className="bg-white rounded-lg border border-sky-200 p-3 mt-2 max-w-full overflow-hidden">
+                                            <p className="text-sky-800 font-bold text-sm mb-2 break-words">
                                                 🎮 找到主帳號「{masterLookup.masterName}」，共 {masterLookup.chars.length} 個角色：
                                             </p>
                                             <div className="space-y-1.5 mb-3">
                                                 {masterLookup.chars.map((ch, i) => (
-                                                    <div key={i} className="flex items-center gap-3 bg-sky-50 rounded-lg px-3 py-2 text-sm">
+                                                    <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-sky-50 rounded-lg px-3 py-2 text-sm min-w-0">
                                                         <span className={`w-2 h-2 rounded-full shrink-0 ${ch.isOnline ? 'bg-emerald-500' : 'bg-stone-400'}`} title={ch.isOnline ? '線上' : '離線'} />
                                                         <div className="flex-1 min-w-0">
-                                                            <span className="font-black text-stone-800">{ch.charName || '(無角色名)'}</span>
-                                                            <span className="text-stone-500 text-xs ml-2 font-mono">{ch.account}</span>
+                                                            <span className="font-black text-stone-800 break-words">{ch.charName || '(無角色名)'}</span>
+                                                            <span className="text-stone-500 text-xs ml-2 font-mono break-all">{ch.account}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs shrink-0">
+                                                        <div className="flex items-center gap-2 text-xs shrink-0 ml-auto">
                                                             <span className="text-amber-600 font-bold">💰 {(ch.gold || 0).toLocaleString()}</span>
                                                             {ch.isBanned && <span className="text-red-500 font-bold">🔒封</span>}
                                                         </div>
@@ -3985,8 +4016,9 @@
                                                 ))}
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={handleSaveMaster}
-                                                className="w-full py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                                className="w-full py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                                             >
                                                 <CheckCircle size={14} />
                                                 綁定此主帳號並同步所有角色
@@ -3996,31 +4028,34 @@
                                 </div>
 
                                 {/* 第二組遊戲主帳號綁定 */}
-                                <div className={`rounded-xl p-4 mb-4 border-2 ${gameMaster2 ? 'bg-violet-50 border-violet-200' : 'bg-stone-50 border-stone-200'}`}>
+                                <div className={`rounded-xl p-3 sm:p-4 mb-4 border-2 max-w-full overflow-hidden ${gameMaster2 ? 'bg-violet-50 border-violet-200' : 'bg-stone-50 border-stone-200'}`}>
                                     <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                        <User size={20} className={gameMaster2 ? 'text-violet-600' : 'text-stone-400'} />
+                                        <User size={20} className={`shrink-0 ${gameMaster2 ? 'text-violet-600' : 'text-stone-400'}`} />
                                         <span className="text-stone-700 font-bold">第二組遊戲主帳號</span>
                                         {gameMaster2 ? (
                                             <span className="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-black rounded-full border border-violet-300">✅ 已綁定</span>
                                         ) : (
                                             <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-xs font-bold rounded-full border border-stone-300">選填</span>
                                         )}
-                                        <span className="text-xs text-stone-500">（選填，如有第二組遊戲帳號可在此綁定）</span>
+                                        <span className="text-xs text-stone-500 w-full sm:w-auto">（選填，如有第二組遊戲帳號可在此綁定）</span>
                                     </div>
-                                    <div className="flex flex-col gap-2 mb-2">
-                                        <div className="flex gap-2">
+                                    <div className="flex flex-col gap-2 mb-2 w-full min-w-0">
+                                        <div className="flex flex-col sm:flex-row gap-2 w-full min-w-0">
                                             <input
                                                 type="text"
                                                 value={masterInput2}
                                                 onChange={e => { setMasterInput2(e.target.value); setMasterError2(''); setMasterLookup2(null); }}
                                                 onKeyDown={e => e.key === 'Enter' && handleMasterLookup2()}
                                                 placeholder="輸入第二組遊戲主帳號名稱（選填）"
-                                                className="flex-1 px-3 py-2 border-2 rounded-lg focus:outline-none font-bold text-sm border-violet-300 focus:border-violet-500 bg-white min-w-0"
+                                                autoComplete="off"
+                                                inputMode="text"
+                                                className="w-full min-w-0 max-w-full flex-1 px-3 py-3 sm:py-2 border-2 rounded-lg focus:outline-none font-bold text-base sm:text-sm border-violet-300 focus:border-violet-500 bg-white box-border"
                                             />
                                             <button
+                                                type="button"
                                                 onClick={handleMasterLookup2}
                                                 disabled={masterLoading2}
-                                                className="px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-1 shrink-0"
+                                                className="w-full sm:w-auto shrink-0 px-4 py-3 sm:py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
                                             >
                                                 {masterLoading2 ? <span className="animate-spin">⏳</span> : <Search size={14} />}
                                                 查詢
@@ -4028,6 +4063,7 @@
                                         </div>
                                         {gameMaster2 && (
                                             <button
+                                                type="button"
                                                 onClick={async () => {
                                                     const ok = await window.sodaConfirm({
                                                         title: '解除第二組主帳號綁定？',
@@ -4043,37 +4079,38 @@
                                                     setGameAccounts(kept);
                                                     showToast('已解除第二組主帳號綁定', 'info');
                                                 }}
-                                                className="w-full px-3 py-2 bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-600 font-bold rounded-lg transition-colors text-sm border border-stone-200 hover:border-red-200"
+                                                className="w-full px-3 py-2.5 bg-stone-100 hover:bg-red-50 text-stone-500 hover:text-red-600 font-bold rounded-lg transition-colors text-sm border border-stone-200 hover:border-red-200"
                                                 title="解除綁定"
                                             >✕ 解除第二組主帳號綁定</button>
                                         )}
                                     </div>
-                                    {masterError2 && <p className="text-red-600 text-xs font-semibold mb-2">❌ {masterError2}</p>}
+                                    {masterError2 && <p className="text-red-600 text-xs font-semibold mb-2 break-words">❌ {masterError2}</p>}
                                     {gameMaster2 && !masterError2 && (
-                                        <p className="text-violet-700 text-xs font-semibold mb-2">
+                                        <p className="text-violet-700 text-xs font-semibold mb-2 break-words">
                                             ✅ 已綁定第二組：<span className="font-black">{gameMaster2}</span>
                                         </p>
                                     )}
                                     {masterLookup2 && !masterLookup2.error && (
-                                        <div className="bg-white rounded-lg border border-violet-200 p-3 mt-2">
-                                            <p className="text-violet-800 font-bold text-sm mb-2">
+                                        <div className="bg-white rounded-lg border border-violet-200 p-3 mt-2 max-w-full overflow-hidden">
+                                            <p className="text-violet-800 font-bold text-sm mb-2 break-words">
                                                 🎮 找到主帳號「{masterLookup2.masterName}」，共 {masterLookup2.chars.length} 個角色：
                                             </p>
                                             <div className="space-y-1.5 mb-3">
                                                 {masterLookup2.chars.map((ch, i) => (
-                                                    <div key={i} className="flex items-center gap-3 bg-violet-50 rounded-lg px-3 py-2 text-sm">
+                                                    <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-violet-50 rounded-lg px-3 py-2 text-sm min-w-0">
                                                         <span className={`w-2 h-2 rounded-full shrink-0 ${ch.isOnline ? 'bg-emerald-500' : 'bg-stone-400'}`} />
                                                         <div className="flex-1 min-w-0">
-                                                            <span className="font-black text-stone-800">{ch.charName || '(無角色名)'}</span>
-                                                            <span className="text-stone-500 text-xs ml-2 font-mono">{ch.account}</span>
+                                                            <span className="font-black text-stone-800 break-words">{ch.charName || '(無角色名)'}</span>
+                                                            <span className="text-stone-500 text-xs ml-2 font-mono break-all">{ch.account}</span>
                                                         </div>
-                                                        <span className="text-amber-600 font-bold text-xs shrink-0">💰 {(ch.gold || 0).toLocaleString()}</span>
+                                                        <span className="text-amber-600 font-bold text-xs shrink-0 ml-auto">💰 {(ch.gold || 0).toLocaleString()}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                             <button
+                                                type="button"
                                                 onClick={handleSaveMaster2}
-                                                className="w-full py-2 bg-violet-500 hover:bg-violet-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                                                className="w-full py-2.5 bg-violet-500 hover:bg-violet-600 text-white font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                                             >
                                                 <CheckCircle size={14} />
                                                 綁定第二組主帳號並加入角色
@@ -4083,18 +4120,19 @@
                                 </div>
 
                                 {/* 遊戲帳號列表 */}
-                                <div className="bg-gold-50 border-2 border-gold-200 rounded-xl p-4">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <User size={20} className="text-gold-600" />
+                                <div className="bg-gold-50 border-2 border-gold-200 rounded-xl p-3 sm:p-4 max-w-full overflow-hidden">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                            <User size={20} className="text-gold-600 shrink-0" />
                                             <span className="text-stone-700 font-bold">我的遊戲角色</span>
-                                            {gameMaster && <span className="text-xs text-sky-600 font-semibold">（主帳號：{gameMaster}）</span>}
-                                            {gameMaster2 && <span className="text-xs text-violet-600 font-semibold">（第二組：{gameMaster2}）</span>}
+                                            {gameMaster && <span className="text-xs text-sky-600 font-semibold break-all">（主帳號：{gameMaster}）</span>}
+                                            {gameMaster2 && <span className="text-xs text-violet-600 font-semibold break-all">（第二組：{gameMaster2}）</span>}
                                         </div>
                                         {gameAccounts.length < 5 && (
                                             <button
+                                                type="button"
                                                 onClick={() => setShowAddAccount(true)}
-                                                className="text-gold-600 hover:text-gold-700 font-bold text-sm flex items-center gap-1"
+                                                className="text-gold-600 hover:text-gold-700 font-bold text-sm flex items-center gap-1 shrink-0 self-start"
                                             >
                                                 <Plus size={14} />
                                                 手動新增
