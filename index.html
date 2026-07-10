@@ -7393,19 +7393,33 @@
 
                     {/* SHOPLINE 訂單確認對話框 */}
                     {confirmModal.show && (
-                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-md">
-                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border-2 border-gold-200">
-                                <div className="p-6 border-b border-stone-100">
-                                    <h3 className="text-xl font-black text-stone-800">{confirmModal.title}</h3>
+                        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/75 backdrop-blur-md">
+                            <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="bg-white rounded-t-[1.75rem] sm:rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border-2 border-amber-300 max-h-[92dvh] flex flex-col">
+                                <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 shrink-0" aria-hidden />
+                                <div className="p-5 sm:p-6 border-b border-stone-100 flex items-center gap-3 shrink-0">
+                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 border border-emerald-200 shrink-0" aria-hidden>
+                                        <CheckCircle size={24} strokeWidth={2.5} />
+                                    </span>
+                                    <h3 className="text-xl font-black text-stone-800 leading-tight">{confirmModal.title}</h3>
                                 </div>
-                                <div className="p-6 max-h-[60vh] overflow-y-auto">{confirmModal.message}</div>
-                                <div className="p-6 bg-stone-50 flex gap-3">
-                                    <button onClick={hideConfirm} className="flex-1 py-3 rounded-xl border-2 border-stone-300 text-stone-600 font-bold hover:bg-stone-100 transition-colors">
-                                        取消
-                                    </button>
-                                    <button onClick={() => { if (confirmModal.onConfirm) { confirmModal.onConfirm(); hideConfirm(); } }} className="flex-1 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-bold transition-colors">
+                                <div className="p-5 sm:p-6 max-h-[50vh] overflow-y-auto overscroll-contain flex-1 min-h-0">{confirmModal.message}</div>
+                                <div className="p-4 sm:p-5 bg-gradient-to-t from-amber-50 to-stone-50 border-t-2 border-amber-200/80 flex flex-col gap-3 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+                                    <button
+                                        type="button"
+                                        onClick={() => { if (confirmModal.onConfirm) { confirmModal.onConfirm(); hideConfirm(); } }}
+                                        className="w-full min-h-[56px] py-4 px-4 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-400 hover:via-amber-400 hover:to-orange-500 text-white font-black text-base sm:text-lg shadow-[0_8px_28px_rgba(234,88,12,0.55)] ring-4 ring-orange-300/70 animate-pulse hover:animate-none transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                                    >
+                                        <ExternalLink size={20} className="shrink-0" strokeWidth={2.75} aria-hidden />
                                         {confirmModal.confirmLabel}
                                     </button>
+                                    <button
+                                        type="button"
+                                        onClick={hideConfirm}
+                                        className="w-full min-h-[44px] py-2.5 rounded-xl border-2 border-stone-200 text-stone-500 font-bold hover:bg-white hover:text-stone-700 transition-colors text-sm"
+                                    >
+                                        取消
+                                    </button>
+                                    <p className="text-center text-[11px] font-bold text-orange-700/80">↑ 截圖後請點上方橘色按鈕前往支付</p>
                                 </div>
                             </motion.div>
                         </div>
