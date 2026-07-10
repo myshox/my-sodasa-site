@@ -584,6 +584,109 @@
             height: 16rem;
             background: rgba(45, 212, 191, 0.28);
         }
+        /* ========== 全站 UX 升級：更溫暖、更清楚、更好點 ========== */
+        ::selection {
+            background: rgba(45, 212, 191, 0.35);
+            color: #1c1917;
+        }
+        a {
+            transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+        }
+        .page-content h1,
+        .page-content h2,
+        .page-content .section-title {
+            text-wrap: balance;
+        }
+        .page-content p,
+        .page-content .section-sub {
+            text-wrap: pretty;
+        }
+        /* 友善提示條 */
+        .ux-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            border: 1.5px solid rgba(45, 212, 191, 0.35);
+            background: linear-gradient(135deg, rgba(204, 251, 241, 0.65), rgba(255, 251, 235, 0.9));
+            color: #44403c;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.55;
+            box-shadow: 0 8px 20px -14px rgba(15, 118, 110, 0.35);
+        }
+        .ux-hint strong { color: #0f766e; }
+        /* 頁面標題卡 */
+        .page-hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.75rem;
+            border: 2px solid rgba(15, 118, 110, 0.28);
+            background:
+                linear-gradient(165deg, rgba(255,255,255,0.98) 0%, rgba(255,251,235,0.95) 55%, rgba(236,253,245,0.92) 100%);
+            box-shadow:
+                0 24px 48px -20px rgba(15, 118, 110, 0.28),
+                0 0 0 1px rgba(251, 191, 36, 0.12),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        .page-hero-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 4px;
+            background: linear-gradient(90deg, #14b8a6, #fbbf24, #f59e0b, #14b8a6);
+            background-size: 200% 100%;
+            animation: gradientShift 6s ease infinite;
+        }
+        /* 輸入框全站更圓潤、聚焦更明顯 */
+        .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        .page-content select,
+        .page-content textarea {
+            border-radius: 1rem !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+        .page-content select:focus,
+        .page-content textarea:focus {
+            border-color: #14b8a6 !important;
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.2);
+            background: #fff;
+        }
+        /* 主要按鈕更有份量 */
+        .page-content button:not(:disabled),
+        .page-content [role="button"] {
+            letter-spacing: 0.01em;
+        }
+        /* 手機底欄更圓潤 */
+        .mobile-bottom-nav .pointer-events-auto {
+            box-shadow:
+                0 -12px 40px rgba(0,0,0,0.45),
+                0 0 0 1px rgba(45, 212, 191, 0.25),
+                inset 0 1px 0 rgba(255,255,255,0.08) !important;
+        }
+        /* 空狀態友善 */
+        .ux-empty {
+            text-align: center;
+            padding: 2.5rem 1.25rem;
+            border-radius: 1.5rem;
+            border: 2px dashed rgba(168, 162, 158, 0.45);
+            background: rgba(255,255,255,0.65);
+            color: #78716c;
+        }
+        .ux-empty__title {
+            font-family: "Zen Maru Gothic", sans-serif;
+            font-weight: 900;
+            font-size: 1.15rem;
+            color: #44403c;
+            margin-bottom: 0.35rem;
+        }
+        /* 頁尾更溫暖 */
+        footer.site-footer {
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245, 158, 11, 0.12), transparent 55%),
+                linear-gradient(180deg, #161310 0%, #0a0908 100%) !important;
+        }
         /* 遊戲感裝飾框（首頁 CTA 等） */
         .game-hud-frame {
             position: relative;
@@ -2888,33 +2991,32 @@
             );
         };
 
-        const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-teal-600" }) {
+        const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-teal-600", kicker = "蘇打石器 · 陪你慢慢玩" }) {
             const { pathname } = useLocation();
             const showBreadcrumb = pathname !== '/' && pathname !== '';
             return (
                 <header className="mb-8 md:mb-12 max-w-3xl mx-auto px-1">
-                    <div className="rounded-[1.6rem] md:rounded-[1.85rem] border-2 border-teal-600/30 bg-white/95 shadow-[0_22px_48px_-16px_rgba(13,148,136,0.28)] ring-1 ring-teal-500/15 overflow-hidden backdrop-blur-sm">
-                        <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-amber-400 to-amber-500" aria-hidden />
-                        <div className="px-5 py-6 md:px-10 md:py-9 relative">
-                            <div className="absolute -right-8 -top-10 w-36 h-36 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" aria-hidden />
-                            <div className="absolute -left-10 bottom-0 w-28 h-28 rounded-full bg-teal-300/20 blur-3xl pointer-events-none" aria-hidden />
+                    <div className="page-hero-card">
+                        <div className="px-5 py-7 md:px-10 md:py-10 relative">
+                            <div className="absolute -right-10 -top-12 w-44 h-44 rounded-full bg-amber-300/25 blur-3xl pointer-events-none" aria-hidden />
+                            <div className="absolute -left-12 bottom-0 w-36 h-36 rounded-full bg-teal-300/25 blur-3xl pointer-events-none" aria-hidden />
                             {showBreadcrumb && (
                                 <nav className="mb-4 md:mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm md:justify-center relative" aria-label="麵包屑導覽">
-                                    <Link to="/" className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-teal-800 hover:bg-teal-100 font-bold transition-colors">首頁</Link>
+                                    <Link to="/" className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1.5 text-teal-800 hover:bg-teal-100 font-bold transition-colors border border-teal-200/80">← 回首頁</Link>
                                     <span className="text-stone-400" aria-hidden>›</span>
-                                    <span className="font-black text-stone-900">{title}</span>
+                                    <span className="font-black text-stone-800">{title}</span>
                                 </nav>
                             )}
                             <div className="flex flex-col items-center text-center gap-3.5 md:gap-5 relative">
                                 {Icon && (
-                                    <span className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-100 via-white to-amber-50 border-2 border-teal-300/70 shadow-lg shadow-teal-900/10" aria-hidden>
-                                        <Icon size={32} className={`${color} shrink-0`} strokeWidth={1.75} />
+                                    <span className="flex h-16 w-16 md:h-[4.5rem] md:w-[4.5rem] items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-teal-100 via-white to-amber-50 border-2 border-teal-300/80 shadow-xl shadow-teal-900/10" aria-hidden>
+                                        <Icon size={34} className={`${color} shrink-0`} strokeWidth={1.75} />
                                     </span>
                                 )}
                                 <div>
-                                    <p className="section-kicker mb-2.5">蘇打石器</p>
-                                    <h1 className="section-title text-3xl sm:text-4xl md:text-[2.45rem]">{title}</h1>
-                                    <div className="mt-3.5 mx-auto h-1.5 w-24 md:w-28 rounded-full bg-gradient-to-r from-teal-500 via-amber-400 to-amber-500" aria-hidden />
+                                    <p className="section-kicker mb-3">{kicker}</p>
+                                    <h1 className="section-title text-3xl sm:text-4xl md:text-[2.55rem]">{title}</h1>
+                                    <div className="mt-4 mx-auto h-1.5 w-28 rounded-full bg-gradient-to-r from-teal-500 via-amber-400 to-amber-500" aria-hidden />
                                 </div>
                                 {subtitle && <p className="section-sub text-base md:text-lg max-w-xl mx-auto">{subtitle}</p>}
                             </div>
@@ -3390,12 +3492,19 @@
 
                     <div className="max-w-md mx-auto">
                         <div className="stone-panel p-5 sm:p-8 md:p-10">
-                            <h1 className="text-2xl md:text-3xl font-black text-stone-800 mb-2 text-center">
+                            <p className="section-kicker mx-auto mb-3 w-fit">{isRecoveryMode ? '帳號安全' : (isLogin ? '歡迎回來' : '新朋友你好')}</p>
+                            <h1 className="section-title text-2xl md:text-3xl mb-2 text-center">
                                 {isRecoveryMode ? '設定新密碼' : (isLogin ? '會員登入' : '註冊帳號')}
                             </h1>
-                            <p className="text-stone-500 text-center mb-8">
-                                {isRecoveryMode ? '請輸入您的新密碼' : (isLogin ? '歡迎回到蘇打石器' : '加入蘇打石器大家庭')}
+                            <p className="section-sub text-center mb-6 md:mb-8 text-sm md:text-base">
+                                {isRecoveryMode ? '設定一組好記又安全的新密碼吧' : (isLogin ? '登入後就能綁定遊戲帳號、查看儲值紀錄' : '免費加入，一個 Email 就能開始冒險')}
                             </p>
+                            {!isRecoveryMode && (
+                                <div className="ux-hint mb-6">
+                                    <span aria-hidden>💡</span>
+                                    <span>{isLogin ? <>忘記密碼也沒關係，點下方「忘記密碼」就能重設。</> : <>註冊後記得先到<strong>會員中心綁定遊戲主帳號</strong>，儲值才發得到金幣喔。</>}</span>
+                                </div>
+                            )}
                             
                             {/* 密碼重設表單 */}
                             {isRecoveryMode ? (
@@ -4085,7 +4194,7 @@
             return (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
                     <div className="max-w-4xl mx-auto w-full min-w-0">
-                        <PageHeader title="會員中心" subtitle="管理您的帳號與贊助紀錄" icon={User} color="text-wind-500" />
+                        <PageHeader title="會員中心" subtitle="在這裡綁定遊戲帳號、查看儲值紀錄，有問題也能快速找到客服。" icon={User} color="text-wind-500" kicker="歡迎回來" />
 
                         {/* 未綁定主帳號警告橫幅 */}
                         {!gameMaster && (
@@ -4468,10 +4577,13 @@
                             <h2 className="text-xl sm:text-2xl font-black text-stone-800 mb-6">我的儲值紀錄</h2>
                             
                             {sponsorships.length === 0 ? (
-                                <div className="text-center py-16 text-stone-400">
-                                    <Heart size={48} className="mx-auto mb-4 opacity-20" />
-                                    <p className="text-xl font-bold">尚無贊助紀錄</p>
-                                    <p className="mt-2">趕快前往金幣贊助支持我們吧！</p>
+                                <div className="ux-empty">
+                                    <Heart size={40} className="mx-auto mb-3 opacity-40 text-gold-500" />
+                                    <p className="ux-empty__title">還沒有儲值紀錄</p>
+                                    <p className="text-sm mt-1 mb-4">想支持部落的話，隨時可以去金幣贊助頁面喔</p>
+                                    <Link to="/recharge" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-bold text-sm transition-colors">
+                                        前往金幣贊助 <ArrowRight size={16} />
+                                    </Link>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -4818,9 +4930,9 @@
                         <div className="max-w-6xl mx-auto">
                             <ScrollReveal>
                                 <div className="text-center mb-8 md:mb-14">
-                                    <p className="section-kicker mb-3"><Zap size={14} /> 新手必看</p>
-                                    <h2 className="section-title text-2xl md:text-4xl mb-2">3 步驟，3 分鐘進入遊戲</h2>
-                                    <p className="section-sub text-sm md:text-base">完全免費，不用信用卡，不用實名</p>
+                                    <p className="section-kicker mb-3"><Zap size={14} /> 第一次來？看這裡</p>
+                                    <h2 className="section-title text-2xl md:text-4xl mb-2">3 步驟，約 3 分鐘就能開玩</h2>
+                                    <p className="section-sub text-sm md:text-base">完全免費，不用信用卡，也不用實名認證</p>
                                 </div>
                             </ScrollReveal>
                             <div className="grid md:grid-cols-3 gap-5 md:gap-6 relative">
@@ -5734,9 +5846,14 @@
                     className="page-content min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/50"
                 >
                     <div className="max-w-7xl mx-auto">
-                        <header className="text-center mb-8 md:mb-10">
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-800 tracking-tight mb-2">活動攻略</h1>
-                            <p className="text-stone-500 text-sm md:text-base max-w-lg mx-auto leading-relaxed">活動、教學、副本—依分類瀏覽或搜尋</p>
+                        <header className="text-center mb-8 md:mb-12">
+                            <div className="page-hero-card max-w-2xl mx-auto mb-2">
+                                <div className="px-5 py-7 md:px-8 md:py-9 relative">
+                                    <p className="section-kicker mb-3">新手友善 · 慢慢看</p>
+                                    <h1 className="section-title text-2xl sm:text-3xl md:text-4xl mb-2">活動攻略</h1>
+                                    <p className="section-sub text-sm md:text-base max-w-lg mx-auto">活動、教學、副本都整理好了。不會也沒關係，跟著攻略一步步來。</p>
+                                </div>
+                            </div>
                         </header>
 
                         {/* 搜尋 + 檢視切換（單一區塊，減少層次） */}
@@ -6729,13 +6846,13 @@
                         >
                             <Download size={32} className="text-white" strokeWidth={2.5} />
                         </motion.div>
-                        <p className="section-kicker mb-3">Download</p>
+                        <p className="section-kicker mb-3">下載遊戲 · 免費開玩</p>
                         <h1 className="section-title text-3xl md:text-4xl lg:text-5xl mb-2">遊戲下載</h1>
                         <p className="section-sub text-sm md:text-base max-w-xl mx-auto">
-                            選擇裝置取得客戶端，馬上開始冒險
+                            選你的裝置下載就好，安裝後就能進入尼斯大陸
                         </p>
                         <p className="text-stone-500 text-sm mt-4 flex items-center justify-center gap-2">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-500" /> 按鈕將於新分頁開啟下載
+                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-500" /> 點擊後會在新分頁開啟下載連結
                         </p>
                     </div>
 
@@ -6918,7 +7035,7 @@
 
             return (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
-                    <PageHeader title="最新活動" subtitle="即時掌握部落最新動態與福利活動。" icon={Calendar} color="text-fire-500" />
+                    <PageHeader title="最新活動" subtitle="部落最近在忙什麼？福利、活動與公告都在這裡，慢慢看就好。" icon={Calendar} color="text-fire-500" kicker="部落動態" />
                     
                     <div className="max-w-4xl mx-auto space-y-6">
                         {loading ? (
@@ -7285,7 +7402,7 @@
             if (gameMasterBound !== null && (!gameMasterBound || gameAccounts.length === 0)) {
                 return (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
-                        <PageHeader title="金幣贊助" subtitle="您的每一次贊助，都是維持部落運轉的神聖火種。" icon={Crown} color="text-gold-500" />
+                        <PageHeader title="金幣贊助" subtitle="謝謝你願意支持部落。填完資料後會先請你截圖，再安心前往付款。" icon={Crown} color="text-gold-500" kicker="自願贊助 · 感謝有你" />
                         <div className="max-w-2xl mx-auto mt-8">
                             <div className="bg-white rounded-3xl border-2 border-red-300 shadow-xl overflow-hidden">
                                 <div className="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6 flex items-center gap-4">
@@ -7960,8 +8077,18 @@
                                         {rechargeReady ? '前往支付' : '請完成必填項目'}
                                     </Button>
                                     {!rechargeReady && (
-                                        <p className="mt-3 text-center text-[11px] font-medium leading-relaxed text-amber-900/80">
-                                            請依序完成左欄步驟；自訂金額需 ≥ NT$ 100，並填寫與客服聯繫時一致的暱稱。
+                                        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-center">
+                                            <p className="text-[11px] font-bold text-amber-900 leading-relaxed">
+                                                還差一點就能付款：請檢查上方清單未打勾的項目
+                                            </p>
+                                            <p className="mt-1 text-[10px] font-medium text-amber-800/80 leading-relaxed">
+                                                自訂金額需 ≥ NT$100；暱稱請填與客服聯繫時一致的名稱
+                                            </p>
+                                        </div>
+                                    )}
+                                    {rechargeReady && (
+                                        <p className="mt-3 text-center text-[11px] font-bold text-emerald-700 leading-relaxed">
+                                            資料齊全了，點下方按鈕後會先請您截圖再前往支付
                                         </p>
                                     )}
                                     <p className="mt-4 flex items-center justify-center gap-2 text-center text-[11px] font-medium text-stone-400">
@@ -8080,7 +8207,7 @@
             return (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
                     <div className="max-w-4xl mx-auto w-full space-y-8">
-                        <PageHeader title="部落客服中心" subtitle="保護您的帳號安全，遠離詐騙" icon={ShieldCheck} color="text-gold-500" />
+                        <PageHeader title="部落客服中心" subtitle="遇到問題別慌，備好截圖與帳號資訊，我們會盡力協助你。" icon={ShieldCheck} color="text-gold-500" kicker="有困難找我們" />
                         
                         {/* 官方 LINE 區塊 */}
                         <div className="stone-panel p-6 sm:p-10 md:p-16 text-center shadow-xl bg-white">
@@ -15206,7 +15333,7 @@
                                 </div>
                                 <div className="hidden sm:flex flex-col items-start justify-center leading-tight min-w-0">
                                     <span className="font-display font-black text-white text-base md:text-lg tracking-tight truncate max-w-[10rem] md:max-w-[14rem]">蘇打石器</span>
-                                    <span className="text-[10px] md:text-[11px] font-bold text-teal-300/95 uppercase tracking-[0.12em]">公益服 · 下載 → 登入 → 開玩</span>
+                                    <span className="text-[10px] md:text-[11px] font-bold text-teal-300/95 tracking-[0.08em]">公益服 · 慢慢玩，不趕時間</span>
                                 </div>
                             </Link>
 
@@ -15283,11 +15410,15 @@
                     <div className="footer-tribal-border"></div>
                     <footer className="site-footer bg-gradient-to-b from-[#12100e] to-[#0a0908] py-10 md:py-16 px-4 sm:px-6 border-t border-amber-900/25 mt-auto relative z-10 text-stone-400 mb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom,0px)))] md:mb-0 shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
                         <div className="max-w-7xl mx-auto space-y-7">
+                            <div className="text-center md:text-left px-1">
+                                <p className="font-display text-lg md:text-xl font-black text-amber-200/95 tracking-tight">蘇打石器 · 最有人情味的石器時代</p>
+                                <p className="mt-1.5 text-sm text-stone-400 font-medium">有問題找客服、想玩先下載，我們陪你慢慢來。</p>
+                            </div>
                             {/* 免責聲明 */}
                             <div className="rounded-2xl p-5 md:p-7 border border-stone-700/70 bg-stone-800/35 backdrop-blur-sm">
                                 <h3 className="text-stone-200 font-bold text-base mb-3 flex items-center gap-2">
                                     <AlertCircle size={18} className="text-amber-500/90 shrink-0" />
-                                    免責聲明
+                                    溫馨提醒（請務必閱讀）
                                 </h3>
                                 <div className="space-y-3 text-stone-400 text-sm leading-relaxed">
                                     <p>
