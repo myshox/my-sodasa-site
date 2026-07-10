@@ -1,8 +1,8 @@
 // Service Worker for Soda Stone Age PWA
-// Version 2.3.1 - 訂單確認「前往支付」高亮
+// Version 2.3.2 - 訂單確認人性化＋截圖防呆
 
-const CACHE_NAME = 'soda-stone-v2.3.1';
-const RUNTIME_CACHE = 'soda-stone-runtime-v2.3.1';
+const CACHE_NAME = 'soda-stone-v2.3.2';
+const RUNTIME_CACHE = 'soda-stone-runtime-v2.3.2';
 
 // Assets to cache on install
 const STATIC_ASSETS = [

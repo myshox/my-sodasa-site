@@ -2209,64 +2209,60 @@
                                     // 關閉當前彈窗
                                     onClose();
                                     
-                                    // 顯示提醒
+                                    // 顯示提醒（人性化步驟＋截圖防呆）
                                     setTimeout(() => {
                                         showConfirm(
-                                            '⚠️ 前往付款前請先閱讀',
+                                            '訂單已建立，請先截圖',
                                             <div className="text-left space-y-4">
+                                                <p className="text-sm text-stone-600 leading-relaxed font-medium">
+                                                    別擔心，訂單已幫您建好。接下來依序完成：截圖 → 付款 → 傳給客服。
+                                                </p>
                                                 {newOrderNumber && (
-                                                    <div className="bg-purple-50 border-2 border-purple-500 p-4 rounded-lg">
-                                                        <p className="text-sm text-stone-600 font-bold mb-2">您的訂單編號</p>
-                                                        <div className="flex items-center gap-3 justify-center">
-                                                            <code className="text-xl font-black text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-purple-300">
-                                                                {newOrderNumber}
-                                                            </code>
+                                                    <div className="rounded-2xl border-2 border-violet-300 bg-violet-50 p-4">
+                                                        <p className="text-xs font-bold text-violet-700 mb-2">步驟 1 · 保存訂單編號</p>
+                                                        <div className="flex items-center gap-2 justify-center flex-wrap">
+                                                            <code className="text-lg font-black text-violet-700 bg-white px-3 py-2 rounded-xl border-2 border-violet-300 break-all">{newOrderNumber}</code>
                                                             <button
+                                                                type="button"
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(newOrderNumber);
                                                                     showToast('訂單編號已複製', 'success');
                                                                 }}
-                                                                className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                                                                className="p-2.5 min-h-[44px] min-w-[44px] hover:bg-violet-100 rounded-xl transition-colors"
                                                                 title="複製訂單編號"
                                                             >
-                                                                <Copy size={20} className="text-purple-600" />
+                                                                <Copy size={20} className="text-violet-600" />
                                                             </button>
                                                         </div>
-                                                        <p className="text-xs text-stone-500 text-center mt-2">請先截圖保存訂單編號</p>
                                                     </div>
                                                 )}
-                                                <p className="text-base text-stone-800 font-bold">點擊確認後將開啟外部支付頁面</p>
-                                                <div className="bg-yellow-50 border-2 border-yellow-500 p-4 rounded-lg">
-                                                    <p className="text-xl text-red-600 font-black mb-3">⚠️ 必須截圖兩個畫面！</p>
-                                                    <ol className="text-base text-stone-800 font-bold space-y-2 ml-4 list-decimal">
-                                                        <li>📸 本對話框（含訂單編號）</li>
-                                                        <li>📸 支付成功畫面</li>
+                                                <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4">
+                                                    <p className="text-sm font-black text-amber-900 mb-2">步驟 2 · 請截圖這兩個畫面</p>
+                                                    <ol className="space-y-2 text-sm text-stone-800 font-semibold">
+                                                        <li>1. 本對話框（含訂單編號）</li>
+                                                        <li>2. 支付成功畫面（付款完成後）</li>
                                                     </ol>
-                                                    <p className="text-sm text-stone-600 mt-3">作為支付憑證，避免糾紛</p>
                                                 </div>
-                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded space-y-3">
-                                                    <p className="text-base text-stone-800 font-black">💬 完成支付後，請立即將截圖傳送給 LINE 客服</p>
-                                                    <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
-                                                       className="inline-flex items-center gap-2 px-4 py-3 bg-line-500 text-white rounded-lg text-base font-bold hover:bg-line-600 transition-colors shadow-lg w-full justify-center">
-                                                        <MessageSquare size={20} />
-                                                        立即聯繫 LINE 客服
-                                                        <ExternalLink size={16} />
+                                                <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 space-y-2.5">
+                                                    <p className="text-sm font-black text-stone-800">步驟 3 · 付款後傳給 LINE 客服</p>
+                                                    <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer"
+                                                       className="inline-flex items-center gap-2 px-4 py-2.5 bg-line-500 text-white rounded-xl text-sm font-bold hover:bg-line-600 transition-colors w-full justify-center">
+                                                        <MessageSquare size={18} />
+                                                        開啟 LINE 客服（可先收藏）
+                                                        <ExternalLink size={14} />
                                                     </a>
-                                                    <p className="text-sm text-stone-600 font-bold text-center">⏰ 人工客服時間：10:00 - 22:00</p>
-                                                </div>
-                                                <div className="bg-red-50 border border-red-300 rounded-lg p-3">
-                                                    <p className="text-sm text-red-700 font-bold">💡 傳送截圖後，客服會為您核對訂單編號並發放金幣</p>
+                                                    <p className="text-xs text-stone-500 font-semibold text-center">人工客服 10:00–22:00</p>
                                                 </div>
                                             </div>,
                                             () => {
                                                 window.open(plan.url, '_blank');
-                                                // 跳轉到會員後台（使用 navigate 避免整頁載入、白畫面）
                                                 setTimeout(() => {
                                                     navigate('/member');
-                                                    showToast('訂單已建立，請完成支付後聯繫客服', 'success');
+                                                    showToast('已開啟支付頁。付完後記得把截圖傳給 LINE 客服喔', 'success');
                                                 }, 500);
                                             },
-                                            '我已截圖，前往支付'
+                                            '我已截圖，前往支付',
+                                            { requireAck: true, orderNumber: newOrderNumber }
                                         );
                                     }, 500);
                                 }
@@ -6986,12 +6982,78 @@
             const [orderNumber, setOrderNumber] = useState(''); // 新增：訂單編號
             const [lineName, setLineName] = useState(''); // 新增：LINE 名稱
             const [formErrors, setFormErrors] = useState({ gameAccount: '', method: '', plan: '', lineName: '' });
-            const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: null, onConfirm: null, confirmLabel: '確認' });
+            const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: null, onConfirm: null, confirmLabel: '確認', orderNumber: null, requireAck: false });
+            const [confirmAck, setConfirmAck] = useState(false);
             
-            const showConfirm = (title, message, onConfirm, confirmLabel = '確認') => {
-                setConfirmModal({ show: true, title, message, onConfirm, confirmLabel });
+            const showConfirm = (title, message, onConfirm, confirmLabel = '確認', opts = {}) => {
+                setConfirmAck(false);
+                setConfirmModal({
+                    show: true,
+                    title,
+                    message,
+                    onConfirm,
+                    confirmLabel,
+                    orderNumber: opts.orderNumber || null,
+                    requireAck: Boolean(opts.requireAck)
+                });
+                if (opts.orderNumber) {
+                    try {
+                        navigator.clipboard.writeText(String(opts.orderNumber));
+                        showToast('訂單編號已自動複製到剪貼簿', 'success');
+                    } catch (_) { /* ignore */ }
+                }
             };
-            const hideConfirm = () => setConfirmModal({ show: false, title: '', message: null, onConfirm: null, confirmLabel: '確認' });
+            const hideConfirm = () => {
+                setConfirmAck(false);
+                setConfirmModal({ show: false, title: '', message: null, onConfirm: null, confirmLabel: '確認', orderNumber: null, requireAck: false });
+            };
+
+            const buildOrderConfirmBody = (num) => (
+                <div className="text-left space-y-4">
+                    <p className="text-sm text-stone-600 leading-relaxed font-medium">
+                        別擔心，訂單已幫您建好。接下來只要依序完成下面 3 步，客服就能快速幫您入帳。
+                    </p>
+                    {num && (
+                        <div className="rounded-2xl border-2 border-violet-300 bg-violet-50 p-4">
+                            <p className="text-xs font-bold text-violet-700 mb-2 tracking-wide">步驟 1 · 保存訂單編號</p>
+                            <div className="flex items-center gap-2 justify-center flex-wrap">
+                                <code className="text-lg sm:text-xl font-black text-violet-700 bg-white px-3 py-2 rounded-xl border-2 border-violet-300 break-all">{num}</code>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(num);
+                                        showToast('訂單編號已複製', 'success');
+                                    }}
+                                    className="p-2.5 min-h-[44px] min-w-[44px] hover:bg-violet-100 rounded-xl transition-colors touch-square"
+                                    title="複製訂單編號"
+                                >
+                                    <Copy size={20} className="text-violet-600" />
+                                </button>
+                            </div>
+                            <p className="text-xs text-violet-600/90 text-center mt-2 font-semibold">已自動複製；建議再截圖本畫面保存</p>
+                        </div>
+                    )}
+                    <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4">
+                        <p className="text-sm font-black text-amber-900 mb-2">步驟 2 · 請截圖這兩個畫面</p>
+                        <ol className="space-y-2 text-sm text-stone-800 font-semibold">
+                            <li className="flex gap-2 items-start"><span className="shrink-0 w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center">1</span><span>本對話框（含訂單編號）</span></li>
+                            <li className="flex gap-2 items-start"><span className="shrink-0 w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center">2</span><span>支付成功畫面（付款完成後）</span></li>
+                        </ol>
+                        <p className="text-xs text-stone-500 mt-2.5 leading-relaxed">這兩張圖是查帳憑證，沒有的話客服較難核對。</p>
+                    </div>
+                    <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 space-y-2.5">
+                        <p className="text-sm font-black text-stone-800">步驟 3 · 付款後傳給 LINE 客服</p>
+                        <p className="text-xs text-stone-600 leading-relaxed">付完款後，把截圖傳到官方 LINE，客服會依訂單編號幫您入帳。</p>
+                        <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer"
+                           className="inline-flex items-center gap-2 px-4 py-2.5 bg-line-500 text-white rounded-xl text-sm font-bold hover:bg-line-600 transition-colors w-full justify-center">
+                            <MessageSquare size={18} />
+                            開啟 LINE 客服（可先收藏）
+                            <ExternalLink size={14} />
+                        </a>
+                        <p className="text-xs text-stone-500 font-semibold text-center">人工客服 10:00–22:00</p>
+                    </div>
+                </div>
+            );
             const accountRef = useRef(null);
             const methodRef = useRef(null);
             const planRef = useRef(null);
@@ -7174,62 +7236,20 @@
                     const newOrderNumber = typeof result === 'string' ? result : `ORD-${Date.now()}`;
                     
                     if (result) {
-                        // 顯示訂單編號和提醒
+                        // 顯示訂單編號和提醒（人性化步驟＋截圖防呆）
                         setTimeout(() => {
                             showConfirm(
-                                '✅ 訂單已建立',
-                                <div className="text-left space-y-4">
-                                    <div className="bg-purple-50 border-2 border-purple-500 p-4 rounded-lg">
-                                        <p className="text-sm text-stone-600 font-bold mb-2">您的訂單編號</p>
-                                        <div className="flex items-center gap-3 justify-center">
-                                            <code className="text-xl font-black text-purple-600 bg-white px-4 py-2 rounded-lg border-2 border-purple-300">
-                                                {newOrderNumber}
-                                            </code>
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(newOrderNumber);
-                                                    showToast('訂單編號已複製', 'success');
-                                                }}
-                                                className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
-                                                title="複製訂單編號"
-                                            >
-                                                <Copy size={20} className="text-purple-600" />
-                                            </button>
-                                        </div>
-                                        <p className="text-xs text-stone-500 text-center mt-2">請務必截圖保存此訂單編號</p>
-                                    </div>
-                                    <div className="bg-yellow-50 border-2 border-yellow-500 p-4 rounded-lg">
-                                        <p className="text-xl text-red-600 font-black mb-3">⚠️ 必須截圖兩個畫面！</p>
-                                        <ol className="text-base text-stone-800 font-bold space-y-2 ml-4 list-decimal">
-                                            <li>📸 本對話框（含訂單編號）</li>
-                                            <li>📸 支付成功畫面</li>
-                                        </ol>
-                                        <p className="text-sm text-stone-600 mt-3">作為支付憑證，方便查帳核對</p>
-                                    </div>
-                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded space-y-3">
-                                        <p className="text-base text-stone-800 font-black">💬 完成支付後，請立即將截圖傳送給 LINE 客服</p>
-                                        <a href="https://lin.ee/3vSihiH" target="_blank" rel="noopener noreferrer" 
-                                           className="inline-flex items-center gap-2 px-4 py-3 bg-line-500 text-white rounded-lg text-base font-bold hover:bg-line-600 transition-colors shadow-lg w-full justify-center">
-                                            <MessageSquare size={20} />
-                                            立即聯繫 LINE 客服
-                                            <ExternalLink size={16} />
-                                        </a>
-                                        <p className="text-sm text-stone-600 font-bold text-center">⏰ 人工客服時間：10:00 - 22:00</p>
-                                    </div>
-                                    <div className="bg-red-50 border border-red-300 rounded-lg p-3">
-                                        <p className="text-sm text-red-700 font-bold">💡 客服會根據訂單編號和支付憑證為您查帳核對</p>
-                                    </div>
-                                </div>,
+                                '訂單已建立，請先截圖',
+                                buildOrderConfirmBody(newOrderNumber),
                                 () => {
-                                    // 開啟外部支付頁面
                                     window.open(selectedPlan.url, '_blank');
-                                    // 跳轉到會員後台（使用 navigate 避免整頁載入、白畫面）
                                     setTimeout(() => {
                                         navigate('/member');
-                                        showToast('訂單已建立，請完成支付後聯繫客服', 'success');
+                                        showToast('已開啟支付頁。付完後記得把截圖傳給 LINE 客服喔', 'success');
                                     }, 500);
                                 },
-                                '我已截圖，前往支付'
+                                '我已截圖，前往支付',
+                                { requireAck: true, orderNumber: newOrderNumber }
                             );
                         }, 500);
                     }
@@ -7391,35 +7411,70 @@
                         />
                     )}
 
-                    {/* SHOPLINE 訂單確認對話框 */}
+                    {/* SHOPLINE 訂單確認對話框（人性化步驟＋截圖防呆） */}
                     {confirmModal.show && (
-                        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/75 backdrop-blur-md">
-                            <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="bg-white rounded-t-[1.75rem] sm:rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border-2 border-amber-300 max-h-[92dvh] flex flex-col">
+                        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-stone-900/75 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="order-confirm-title">
+                            <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="bg-white rounded-t-[1.75rem] sm:rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden border-2 border-amber-300 max-h-[92dvh] flex flex-col" onClick={e => e.stopPropagation()}>
                                 <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 shrink-0" aria-hidden />
                                 <div className="p-5 sm:p-6 border-b border-stone-100 flex items-center gap-3 shrink-0">
                                     <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 border border-emerald-200 shrink-0" aria-hidden>
                                         <CheckCircle size={24} strokeWidth={2.5} />
                                     </span>
-                                    <h3 className="text-xl font-black text-stone-800 leading-tight">{confirmModal.title}</h3>
+                                    <div className="min-w-0">
+                                        <h3 id="order-confirm-title" className="text-xl font-black text-stone-800 leading-tight">{confirmModal.title}</h3>
+                                        <p className="text-xs text-stone-500 font-semibold mt-0.5">慢慢來，先截圖再付款最保險</p>
+                                    </div>
                                 </div>
-                                <div className="p-5 sm:p-6 max-h-[50vh] overflow-y-auto overscroll-contain flex-1 min-h-0">{confirmModal.message}</div>
+                                <div className="p-5 sm:p-6 max-h-[46vh] overflow-y-auto overscroll-contain flex-1 min-h-0">{confirmModal.message}</div>
                                 <div className="p-4 sm:p-5 bg-gradient-to-t from-amber-50 to-stone-50 border-t-2 border-amber-200/80 flex flex-col gap-3 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+                                    {confirmModal.requireAck && (
+                                        <label className={`flex items-start gap-3 rounded-2xl border-2 p-3.5 cursor-pointer transition-colors ${confirmAck ? 'border-emerald-400 bg-emerald-50' : 'border-amber-300 bg-white'}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={confirmAck}
+                                                onChange={(e) => setConfirmAck(e.target.checked)}
+                                                className="mt-0.5 w-5 h-5 rounded accent-emerald-600 shrink-0"
+                                            />
+                                            <span className="text-sm font-bold text-stone-800 leading-snug">
+                                                我已截圖保存訂單編號
+                                                <span className="block text-xs font-semibold text-stone-500 mt-1">勾選後才能前往支付，避免忘記截圖</span>
+                                            </span>
+                                        </label>
+                                    )}
                                     <button
                                         type="button"
-                                        onClick={() => { if (confirmModal.onConfirm) { confirmModal.onConfirm(); hideConfirm(); } }}
-                                        className="w-full min-h-[56px] py-4 px-4 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-400 hover:via-amber-400 hover:to-orange-500 text-white font-black text-base sm:text-lg shadow-[0_8px_28px_rgba(234,88,12,0.55)] ring-4 ring-orange-300/70 animate-pulse hover:animate-none transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                                        disabled={confirmModal.requireAck && !confirmAck}
+                                        onClick={() => {
+                                            if (confirmModal.requireAck && !confirmAck) {
+                                                showToast('請先勾選「我已截圖保存訂單編號」', 'warning');
+                                                return;
+                                            }
+                                            if (confirmModal.onConfirm) { confirmModal.onConfirm(); hideConfirm(); }
+                                        }}
+                                        className={`w-full min-h-[56px] py-4 px-4 rounded-2xl text-white font-black text-base sm:text-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] ${
+                                            confirmModal.requireAck && !confirmAck
+                                                ? 'bg-stone-300 cursor-not-allowed shadow-none ring-0'
+                                                : 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-400 hover:via-amber-400 hover:to-orange-500 shadow-[0_8px_28px_rgba(234,88,12,0.55)] ring-4 ring-orange-300/70'
+                                        }`}
                                     >
                                         <ExternalLink size={20} className="shrink-0" strokeWidth={2.75} aria-hidden />
                                         {confirmModal.confirmLabel}
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={hideConfirm}
+                                        onClick={() => {
+                                            hideConfirm();
+                                            showToast('沒關係，訂單已留在會員中心，之後可再付款', 'info');
+                                        }}
                                         className="w-full min-h-[44px] py-2.5 rounded-xl border-2 border-stone-200 text-stone-500 font-bold hover:bg-white hover:text-stone-700 transition-colors text-sm"
                                     >
-                                        取消
+                                        先不要，稍後再付
                                     </button>
-                                    <p className="text-center text-[11px] font-bold text-orange-700/80">↑ 截圖後請點上方橘色按鈕前往支付</p>
+                                    <p className="text-center text-[11px] font-bold text-stone-500 leading-relaxed">
+                                        {confirmModal.requireAck && !confirmAck
+                                            ? '請先勾選上方「我已截圖」再點橘色按鈕'
+                                            : '點橘色按鈕會開啟安全支付頁'}
+                                    </p>
                                 </div>
                             </motion.div>
                         </div>
