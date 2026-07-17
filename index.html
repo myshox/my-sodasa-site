@@ -69,7 +69,7 @@
     <link rel="preload" href="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js" as="script">
     <!-- ★ 預載首頁封面（LCP 元素），提早 200-500ms 顯示，提升 Lighthouse 分數 -->
     <link rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high">
-    <link rel="preload" as="image" href="/images/logo-official-v2.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/logo-official-transparent.png" type="image/png" fetchpriority="high">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1785,7 +1785,7 @@
         
         // --- 靜態資料與素材 ---
         const ASSETS = {
-        LOGO: 'images/logo-official-v2.webp',
+        LOGO: 'images/logo-official-transparent.png',
         HERO: 'images/hero.webp',
             LINE_LOGO: 'images/LINE_logo.jpg',
             LINE_PAY_LOGO: 'images/LINEPAY.jpg', 
@@ -8130,9 +8130,1111 @@
                                     </div>
                                     <h3 className="font-display text-2xl font-black text-white md:text-3xl">儲值有疑問？</h3>
                                     <p className="max-w-xl text-sm leading-relaxed text-stone-300">
-                                        請備妥以下資料聯繫官方 LINE，�
-... 74710 bytes omitted ...
-     
+                                        請備妥以下資料聯繫官方 LINE，客服將依訂單與憑證協助查核。
+                                    </p>
+                                    <ul className="grid gap-2 text-sm text-stone-200 sm:grid-cols-1">
+                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                                            <span><strong className="text-white">官網頁面截圖</strong>（含訂單資訊）</span></li>
+                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                                            <span><strong className="text-white">付款／轉帳紀錄</strong>（時間、金額）</span></li>
+                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                                            <span><strong className="text-white">遊戲帳號</strong>與<strong className="text-white">註冊信箱</strong></span></li>
+                                    </ul>
+                                </div>
+                                <div className="shrink-0 md:pl-4">
+                                    <a
+                                        href="https://lin.ee/3vSihiH"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#06C755] px-8 py-4 text-base font-black text-white shadow-lg shadow-emerald-900/40 transition-all hover:bg-[#05B34C] hover:shadow-xl md:w-auto"
+                                    >
+                                        <MessageSquare size={22} />
+                                        官方 LINE 客服
+                                    </a>
+                                    <p className="mt-3 text-center text-[11px] text-stone-500 md:text-left">人工時段：10:00 – 22:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 公益承諾 */}
+                    <div className="max-w-7xl mx-auto mt-24 md:mt-32">
+                        <div 
+                            className="stone-panel p-6 sm:p-10 md:p-20 relative overflow-hidden shadow-2xl border-0"
+                            style={{ 
+                                backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.95)), url(${getAssetUrl(ASSETS.LOVE_BG)})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center'
+                            }}
+                        >
+                            <div className="text-center mb-16 relative z-10">
+                                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-50 text-red-500 font-bold mb-6 text-sm tracking-wide">
+                                    <Heart className="fill-red-500" size={16} />
+                                    <span>公益承諾</span>
+                                </div>
+                                <h2 className="text-2xl md:text-4xl font-display font-black text-stone-800 mb-4">營收 1% 捐給公益</h2>
+                                <p className="text-lg md:text-xl text-stone-500 font-medium max-w-2xl mx-auto leading-relaxed">
+                                    讓遊戲的歡樂延伸到現實世界，幫助更多需要的人。
+                                </p>
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-16 relative z-10">
+                                {[
+                                    {t: "透明公開", d: "不定期公佈捐款明細，有跡可循", i: Eye, c: "text-water-500", b: "bg-water-50"},
+                                    {t: "持續承諾", d: "長期穩定的計畫，非一時噱頭", i: Star, c: "text-gold-500", b: "bg-gold-50"},
+                                    {t: "共同參與", d: "每位玩家的支持，都是一份愛心", i: HeartHandshake, c: "text-fire-500", b: "bg-fire-50"}
+                                ].map((item, i) => (
+                                    <div key={i} className="bg-white/80 p-8 rounded-3xl border border-stone-100 text-center hover:shadow-lg transition-all duration-500 backdrop-blur-sm">
+                                        <div className={`w-16 h-16 mx-auto ${item.b} rounded-2xl flex items-center justify-center mb-6 ${item.c}`}>
+                                            <item.i size={32} />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-stone-700 mb-3">{item.t}</h3>
+                                        <p className="text-stone-500 text-sm font-medium leading-relaxed">{item.d}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="bg-stone-900 p-10 md:p-14 rounded-[2.5rem] relative z-10 text-white shadow-2xl">
+                                <div className="flex flex-col md:flex-row gap-10 items-center">
+                                    <div className="flex-1 space-y-6">
+                                        <h3 className="text-2xl md:text-3xl font-display font-bold flex items-center gap-3 text-gold-400">
+                                            <ScrollText className="text-stone-500" /> 我們的公益理念
+                                        </h3>
+                                        <div className="space-y-4 text-stone-300 font-medium leading-loose text-base md:text-lg">
+                                            <p>蘇打石器始終相信，遊戲不僅是娛樂，更是一種連結人心的方式。 我們希望透過這個平台，讓玩家在享受遊戲樂趣的同時，也能為社會帶來正面的影響。</p>
+                                            <p>我們承諾將遊戲商城營收的 1% 捐贈給合格的公益機構， 包括兒童福利、教育援助、弱勢關懷等領域。</p>
+                                            <p className="text-white/90 border-l-4 border-gold-500 pl-4 py-1 mt-4">感謝每一位馴獸師的支持，您的每一次儲值，都在為這個世界帶來一點溫暖。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const SupportPage = () => {
+            const handleLine = () => window.open('https://lin.ee/3vSihiH', '_blank'); // FIXED: Support LINE
+
+            return (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
+                    <div className="max-w-4xl mx-auto w-full space-y-8">
+                        <PageHeader title="部落客服中心" subtitle="遇到問題別慌，備好截圖與帳號資訊，我們會盡力協助你。" icon={ShieldCheck} color="text-gold-500" kicker="有困難找我們" />
+                        
+                        {/* 官方 LINE 區塊 */}
+                        <div className="stone-panel p-6 sm:p-10 md:p-16 text-center shadow-xl bg-white">
+                            <div className="w-28 h-28 md:w-36 md:h-36 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+                                <SmartImage src={getAssetUrl(ASSETS.LINE_LOGO)} fallbackType="logo" className="w-full h-full object-contain rounded-[2rem] border-4 border-white shadow-lg" alt="LINE" />
+                            </div>
+                            
+                            <h3 className="text-xl md:text-2xl font-bold text-stone-800 mb-3">加入官方 LINE</h3>
+                            <p className="text-stone-500 font-medium text-base mb-8 max-w-md mx-auto leading-relaxed">
+                                專人一對一服務，解決遊戲問題、儲值異常或違規檢舉。
+                            </p>
+
+                            <div className="bg-stone-50 rounded-2xl p-5 sm:p-6 mb-8 border border-stone-100 inline-block w-full max-w-sm">
+                                <p className="text-stone-400 text-xs font-bold mb-1 uppercase tracking-widest">官方 LINE ID</p>
+                                <p className="text-2xl md:text-3xl font-black text-stone-700 tracking-wider font-mono">@939yjtdj</p>
+                            </div>
+
+                            <div className="flex justify-center">
+                                <Button variant="line" className="w-full md:w-auto md:min-w-[280px] py-4 text-xl rounded-2xl shadow-lg shadow-green-100" icon={LineIcon} onClick={handleLine}>
+                                    立即加入好友
+                                </Button>
+                            </div>
+                            
+                            <p className="text-stone-400 text-xs font-medium mt-10 bg-stone-50 inline-block px-4 py-1.5 rounded-full">
+                                服務時間：每日 10:00 - 22:00
+                            </p>
+                        </div>
+
+                        {/* 跨裝置資料說明 */}
+                        <div className="stone-panel p-6 md:p-8 bg-white border-2 border-sky-100/90 shadow-lg">
+                            <h3 className="text-lg md:text-xl font-black text-stone-800 mb-4 flex items-center gap-2">
+                                <Smartphone className="text-sky-500 shrink-0" size={26} aria-hidden />
+                                常見問題：iOS／Android 資料不同步？
+                            </h3>
+                            <div className="space-y-4 text-stone-700 text-sm md:text-base leading-relaxed">
+                                <p>
+                                    遊戲資料由<strong className="text-stone-900">伺服器</strong>保存。若手機與另一台裝置看到的角色或進度不同，請依序確認：
+                                </p>
+                                <ol className="list-decimal pl-5 space-y-2 font-medium text-stone-800">
+                                    <li>兩端是否以<strong>同一組遊戲主帳號</strong>登入（與官網會員中心綁定名稱一致）。</li>
+                                    <li>遊戲內是否選到<strong>同一伺服器／分流</strong>（不同分流會是不同的角色列表）。</li>
+                                    <li>是否曾用<strong>訪客或不同帳號</strong>試玩，導致以為「資料不見」。</li>
+                                    <li><strong className="text-stone-900">iOS 上完全沒資料、像新帳？</strong> 請在 iPhone 上確認登入方式與 Android 相同（非訪客），並在<strong>選伺服器</strong>畫面選到與 Android <strong>完全相同</strong>的伺服器名稱；若仍為空，請備妥兩端「登入＋選服」截圖與主帳號聯絡 LINE。</li>
+                                </ol>
+                                <p className="text-stone-600 text-sm border-t border-stone-100 pt-4">
+                                    官網僅能協助<strong className="text-stone-800">查詢與綁定主帳號相關資訊</strong>；若已確認帳號與伺服器仍異常，請透過上方 LINE 提供<strong>主帳號</strong>與兩端畫面截圖，由客服向技術端協助排查。
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 防詐騙警告 */}
+                        <div className="bg-gradient-to-br from-red-50 via-orange-50 to-red-50 border-4 border-red-400 rounded-3xl p-8 md:p-10 shadow-2xl">
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="bg-red-500 p-3 md:p-4 rounded-2xl shrink-0">
+                                    <AlertCircle size={36} className="text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-red-700 mb-2">🚨 防詐騙警告</h2>
+                                    <p className="text-red-600 font-bold text-base md:text-lg">請務必仔細閱讀，保護您的帳號與財產安全！</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white rounded-2xl p-6 md:p-8 space-y-6">
+                                <div className="space-y-4">
+                                    <h3 className="font-black text-red-700 text-lg md:text-xl flex items-center gap-2">
+                                        <CheckCircle size={24} />
+                                        官方唯一儲值管道
+                                    </h3>
+                                    <ul className="space-y-2 text-stone-700 font-bold text-sm md:text-base ml-4">
+                                        <li>✅ 本網站為官方唯一儲值網站</li>
+                                        <li>✅ 只接受 LINE Pay、SHOPLINE 等第三方金流</li>
+                                        <li>✅ 官方 LINE ID：<span className="text-green-600">@939yjtdj</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="border-t border-red-200 pt-6 space-y-4">
+                                    <h3 className="font-black text-red-700 text-lg md:text-xl flex items-center gap-2">
+                                        <X size={24} />
+                                        官方絕不會要求您
+                                    </h3>
+                                    <ul className="space-y-2 text-stone-700 font-bold text-sm md:text-base ml-4">
+                                        <li>🚫 私下透過個人帳號轉帳、匯款</li>
+                                        <li>🚫 提供遊戲帳號密碼</li>
+                                        <li>🚫 透過來路不明的網站儲值</li>
+                                        <li>🚫 進行「代儲」、「低價儲值」</li>
+                                        <li>🚫 點擊可疑連結或掃描不明 QR Code</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 常見詐騙手法 */}
+                        <div className="stone-panel p-5 sm:p-8 md:p-10 bg-white">
+                            <h2 className="text-xl md:text-2xl font-black text-stone-800 mb-6 flex items-center gap-3">
+                                <Eye size={28} className="text-orange-500" />
+                                常見詐騙手法
+                            </h2>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <User size={18} />
+                                        假客服詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        假冒官方客服索取<strong className="text-orange-700">帳號密碼</strong>
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 官方絕不索取密碼！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <Coins size={18} />
+                                        低價代儲詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        宣稱比官方便宜的代儲服務
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 貪小便宜易上當！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <ExternalLink size={18} />
+                                        釣魚網站詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        建立假官網誘導輸入帳密
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 仔細檢查網址！</strong>
+                                    </p>
+                                </div>
+
+                                <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-5">
+                                    <h3 className="font-black text-orange-700 text-base md:text-lg mb-2 flex items-center gap-2">
+                                        <MessageSquare size={18} />
+                                        假官方帳號詐騙
+                                    </h3>
+                                    <p className="text-stone-700 text-sm leading-relaxed">
+                                        建立假 LINE 發送詐騙訊息
+                                        <br />
+                                        <strong className="text-orange-700">⚠️ 認明官方帳號！</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 遇到詐騙怎麼辦 */}
+                        <div className="bg-gradient-to-br from-fire-50 to-red-50 border-2 border-fire-400 rounded-3xl p-8">
+                            <h2 className="text-xl md:text-2xl font-black text-fire-700 mb-4 flex items-center gap-2">
+                                <AlertCircle size={26} />
+                                遇到詐騙怎麼辦？
+                            </h2>
+                            <div className="space-y-3">
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">1.</span>
+                                    <span><strong className="text-fire-700">立即停止</strong>與對方的一切聯繫</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">2.</span>
+                                    <span><strong className="text-fire-700">保留證據</strong>：截圖對話、交易紀錄</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">3.</span>
+                                    <span><strong className="text-fire-700">聯繫官方</strong>：透過官方 LINE（@939yjtdj）回報</span>
+                                </p>
+                                <p className="text-stone-700 font-bold text-sm md:text-base flex items-start gap-2">
+                                    <span className="text-fire-600 font-black shrink-0">4.</span>
+                                    <span><strong className="text-fire-700">報警處理</strong>：金額較大時建議報案</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const NotFoundPage = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="page-content page-content--centered min-h-screen">
+                    <div className="text-center max-w-md w-full px-2">
+                        <div className="text-8xl font-black text-stone-200 mb-4">404</div>
+                        <h1 className="text-2xl font-black text-stone-800 mb-3">找不到頁面</h1>
+                        <p className="text-stone-500 mb-8">你要找的頁面不存在或已被移除。</p>
+                        <div className="flex gap-3 justify-center">
+                            <button onClick={() => navigate(-1)} className="px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition-colors">
+                                返回上一頁
+                            </button>
+                            <Link to="/" className="px-6 py-3 bg-gradient-to-r from-gold-500 to-orange-500 hover:from-gold-600 hover:to-orange-600 text-white font-bold rounded-xl transition-colors">
+                                回首頁
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ── 遊戲玩家查詢與管理 Tab（獨立 component 避免 Hooks 違規）──
+        const GamePlayersTab = ({ showToast, gmWorker }) => {
+            const [gpQuery, setGpQuery] = useState('');
+            const [gpResults, setGpResults] = useState([]);
+            const [gpLoading, setGpLoading] = useState(false);
+            const [gpSelected, setGpSelected] = useState(null);
+            const [gpGold, setGpGold] = useState('');
+            const [gpGoldLoading, setGpGoldLoading] = useState(false);
+            const [gpBanLoading, setGpBanLoading] = useState(false);
+            const [gpMailTitle, setGpMailTitle] = useState('');
+            const [gpMailContent, setGpMailContent] = useState('');
+            const [gpMailLoading, setGpMailLoading] = useState(false);
+
+            const searchPlayers = async () => {
+                if (!gpQuery.trim()) return;
+                setGpLoading(true); setGpResults([]); setGpSelected(null);
+                try {
+                    const res = await fetch(`${gmWorker}/players?q=${encodeURIComponent(gpQuery.trim())}`);
+                    if (res.ok) setGpResults(await res.json());
+                    else showToast('查詢失敗', 'error');
+                } catch { showToast('網路錯誤', 'error'); } finally { setGpLoading(false); }
+            };
+
+            const doGold = async () => {
+                const gold = parseInt(gpGold);
+                if (isNaN(gold) || gold < 0) { showToast('請輸入有效金幣數量', 'error'); return; }
+                setGpGoldLoading(true);
+                try {
+                    const res = await fetch(`${gmWorker}/player/${encodeURIComponent(gpSelected.account)}/gold`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ gold }) });
+                    const r = await res.json();
+                    if (res.ok) { showToast(r.message || '金幣已設定', 'success'); setGpGold(''); setGpSelected(p => ({ ...p, gold })); setGpResults(list => list.map(p => p.account === gpSelected.account ? { ...p, gold } : p)); }
+                    else showToast(r.message || '失敗', 'error');
+                } catch { showToast('網路錯誤', 'error'); } finally { setGpGoldLoading(false); }
+            };
+
+            const doBan = async (ban) => {
+                setGpBanLoading(true);
+                try {
+                    const res = await fetch(`${gmWorker}/player/${encodeURIComponent(gpSelected.account)}/ban`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ ban, days: 0 }) });
+                    const r = await res.json();
+                    if (res.ok) { showToast(r.message || (ban ? '已封號' : '已解封'), 'success'); setGpSelected(p => ({ ...p, isBanned: ban })); setGpResults(list => list.map(p => p.account === gpSelected.account ? { ...p, isBanned: ban } : p)); }
+                    else showToast(r.message || '失敗', 'error');
+                } catch { showToast('網路錯誤', 'error'); } finally { setGpBanLoading(false); }
+            };
+
+            const doMail = async () => {
+                if (!gpMailTitle || !gpMailContent) { showToast('請填寫標題與內容', 'error'); return; }
+                setGpMailLoading(true);
+                try {
+                    const res = await fetch(`${gmWorker}/player/${encodeURIComponent(gpSelected.account)}/mail`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title: gpMailTitle, content: gpMailContent }) });
+                    const r = await res.json();
+                    if (res.ok) { showToast(r.message || '已發送', 'success'); setGpMailTitle(''); setGpMailContent(''); }
+                    else showToast(r.message || '失敗', 'error');
+                } catch { showToast('網路錯誤', 'error'); } finally { setGpMailLoading(false); }
+            };
+
+            return (
+                <div className="space-y-6">
+                    <h2 className="text-white font-black text-2xl flex items-center gap-3">🎮 遊戲玩家查詢與管理</h2>
+                    <div className="bg-gradient-to-br from-emerald-950/40 to-stone-800 rounded-2xl p-6 border border-emerald-700/30">
+                        <div className="flex gap-3">
+                            <input type="text" value={gpQuery} onChange={e => setGpQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchPlayers()}
+                                placeholder="輸入帳號名稱或角色名稱搜尋..."
+                                className="flex-1 px-4 py-3 rounded-xl bg-stone-900 border border-stone-600 text-white placeholder-stone-500 focus:border-emerald-500 outline-none text-sm font-medium" />
+                            <button onClick={searchPlayers} disabled={gpLoading || !gpQuery.trim()} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold rounded-xl transition-colors flex items-center gap-2">
+                                {gpLoading ? <span className="animate-spin">⏳</span> : <Search size={18} />} 搜尋
+                            </button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* 搜尋結果 */}
+                        <div className="bg-stone-800/60 rounded-2xl border border-stone-700 overflow-hidden">
+                            <div className="px-5 py-4 border-b border-stone-700">
+                                <h3 className="text-white font-bold text-sm">搜尋結果 {gpResults.length > 0 && <span className="text-stone-400">({gpResults.length} 筆)</span>}</h3>
+                            </div>
+                            {gpLoading && <div className="py-16 text-center text-emerald-400">搜尋中...</div>}
+                            {!gpLoading && gpResults.length === 0 && <div className="py-16 text-center text-stone-500">輸入帳號或角色名稱後按搜尋</div>}
+                            {gpResults.length > 0 && (
+                                <div className="divide-y divide-stone-700/60 max-h-[500px] overflow-y-auto">
+                                    {gpResults.map((p, i) => (
+                                        <button key={i} onClick={() => setGpSelected(p)} className={`w-full text-left px-5 py-4 hover:bg-stone-700/40 transition-colors flex items-center gap-4 ${gpSelected?.account === p.account ? 'bg-emerald-900/30 border-l-2 border-emerald-500' : ''}`}>
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white font-black text-base flex-shrink-0">
+                                                {(p.charName || p.account || '?')[0].toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-white font-bold text-sm">{p.charName || '(無角色名)'}</span>
+                                                    <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${p.isOnline ? 'bg-emerald-900/60 text-emerald-400' : 'bg-stone-700 text-stone-400'}`}>{p.isOnline ? '🟢' : '⚫'}</span>
+                                                    {p.isBanned && <span className="text-xs px-1.5 py-0.5 rounded font-bold bg-red-900/60 text-red-400">🔒封</span>}
+                                                    {p.vipLevel > 0 && <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${p.vipLevel >= 2 ? 'bg-sky-900/60 text-sky-300' : 'bg-amber-900/60 text-amber-300'}`}>VIP{p.vipLevel}</span>}
+                                                </div>
+                                                <div className="text-stone-400 text-xs font-mono mt-0.5">{p.account} {p.masterName && <span className="text-purple-400">| 主:{p.masterName}</span>}</div>
+                                                <div className="text-yellow-400 text-xs mt-0.5">💰 {(p.gold||0).toLocaleString()} <span className="text-stone-500 ml-2">累儲: NT${(p.payTotal||0).toLocaleString()}</span></div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        {/* 操作面板 */}
+                        <div className="bg-stone-800/60 rounded-2xl border border-stone-700 overflow-hidden">
+                            <div className="px-5 py-4 border-b border-stone-700">
+                                <h3 className="text-white font-bold text-sm">操作面板 {gpSelected && <span className="text-emerald-400">— {gpSelected.charName || gpSelected.account}</span>}</h3>
+                            </div>
+                            {!gpSelected ? (
+                                <div className="py-16 text-center text-stone-500">從左側選擇玩家後可進行操作</div>
+                            ) : (
+                                <div className="p-5 space-y-5">
+                                    <div className="bg-stone-900/60 rounded-xl p-4 space-y-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white font-black text-xl">{(gpSelected.charName || gpSelected.account || '?')[0].toUpperCase()}</div>
+                                            <div>
+                                                <div className="text-white font-black text-base">{gpSelected.charName || '(無角色名)'}</div>
+                                                <div className="text-stone-400 text-xs font-mono">{gpSelected.account}</div>
+                                                {gpSelected.masterName && <div className="text-purple-400 text-xs">🔑 主帳號: {gpSelected.masterName}</div>}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3">
+                                            <div className="bg-stone-800/80 rounded-lg p-2"><div className="text-yellow-400 font-black">{(gpSelected.gold||0).toLocaleString()}</div><div className="text-stone-400">金幣</div></div>
+                                            <div className="bg-stone-800/80 rounded-lg p-2"><div className="text-amber-300 font-black">NT${(gpSelected.payTotal||0).toLocaleString()}</div><div className="text-stone-400">累積儲值</div></div>
+                                            <div className="bg-stone-800/80 rounded-lg p-2"><div className={`font-black ${gpSelected.isOnline ? 'text-emerald-400' : 'text-stone-400'}`}>{gpSelected.isOnline ? '在線' : '離線'}</div><div className="text-stone-400">狀態</div></div>
+                                        </div>
+                                        <div className="text-stone-500 text-xs">登入: {gpSelected.loginTime || '—'} | 註冊: {gpSelected.regTime || '—'}</div>
+                                    </div>
+                                    <div>
+                                        <label className="text-stone-400 text-xs font-bold block mb-1.5">設定金幣（直接覆蓋）</label>
+                                        <div className="flex gap-2">
+                                            <input type="number" value={gpGold} onChange={e => setGpGold(e.target.value)} placeholder="新的金幣數量" className="flex-1 px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white text-sm placeholder-stone-600 focus:border-amber-500 outline-none" />
+                                            <button disabled={gpGoldLoading || !gpGold} onClick={doGold} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white text-sm font-bold rounded-lg transition-colors">{gpGoldLoading ? '...' : '💰 設定'}</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-stone-400 text-xs font-bold block mb-1.5">帳號狀態</label>
+                                        <div className="flex gap-2">
+                                            <button disabled={gpBanLoading} onClick={() => doBan(true)} className="flex-1 py-2 bg-red-700/60 hover:bg-red-600/80 disabled:opacity-40 text-red-200 text-sm font-bold rounded-lg border border-red-600/30 transition-colors">{gpBanLoading ? '...' : '🔒 永久封號'}</button>
+                                            <button disabled={gpBanLoading} onClick={() => doBan(false)} className="flex-1 py-2 bg-emerald-700/60 hover:bg-emerald-600/80 disabled:opacity-40 text-emerald-200 text-sm font-bold rounded-lg border border-emerald-600/30 transition-colors">{gpBanLoading ? '...' : '🔓 解封'}</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-stone-400 text-xs font-bold block mb-1.5">發送遊戲站內信</label>
+                                        <div className="space-y-2">
+                                            <input type="text" value={gpMailTitle} onChange={e => setGpMailTitle(e.target.value)} placeholder="信件標題" className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white text-sm placeholder-stone-600 focus:border-sky-500 outline-none" />
+                                            <textarea value={gpMailContent} onChange={e => setGpMailContent(e.target.value)} placeholder="信件內容" rows="3" className="w-full px-3 py-2 rounded-lg bg-stone-900 border border-stone-600 text-white text-sm placeholder-stone-600 focus:border-sky-500 outline-none resize-none" />
+                                            <button disabled={gpMailLoading || !gpMailTitle || !gpMailContent} onClick={doMail} className="w-full py-2 bg-sky-700/60 hover:bg-sky-600/80 disabled:opacity-40 text-sky-200 text-sm font-bold rounded-lg border border-sky-600/30 transition-colors">{gpMailLoading ? '發送中...' : '📧 發送站內信'}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AdminPage = () => {
+            // ✅ 已遷移到 Supabase Auth 認證系統
+            const [adminScriptsReady, setAdminScriptsReady] = useState(() => !!(window.Chart && window.Quill));
+            useEffect(() => {
+                if (window.Chart && window.Quill) {
+                    setAdminScriptsReady(true);
+                    return;
+                }
+                if (window.loadAdminScripts) {
+                    const timer = setTimeout(() => setAdminScriptsReady(true), 8000); // 8 秒超時，避免 CDN 失敗時卡住
+                    window.loadAdminScripts().then(() => { clearTimeout(timer); setAdminScriptsReady(true); });
+                    return () => clearTimeout(timer);
+                } else {
+                    setAdminScriptsReady(true);
+                }
+            }, []);
+            // 狀態管理
+            const [data, setData] = useState([]);
+            const [events, setEvents] = useState([]);
+            const [admins, setAdmins] = useState([]);
+            const [playlist, setPlaylist] = useState([]);
+            const [adminUsers, setAdminUsers] = useState([]);
+            const [allUsers, setAllUsers] = useState([]);
+            const [userGmCache, setUserGmCache] = useState({}); // { cdkey: { charName, gold, vipLevel, isOnline } }
+            const [userSortBy, setUserSortBy] = useState('created_at');
+            const [userSortDir, setUserSortDir] = useState('desc');
+            const [showCreateUserModal, setShowCreateUserModal] = useState(false);
+            const [createUserEmail, setCreateUserEmail] = useState('');
+            const [createUserPassword, setCreateUserPassword] = useState('');
+            const [createUserDisplayName, setCreateUserDisplayName] = useState('');
+            const [createUserRole, setCreateUserRole] = useState('');
+            // 後台幫玩家重設密碼用
+            const [resetPwModal, setResetPwModal] = useState(null); // { id, email } 或 null
+            const [resetPwInput, setResetPwInput] = useState('');
+            const [resetPwInput2, setResetPwInput2] = useState('');
+            const [resetPwLoading, setResetPwLoading] = useState(false);
+            // GM 玩家金幣最後同步時間（讓管理員一眼看出資料新鮮度）
+            const [lastGmSyncAt, setLastGmSyncAt] = useState(0);
+            const [gmSyncTick, setGmSyncTick] = useState(0); // 用來驅動「N 秒前」的 re-render
+            const [gmSyncTrigger, setGmSyncTrigger] = useState(0); // 手動觸發強制重抓
+            const [gmSyncing, setGmSyncing] = useState(false);
+            const [createUserGameMaster, setCreateUserGameMaster] = useState('');
+            const [createUserLoading, setCreateUserLoading] = useState(false);
+            const [createUserMsg, setCreateUserMsg] = useState(null);
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [currentUser, setCurrentUser] = useState(null);
+            const [supabaseUser, setSupabaseUser] = useState(null);
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [rememberAdminMe, setRememberAdminMe] = useState(false); // 管理員記住我
+            const [error, setError] = useState('');
+            
+            // 安全編碼/解碼密碼（支援 Unicode）
+            const safeBtoa = (str) => {
+                try {
+                    return btoa(unescape(encodeURIComponent(str)));
+                } catch (e) {
+                    return btoa(str);
+                }
+            };
+            const safeAtob = (str) => {
+                try {
+                    return decodeURIComponent(escape(atob(str)));
+                } catch (e) {
+                    try { return atob(str); } catch (e2) { return ''; }
+                }
+            };
+
+            // 載入管理員記住的帳號密碼（初次載入 + 每次顯示登入表單時）
+            const loadRememberedAdmin = () => {
+                const savedAdminEmail = localStorage.getItem('rememberedAdminEmail');
+                const savedAdminPassword = localStorage.getItem('rememberedAdminPassword');
+                if (savedAdminEmail) {
+                    setUsername(savedAdminEmail);
+                    setRememberAdminMe(true);
+                }
+                if (savedAdminPassword) {
+                    setPassword(safeAtob(savedAdminPassword));
+                }
+                if (savedAdminEmail || savedAdminPassword) {
+                    console.log('[後台] 已載入記住的帳號密碼');
+                }
+            };
+
+            // 初始化時檢查 Supabase Session（保持登入）
+            useEffect(() => {
+                const checkSession = async () => {
+                    try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user) {
+                            const userRole = user.user_metadata?.role;
+                            if (userRole && ['admin', 'super_admin'].includes(userRole)) {
+                                setIsLoggedIn(true);
+                                setCurrentUser({
+                                    id: user.id,
+                                    email: user.email,
+                                    role: userRole,
+                                    display_name: user.user_metadata?.display_name || user.email
+                                });
+                                setSupabaseUser(user);
+                                console.log('[後台] 已從 Session 恢復登入狀態');
+                                return;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('[後台] Session 檢查失敗', err);
+                    }
+                    // 沒有 session 或不是管理員，載入記住的帳號密碼
+                    loadRememberedAdmin();
+                };
+                
+                checkSession();
+            }, []);
+
+            // 登出後再次顯示登入表單時，重新載入記住的帳號密碼
+            useEffect(() => {
+                if (!isLoggedIn) {
+                    loadRememberedAdmin();
+                }
+            }, [isLoggedIn]);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [currentTab, setCurrentTab] = useState('donations');
+
+            // GM 伺服器統計（報表 tab 用）
+            const [gmStats, setGmStats] = useState(null);
+            const [gmStatsLoading, setGmStatsLoading] = useState(false);
+            const [gmVip, setGmVip] = useState([]);
+            const [gmVipLoading, setGmVipLoading] = useState(false);
+            const GM_WORKER = 'https://soda-recharge.myshoxisgood.workers.dev';
+
+            const loadGmStats = async () => {
+                setGmStatsLoading(true);
+                try {
+                    const res = await fetch(`${GM_WORKER}/stats`);
+                    if (res.ok) setGmStats(await res.json());
+                } catch { } finally { setGmStatsLoading(false); }
+            };
+            const loadGmVip = async () => {
+                setGmVipLoading(true);
+                try {
+                    const res = await fetch(`${GM_WORKER}/vip`);
+                    if (res.ok) setGmVip(await res.json());
+                } catch { } finally { setGmVipLoading(false); }
+            };
+
+            useEffect(() => {
+                if (isLoggedIn && currentTab === 'stats') {
+                    loadGmStats();
+                    loadGmVip();
+                }
+            }, [isLoggedIn, currentTab]);
+
+            // 公告橫幅管理
+            const [adminBanners, setAdminBanners] = useState([]);
+            const [editingBanner, setEditingBanner] = useState(null);
+            const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+
+            const loadAdminBanners = async () => {
+                const data = await getSupabaseData(DB_TABLES.ANNOUNCEMENTS, { columns: 'id, title, subtitle, link, icon, badge, is_active, sort_order, created_at' });
+                setAdminBanners((data || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
+            };
+
+            useEffect(() => {
+                if (isLoggedIn && currentTab === 'events') loadAdminBanners();
+            }, [isLoggedIn, currentTab]);
+
+            const handleSaveBanner = async () => {
+                if (!bannerForm.title.trim()) { showToast('請輸入標題', 'error'); return; }
+                try {
+                    if (editingBanner) {
+                        const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).update(bannerForm).eq('id', editingBanner.id);
+                        if (error) throw error;
+                        showToast('公告橫幅已更新');
+                    } else {
+                        const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).insert(bannerForm);
+                        if (error) throw error;
+                        showToast('公告橫幅已新增');
+                    }
+                    setEditingBanner(null);
+                    setBannerForm({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('儲存失敗: ' + e.message, 'error'); }
+            };
+
+            const handleDeleteBanner = async (id) => {
+                const ok = await window.sodaConfirm({
+                    title: '確定刪除此公告橫幅？',
+                    message: '橫幅將立即從首頁移除，可重新建立但已關聯的點擊統計會一併消失。',
+                    variant: 'danger',
+                    confirmText: '刪除橫幅',
+                    cancelText: '保留'
+                });
+                if (!ok) return;
+                try {
+                    const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('已刪除');
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('刪除失敗: ' + e.message, 'error'); }
+            };
+
+            const handleToggleBannerActive = async (banner) => {
+                try {
+                    const { error } = await supabase.from(DB_TABLES.ANNOUNCEMENTS).update({ is_active: !banner.is_active }).eq('id', banner.id);
+                    if (error) throw error;
+                    showToast(banner.is_active ? '已停用' : '已啟用');
+                    loadAdminBanners();
+                    window.dispatchEvent(new Event('banner-updated'));
+                } catch (e) { showToast('操作失敗: ' + e.message, 'error'); }
+            };
+
+            const startEditBanner = (banner) => {
+                setEditingBanner(banner);
+                setBannerForm({ title: banner.title, subtitle: banner.subtitle || '', link: banner.link || '/events', icon: banner.icon || 'megaphone', badge: banner.badge || '', is_active: banner.is_active, sort_order: banner.sort_order || 0 });
+            };
+
+            const cancelEditBanner = () => {
+                setEditingBanner(null);
+                setBannerForm({ title: '', subtitle: '', link: '/events', icon: 'megaphone', badge: 'NEW', is_active: true, sort_order: 0 });
+            };
+
+            // 進階搜尋
+            const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+            const [dateFrom, setDateFrom] = useState('');
+            const [dateTo, setDateTo] = useState('');
+            const [amountMin, setAmountMin] = useState('');
+            const [amountMax, setAmountMax] = useState('');
+            const [filterPaymentMethod, setFilterPaymentMethod] = useState('all');
+            const [filterTag, setFilterTag] = useState('all');
+            
+            // 批次操作
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [showBatchActions, setShowBatchActions] = useState(false);
+            
+            // GM 玩家資料快取（後台訂單用）
+            const [gmPlayerCache, setGmPlayerCache] = useState({});
+            // 儲值加成確認 Modal
+            const [rechargeConfirmModal, setRechargeConfirmModal] = useState(null); // {id, donation}
+            const [rechargeBonus, setRechargeBonus] = useState(0);
+            const [rechargeUpdatePaydata, setRechargeUpdatePaydata] = useState(true);
+            const [rechargeSkipGold, setRechargeSkipGold] = useState(false);
+            const [rechargeTargetAccount, setRechargeTargetAccount] = useState(''); // 實際充值目標帳號
+            const [rechargeMasterInput, setRechargeMasterInput] = useState('');
+            const [rechargeMasterChars, setRechargeMasterChars] = useState([]);
+            const [rechargeMasterLoading, setRechargeMasterLoading] = useState(false);
+            // 批量發放金幣 / 水晶
+            const [batchGiveAccounts, setBatchGiveAccounts] = useState('');
+            const [batchGiveGold, setBatchGiveGold] = useState('');
+            const [batchGiveCrystal, setBatchGiveCrystal] = useState('');
+            const [batchGiveRemark, setBatchGiveRemark] = useState('');
+            const [batchGiveLoading, setBatchGiveLoading] = useState(false);
+            const [batchGiveResults, setBatchGiveResults] = useState(null);
+            // 贊助列表檢視：卡片 / 條列
+            const [donationListView, setDonationListView] = useState('cards');
+            
+            // 圖表 refs
+            const trendChartRef = useRef(null);
+            const paymentChartRef = useRef(null);
+            const planChartRef = useRef(null);
+            const trendChartInstance = useRef(null);
+            const paymentChartInstance = useRef(null);
+            const planChartInstance = useRef(null);
+            // 業績圖表 refs
+            const revenueMonthlyChartRef = useRef(null);
+            const revenueMonthlyChartInstance = useRef(null);
+            const revenueDailyChartRef = useRef(null);
+            const revenueDailyChartInstance = useRef(null);
+            const revenueHourlyChartRef = useRef(null);
+            const revenueHourlyChartInstance = useRef(null);
+            // 報表統計子分頁
+            const [statsSubTab, setStatsSubTab] = useState('overview');
+            // 匯出報表 state
+            const [reportPeriod, setReportPeriod] = useState('month');
+            const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10));
+            const [reportCustomDays, setReportCustomDays] = useState('7');
+            const [reportRangeFrom, setReportRangeFrom] = useState(() => {
+                const d = new Date(); d.setHours(0, 0, 0, 0);
+                return d.toISOString().slice(0, 16);
+            });
+            const [reportRangeTo, setReportRangeTo] = useState(() => {
+                const d = new Date(); d.setHours(23, 59, 59, 0);
+                return d.toISOString().slice(0, 16);
+            });
+            const [reportPreview, setReportPreview] = useState(null);
+            
+            // Donations 相關（管理員可編輯訂單任何資訊）
+            const [editingId, setEditingId] = useState(null);
+            const [editNotes, setEditNotes] = useState('');
+            const [editGameAccount, setEditGameAccount] = useState('');
+            const [editGameAccountInfo, setEditGameAccountInfo] = useState(null);
+            const [editGameAccountLoading, setEditGameAccountLoading] = useState(false);
+            const [editMasterInput, setEditMasterInput] = useState('');
+            const [editMasterChars, setEditMasterChars] = useState([]);
+            const [editMasterLoading, setEditMasterLoading] = useState(false);
+            const lookupEditGameAccount = async (acc) => {
+                const name = (acc || editGameAccount).trim();
+                if (!name) return;
+                setEditGameAccountLoading(true);
+                setEditGameAccountInfo(null);
+                const WORKER = 'https://soda-recharge.myshoxisgood.workers.dev';
+                try {
+                    // 先查 CDKEY
+                    const res = await fetch(`${WORKER}/player/${encodeURIComponent(name)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.charName || data.gold > 0) {
+                            setEditGameAccountInfo(data);
+                            return;
+                        }
+                    }
+                    // Fallback：當主帳號查詢，取第一個子帳號
+                    const mRes = await fetch(`${WORKER}/master/${encodeURIComponent(name)}`);
+                    if (mRes.ok) {
+                        const mData = await mRes.json();
+                        if (mData.chars && mData.chars.length > 0) {
+                            const first = mData.chars[0];
+                            setEditGameAccountInfo({
+                                account:    first.account,
+                                charName:   first.charName,
+                                masterName: mData.masterName || name,
+                                isOnline:   first.isOnline,
+                                gold:       first.gold,
+                                vipLevel:   first.payTotal >= 15000 ? 2 : first.payTotal >= 5000 ? 1 : 0,
+                                payTotal:   first.payTotal,
+                            });
+                            return;
+                        }
+                    }
+                    setEditGameAccountInfo({ error: '找不到此帳號（CDKEY 或主帳號皆無資料）' });
+                } catch { setEditGameAccountInfo({ error: '查詢失敗' }); }
+                finally { setEditGameAccountLoading(false); }
+            };
+
+            // 查詢主帳號旗下所有角色
+            const lookupMasterChars = async (masterName) => {
+                const name = (masterName || editMasterInput).trim();
+                if (!name) return;
+                setEditMasterLoading(true);
+                setEditMasterChars([]);
+                try {
+                    const res = await fetch(`https://soda-recharge.myshoxisgood.workers.dev/master/${encodeURIComponent(name)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.chars && data.chars.length > 0) {
+                            setEditMasterChars(data.chars);
+                        } else {
+                            setEditMasterChars([]);
+                            showToast('此主帳號下查無角色', 'warning');
+                        }
+                    } else {
+                        showToast('找不到此主帳號', 'error');
+                    }
+                } catch {
+                    showToast('查詢主帳號失敗', 'error');
+                } finally {
+                    setEditMasterLoading(false);
+                }
+            };
+            const [editLineName, setEditLineName] = useState('');
+            const [editEmail, setEditEmail] = useState('');
+            const [editAmount, setEditAmount] = useState('');
+            const [editCoins, setEditCoins] = useState('');
+            const [editPlanName, setEditPlanName] = useState('');
+            const [editPaymentMethod, setEditPaymentMethod] = useState('');
+            const [editStatus, setEditStatus] = useState('');
+            const [editingTags, setEditingTags] = useState(null);
+            const [newTag, setNewTag] = useState('');
+            
+            // 分頁相關
+            const [currentPage, setCurrentPage] = useState(1);
+            const [itemsPerPage, setItemsPerPage] = useState(20);
+            
+            // 確認對話框相關
+            const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null });
+            
+            // Settings State
+            const [oldPassword, setOldPassword] = useState('');
+            const [newPassword, setNewPassword] = useState('');
+            const [confirmPassword, setConfirmPassword] = useState('');
+            const [newAdminUsername, setNewAdminUsername] = useState('');
+            const [newAdminPassword, setNewAdminPassword] = useState('');
+            const [newAdminRoleType, setNewAdminRoleType] = useState('admin');
+            
+            // Events Form State
+            const [eventTitle, setEventTitle] = useState('');
+            const [eventContent, setEventContent] = useState('');
+            const [eventTag, setEventTag] = useState(EVENT_TAGS[0].id);
+            const [eventPopupAspect, setEventPopupAspect] = useState('1:1');
+            const [editingEventId, setEditingEventId] = useState(null);
+            const eventQuillRef = useRef(null);
+            const eventEditorRef = useRef(null);
+
+            // Music Form State
+            const [newTrackTitle, setNewTrackTitle] = useState('');
+            const [newTrackUrl, setNewTrackUrl] = useState('');
+            
+            // 超級管理員管理相關
+            const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+            const [editingAdmin, setEditingAdmin] = useState(null);
+            const [newAdminEmail, setNewAdminEmail] = useState('');
+            const [newAdminRole, setNewAdminRole] = useState('admin');
+            
+            // 註冊用戶編輯（資料、角色、遊戲特殊編號）
+            const [editingUser, setEditingUser] = useState(null);
+            const [editUserForm, setEditUserForm] = useState({ display_name: '', role: '', game_special_ids: ['', '', '', '', ''], game_master: '', game_master2: '', game_accounts: ['', '', '', '', '', '', '', '', '', ''] });
+            const [editUserMasterLookup, setEditUserMasterLookup] = useState(null);
+            const [editUserMaster2Lookup, setEditUserMaster2Lookup] = useState(null);
+            const [editUserMaster2Loading, setEditUserMaster2Loading] = useState(false);
+            const [editUserCharNames, setEditUserCharNames] = useState({});
+            // GM 直接操作（設定金幣、封號、站內信）
+            const [gmOpGold, setGmOpGold] = useState('');
+            const [gmOpBanLoading, setGmOpBanLoading] = useState(false);
+            const [gmOpGoldLoading, setGmOpGoldLoading] = useState(false);
+            const [gmOpMailTitle, setGmOpMailTitle] = useState('');
+            const [gmOpMailContent, setGmOpMailContent] = useState('');
+            const [gmOpMailLoading, setGmOpMailLoading] = useState(false);
+            const [editUserMasterLoading, setEditUserMasterLoading] = useState(false);
+            // 註冊用戶列表：哪一行的「操作」下拉選單正在開啟（方便手殘黨、版面不亂）
+            const [openUserActionId, setOpenUserActionId] = useState(null);
+            useEffect(() => {
+                if (!openUserActionId) return;
+                const close = (e) => { if (!e.target.closest('[data-action-menu]')) setOpenUserActionId(null); };
+                document.addEventListener('click', close);
+                return () => document.removeEventListener('click', close);
+            }, [openUserActionId]);
+            
+            // 操作日誌輔助函數
+            const logAction = async (action, resourceType, resourceId, description, changes = null) => {
+                try {
+                    const logData = {
+                        admin_id: currentUser?.id || supabaseUser?.id || 'unknown',
+                        admin_username: currentUser?.username || supabaseUser?.email || 'unknown',
+                        admin_role: currentUser?.role || supabaseUser?.user_metadata?.role || 'admin',
+                        action,
+                        resource_type: resourceType,
+                        resource_id: resourceId,
+                        description,
+                        changes: changes ? JSON.stringify(changes) : null,
+                        ip_address: null, // 可選：前端無法取得真實 IP
+                        user_agent: navigator.userAgent
+                    };
+                    
+                    await supabase.from('audit_logs').insert([logData]);
+                } catch (err) {
+                    console.error('記錄操作日誌失敗:', err);
+                }
+            };
+            
+            // 確認對話框輔助函數
+            const showConfirm = (title, message, onConfirm) => {
+                setConfirmModal({ show: true, title, message, onConfirm });
+            };
+            
+            const hideConfirm = () => {
+                setConfirmModal({ show: false, title: '', message: '', onConfirm: null });
+            };
+            
+            // CSV 匯出函數
+            const exportToCSV = () => {
+                try {
+                    // 準備 CSV 標頭
+                    const headers = ['訂單編號', '時間', '遊戲帳號', 'Email', 'LINE或Discord名稱', '方案名稱', '金額', '金幣', '支付方式', '狀態', '備註'];
+                    
+                    // 準備 CSV 資料
+                    const csvData = filteredData.map(item => [
+                        item.order_number || '',
+                        new Date(item.created_at).toLocaleString('zh-TW'),
+                        item.game_account || '',
+                        item.email || '',
+                        item.line_name || '',
+                        item.plan_name || '',
+                        item.amount || 0,
+                        item.coins || 0,
+                        item.payment_method === 'shopline' ? 'SHOPLINE' : 
+                        item.payment_method === 'linepay' ? 'LINE Pay' : item.payment_method || '',
+                        item.status === 'pending' ? '待處理' : 
+                        item.status === 'completed' ? '已完成' : 
+                        item.status === 'cancelled' ? '已取消' : item.status,
+                        (item.notes || '').replace(/"/g, '""') // 處理備註中的雙引號
+                    ]);
+                    
+                    // 組合 CSV 內容
+                    const csvContent = [
+                        headers.join(','),
+                        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+                    ].join('\n');
+                    
+                    // 加入 BOM 以支援中文
+                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `贊助紀錄_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showToast('CSV 匯出成功', 'success');
+                    logAction('view', 'donation', null, `匯出 ${filteredData.length} 筆贊助紀錄為 CSV`);
+                } catch (err) {
+                    console.error('CSV 匯出失敗:', err);
+                    showToast('CSV 匯出失敗', 'error');
+                }
+            };
+
+            // ── 結算報表：計算指定區間的統計 ──
+            const calcReportStats = (items, label, from, to) => {
+                const inRange = items.filter(d => {
+                    const t = new Date(d.created_at).getTime();
+                    return t >= from && t <= to;
+                });
+                const completed = inRange.filter(d => d.status === 'completed');
+                const pending   = inRange.filter(d => d.status === 'pending');
+                const cancelled = inRange.filter(d => d.status === 'cancelled');
+                const revenue   = completed.reduce((s, d) => s + (d.amount || 0), 0);
+                const avg       = completed.length ? Math.round(revenue / completed.length) : 0;
+                const methodMap = {};
+                completed.forEach(d => {
+                    const m = d.payment_method === 'shopline' ? 'SHOPLINE' : d.payment_method === 'linepay' ? 'LINE Pay' : (d.payment_method || '其他');
+                    methodMap[m] = (methodMap[m] || 0) + (d.amount || 0);
+                });
+                const planMap = {};
+                completed.forEach(d => {
+                    const p = d.plan_name || '未知方案';
+                    if (!planMap[p]) planMap[p] = { count: 0, amount: 0 };
+                    planMap[p].count++;
+                    planMap[p].amount += d.amount || 0;
+                });
+                const topAccounts = (() => {
+                    const m = {};
+                    completed.forEach(d => {
+                        const a = d.game_account || '(未填)';
+                        if (!m[a]) m[a] = { amount: 0, count: 0 };
+                        m[a].amount += d.amount || 0;
+                        m[a].count++;
+                    });
+                    return Object.entries(m).sort((a, b) => b[1].amount - a[1].amount).slice(0, 10);
+                })();
+                return { label, from, to, inRange, completed, pending, cancelled, revenue, avg, methodMap, planMap, topAccounts };
+            };
+
+            const buildReportStats = () => {
+                const ref = new Date(reportDate);
+                let from, to, label;
+                if (reportPeriod === 'day') {
+                    from = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime();
+                    to   = from + 86400000 - 1;
+                    label = `日結 ${reportDate}`;
+                } else if (reportPeriod === 'week') {
+                    const day = ref.getDay();
+                    const mon = new Date(ref); mon.setDate(ref.getDate() - (day === 0 ? 6 : day - 1));
+                    from = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate()).getTime();
+                    to   = from + 7 * 86400000 - 1;
+                    label = `週結 ${mon.toISOString().slice(0,10)} ~ ${new Date(to).toISOString().slice(0,10)}`;
+                } else if (reportPeriod === 'custom') {
+                    const days = Math.max(1, parseInt(reportCustomDays) || 7);
+                    to   = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate()).getTime() + 86400000 - 1;
+                    from = to - days * 86400000 + 1;
+                    label = `${days} 天結 (${new Date(from).toISOString().slice(0,10)} ~ ${reportDate})`;
+                } else if (reportPeriod === 'month') {
+                    from = new Date(ref.getFullYear(), ref.getMonth(), 1).getTime();
+                    to   = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+                    label = `月結 ${ref.getFullYear()}/${String(ref.getMonth()+1).padStart(2,'0')}`;
+                } else if (reportPeriod === 'year') {
+                    from = new Date(ref.getFullYear(), 0, 1).getTime();
+                    to   = new Date(ref.getFullYear(), 11, 31, 23, 59, 59, 999).getTime();
+                    label = `年結 ${ref.getFullYear()}`;
+                } else {
+                    // range：自訂起訖時間
+                    from = new Date(reportRangeFrom).getTime();
+                    to   = new Date(reportRangeTo).getTime();
+                    if (isNaN(from) || isNaN(to)) { showToast('請填寫有效的起訖時間', 'warning'); return null; }
+                    if (from > to) { showToast('結束時間不能早於開始時間', 'warning'); return null; }
+                    const fmt = t => new Date(t).toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+                    label = `自訂結算 ${fmt(from)} ~ ${fmt(to)}`;
+                }
+                return calcReportStats(data, label, from, to);
+            };
+
+            const previewReport = () => {
+                const s = buildReportStats();
+                if (s) setReportPreview(s);
+            };
+
+            const exportReport = () => {
+                const s = buildReportStats();
+                if (!s) return;
+                const fmtDate = t => new Date(t).toLocaleString('zh-TW');
+                const lines = [
+                    `\uFEFF蘇打石器 結算報表 - ${s.label}`,
+                    `產生時間,${new Date().toLocaleString('zh-TW')}`,
+                    `區間,${fmtDate(s.from)} ~ ${fmtDate(s.to)}`,
+                    '',
+                    '== 業績摘要 ==',
+                    `總業績 (已完成),NT$ ${s.revenue.toLocaleString()}`,
+                    `訂單總數,${s.inRange.length}`,
+                    `已完成,${s.completed.length}`,
+                    `待處理,${s.pending.length}`,
+                    `已取消,${s.cancelled.length}`,
+                    `平均客單價,NT$ ${s.avg.toLocaleString()}`,
+                    '',
+                    '== 支付方式業績 ==',
+                    '支付方式,金額',
+                    ...Object.entries(s.methodMap).map(([m, v]) => `${m},NT$ ${v.toLocaleString()}`),
+                    '',
+                    '== 方案統計 ==',
+                    '方案名稱,訂單數,業績',
+                    ...Object.entries(s.planMap).sort((a,b)=>b[1].amount-a[1].amount).map(([p, v]) => `${p},${v.count},NT$ ${v.amount.toLocaleString()}`),
+                    '',
+                    '== TOP 贊助者 ==',
+                    '遊戲帳號,累積金額,訂單數',
+                    ...s.topAccounts.map(([a, v]) => `${a},NT$ ${v.amount.toLocaleString()},${v.count}`),
+                    '',
+                    '== 訂單明細 (已完成) ==',
+                    '訂單編號,時間,遊戲帳號,Email,方案,金額,支付方式',
+                    ...s.completed.map(d => [
+                        d.order_number || d.id,
+                        new Date(d.created_at).toLocaleString('zh-TW'),
+                        d.game_account || '',
+                        d.email || '',
+                        d.plan_name || '',
+                        d.amount || 0,
+                        d.payment_method === 'shopline' ? 'SHOPLINE' : d.payment_method === 'linepay' ? 'LINE Pay' : (d.payment_method || '')
+                    ].map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+                ];
+                const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `蘇打石器_${s.label.replace(/\s/g,'_')}.csv`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast(`已匯出：${s.label}`, 'success');
+            };
+
+            // 註：已移除 admins 表載入邏輯，完全使用 Supabase Auth
+            
+            // 載入 Supabase Auth 用戶（用於超級管理員功能）
+            useEffect(() => {
+                const loadUser = async () => {
+                    const user = await authHelpers.getCurrentUser();
+                    setSupabaseUser(user);
+                };
+                loadUser();
+            }, []);
+            
+            // 載入所有管理員（僅超級管理員可見）
+            useEffect(() => {
+                if (!supabaseUser || supabaseUser.user_metadata?.role !== 'super_admin') return;
+                if (currentTab !== 'super_admins') return;
+                
+                const loadAdminUsers = async () => {
+                    try {
+                        const { data, error } = await supabase.rpc('get_all_users');
+                        
                         if (error) {
                             console.error('載入管理員失敗:', error);
                             return;
@@ -10887,7 +11989,19 @@
                                                                     const plan = PLANS.find(p => p.amount === donation.amount);
                                                                     return plan ? plan.total.toLocaleString() : '0';
                                                                 })()}
-                                                                         <td colSpan="10" className="px-5 py-3">
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-2 py-2.5 hidden lg:table-cell">
+                                                            <span className="text-xs text-stone-300">{donation.payment_method === 'shopline' ? 'SHOPLINE' : donation.payment_method === 'linepay' ? 'LINE' : donation.payment_method || '—'}</span>
+                                                        </td>
+                                                        <td className="px-2 py-2.5 hidden xl:table-cell max-w-[100px]">
+                                                            <span className="text-stone-400 text-xs truncate block" title={donation.notes || ''}>{donation.notes ? (donation.notes.length > 12 ? donation.notes.slice(0, 12) + '…' : donation.notes) : '—'}</span>
+                                                        </td>
+                                                    </tr>
+                                                    {/* 標籤編輯行 */}
+                                                    {editingTags === donation.id && (
+                                                        <tr className="bg-stone-800/30">
+                                                            <td colSpan="10" className="px-5 py-3">
                                                                 <div className="flex items-center gap-3 flex-wrap">
                                                                     <span className="text-stone-500 text-sm font-medium">快速加入標籤</span>
                                                                     <div className="flex flex-wrap gap-2">
@@ -10905,7 +12019,23 @@
                                                     )}
                                                     
                                                     {/* 訂單完整編輯行（管理員可改任何資訊，同步至註冊用戶累計） */}
-                                                    {editingId === donation.id &&                      <label className="block text-purple-300 text-xs font-semibold mb-1.5">🔑 輸入主帳號 → 查詢旗下角色</label>
+                                                    {editingId === donation.id && (
+                                                        <tr className="bg-stone-800/40">
+                                                            <td colSpan="10" className="px-5 py-4">
+                                                                <div className="flex flex-wrap items-center justify-between gap-3 mb-3 p-3 bg-stone-700/30 border border-stone-600/40 rounded-xl">
+                                                                    <p className="text-stone-300 text-sm font-medium">編輯訂單 · 儲存後同步至註冊用戶累計</p>
+                                                                    <div className="flex gap-2">
+                                                                        <button onClick={() => saveNotes(donation.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-semibold rounded-xl text-sm transition-colors">
+                                                                            ✓ 確認儲存
+                                                                        </button>
+                                                                        <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); }} className="px-4 py-2 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">
+                                                                            取消
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                {/* 主帳號查詢角色 */}
+                                                                <div className="mb-3 p-3 bg-purple-900/20 border border-purple-700/30 rounded-xl">
+                                                                    <label className="block text-purple-300 text-xs font-semibold mb-1.5">🔑 輸入主帳號 → 查詢旗下角色</label>
                                                                     <div className="flex gap-1.5">
                                                                         <input
                                                                             type="text"
@@ -10939,7 +12069,33 @@
                                                                                                 account: char.account,
                                                                                                 gold: char.gold,
                                                                                                 vipLevel: char.payTotal >= 15000 ? 2 : char.payTotal >= 5000 ? 1 : 0,
-                                                                                                isOnlinrder-stone-500 outline-none" /></div>
+                                                                                                isOnline: char.isOnline,
+                                                                                            });
+                                                                                        }}
+                                                                                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-800/40 hover:bg-purple-700/60 border border-purple-600/40 rounded-lg text-xs text-white transition-colors"
+                                                                                    >
+                                                                                        <span className="text-purple-300">👤</span>
+                                                                                        <span className="font-bold">{char.charName || char.account}</span>
+                                                                                        {char.isOnline && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>}
+                                                                                        <span className="text-purple-300/70">💰{(char.gold||0).toLocaleString()}</span>
+                                                                                    </button>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">Email</label><input type="text" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="客戶 Email" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">遊戲帳號 (CDKEY)</label><div className="flex gap-1"><input type="text" value={editGameAccount} onChange={e => { setEditGameAccount(e.target.value); setEditGameAccountInfo(null); }} onKeyDown={e => e.key === 'Enter' && lookupEditGameAccount()} placeholder="遊戲帳號 (CDKEY)" className="flex-1 bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-sky-500 outline-none min-w-0" /><button type="button" onClick={() => lookupEditGameAccount()} disabled={editGameAccountLoading} className="px-2.5 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-colors shrink-0">{editGameAccountLoading ? '⏳' : '驗證'}</button></div>{editGameAccountInfo && <div className={`mt-1 px-2.5 py-1.5 rounded-lg text-xs font-medium ${editGameAccountInfo.error ? 'bg-red-900/30 text-red-400' : 'bg-sky-900/30 text-sky-300'}`}>{editGameAccountInfo.error ? `❌ ${editGameAccountInfo.error}` : `✅ ${editGameAccountInfo.charName || editGameAccountInfo.account} · VIP ${editGameAccountInfo.vipLevel ?? '-'} · 💰${(editGameAccountInfo.gold||0).toLocaleString()}`}</div>}</div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">LINE / Discord</label><input type="text" value={editLineName} onChange={(e) => setEditLineName(e.target.value)} placeholder="LINE / Discord" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金額 (NT$)</label><input type="number" min="0" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">金幣</label><input type="number" min="0" value={editCoins} onChange={(e) => setEditCoins(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">方案名稱</label><input type="text" value={editPlanName} onChange={(e) => setEditPlanName(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none" /></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">支付方式</label><select value={editPaymentMethod} onChange={(e) => setEditPaymentMethod(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="linepay">LINE Pay</option><option value="shopline">SHOPLINE</option></select></div>
+                                                                    <div><label className="block text-stone-500 text-xs font-medium mb-1">狀態</label><select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm focus:border-stone-500 outline-none"><option value="pending">待處理</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select></div>
+                                                                </div>
+                                                                <div className="mb-2"><label className="block text-stone-500 text-xs font-medium mb-1">管理員備註</label><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="輸入管理員備註..." rows="2" className="w-full bg-stone-700/50 border border-stone-600/50 rounded-lg px-3 py-2 text-stone-100 text-sm placeholder-stone-500 resize-none focus:border-stone-500 outline-none" /></div>
                                                                 <div className="flex gap-2 pt-2 border-t border-stone-600/40">
                                                                     <button onClick={() => saveNotes(donation.id)} className="px-5 py-2.5 bg-water-600 hover:bg-water-500 text-white font-medium rounded-lg text-sm transition-colors">確認儲存</button>
                                                                     <button onClick={() => { setEditingId(null); setEditNotes(''); setEditGameAccount(''); setEditLineName(''); setEditEmail(''); setEditAmount(''); setEditCoins(''); setEditPlanName(''); setEditPaymentMethod(''); setEditStatus(''); setEditMasterInput(''); setEditMasterChars([]); }} className="px-5 py-2.5 bg-stone-600 hover:bg-stone-500 text-stone-200 font-medium rounded-lg text-sm transition-colors">取消</button>
@@ -10956,7 +12112,17 @@
                                                                     <span className="text-stone-400">{donation.notes}</span>
                                                                 </div>
                                                             </td>
-                                              {(donationListView === 'cards' || donationListView === 'list') && (
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                                )}
+                                {/* 卡片式：一格一卡（舒適圓角與對比）；手機若選條列仍顯示卡片避免破版 */}
+                                {(donationListView === 'cards' || donationListView === 'list') && (
                                 <div className={`p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 ${donationListView === 'list' ? 'md:hidden' : ''}`}>
                                     {paginatedData.map((item) => (
                                         <React.Fragment key={item.id}>
@@ -10974,7 +12140,11 @@
                                                                 } else {
                                                                     updateStatus(item.id, e.target.value);
                                                                 }
-                                                                                                'bg-red-500/20 text-red-400 border-red-500/40'
+                                                            }}
+                                                            className={`text-xs font-medium px-2.5 py-1.5 rounded-lg border cursor-pointer outline-none transition-colors ${
+                                                                item.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 
+                                                                item.status === 'pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 
+                                                                'bg-red-500/20 text-red-400 border-red-500/40'
                                                             }`}
                                                             title="點擊可變更狀態"
                                                         >
@@ -11014,16 +12184,81 @@
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1.5">
                                                         <User size={13} className="text-stone-200" />
-                                                        <spaiv>
+                                                        <span className="text-xs text-stone-100 font-semibold">玩家</span>
+                                                    </div>
+                                                    <div className="pl-5 space-y-0.5">
+                                                        <div className="text-white font-bold text-sm font-mono break-all">{item.game_account || '（未填 CDKEY）'}</div>
+                                                        {gmPlayerCache[item.game_account] && (
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                {gmPlayerCache[item.game_account].charName && (
+                                                                    <span className="text-[11px] text-sky-400/90 font-medium">👤 {gmPlayerCache[item.game_account].charName}</span>
+                                                                )}
+                                                                <span className="text-[11px] text-amber-400/80 font-medium">VIP {gmPlayerCache[item.game_account].vipLevel}</span>
+                                                                <span className="text-[11px] text-amber-300/70 font-medium">💰 {(gmPlayerCache[item.game_account].gold || 0).toLocaleString()}</span>
+                                                                {gmPlayerCache[item.game_account].masterName && (
+                                                                    <span className="text-[11px] text-purple-400/80 font-medium">🔑 主帳號：{gmPlayerCache[item.game_account].masterName}</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        <div className="text-stone-200 text-xs break-all">{item.email}</div>
+                                                        {item.line_name && <div className="text-stone-200 text-xs">LINE/Discord: {item.line_name}</div>}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="rounded-xl p-3 bg-stone-700/30 border border-stone-600/30">
+                                                    <div className="flex items-center justify-between mb-1.5">
+                                                        <span className="text-stone-100 text-xs font-semibold">方案</span>
+                                                        <span className="text-white font-medium text-sm">{item.plan_name}</span>
+                                                    </div>
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-stone-100 font-semibold text-lg">NT$ {item.amount?.toLocaleString() || 0}</span>
                                                         <div className="flex items-center gap-1.5 text-amber-400/90 font-medium text-sm">
                                                             <Coins size={14} />
                                                             {item.coins?.toLocaleString() || (PLANS.find(p => p.amount === item.amount)?.total || 0).toLocaleString()}
                                                         </div>
-                                                                       <div className="flex items-center gap-2">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex flex-wrap items-center gap-3 text-xs">
+                                                    <div className="flex items-center gap-2">
                                                         <CreditCard size={12} className="text-stone-200 shrink-0" />
-                                                        <select value={item.payment_method || ''} onChange={(e) => updatePaymentMethod(item.id, e.target.value)} className="text-xs font-medium px-2 py-1.5 rounded-lg border bg-stone-700/50 text-stone-200 border-stone-600/50 focus:border-stone-500 outline-none cursor-pointer" t                                                                    className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-lg text-xs font-bold transition-colors">
+                                                        <select value={item.payment_method || ''} onChange={(e) => updatePaymentMethod(item.id, e.target.value)} className="text-xs font-medium px-2 py-1.5 rounded-lg border bg-stone-700/50 text-stone-200 border-stone-600/50 focus:border-stone-500 outline-none cursor-pointer" title="支付方式">
+                                                            <option value="linepay">LINE Pay</option>
+                                                            <option value="shopline">SHOPLINE</option>
+                                                            {item.payment_method && item.payment_method !== 'linepay' && item.payment_method !== 'shopline' && <option value={item.payment_method}>{item.payment_method}</option>}
+                                                        </select>
+                                                    </div>
+                                                    {item.ip_address && <span className="text-stone-200 font-mono text-xs">{item.ip_address}</span>}
+                                                </div>
+
+                                                {/* 付款連結／QR（待處理訂單，方便管理員查詢） */}
+                                                {item.status === 'pending' && (() => {
+                                                    const slUrl = item.payment_method === 'shopline' ? (PLANS.find(p => p.amount === item.amount)?.url || null) : null;
+                                                    const lpQr  = item.payment_method === 'linepay'  ? getAssetUrl(ASSETS.LINE_QRS[item.amount] || '') : null;
+                                                    if (!slUrl && !lpQr) return null;
+                                                    return (
+                                                        <div className="rounded-xl bg-stone-900/60 border border-stone-600/50 p-3 space-y-2">
+                                                            <p className="text-stone-300 text-xs font-bold">🔗 付款連結／QR</p>
+                                                            {slUrl && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <a href={slUrl} target="_blank" rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600/80 hover:bg-orange-500 text-white rounded-lg text-xs font-bold transition-colors">
+                                                                        前往 SHOPLINE 付款 <ExternalLink size={11} />
+                                                                    </a>
+                                                                    <button onClick={() => { navigator.clipboard.writeText(slUrl); showToast('付款連結已複製', 'success'); }}
+                                                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-lg text-xs font-bold transition-colors">
+                                                                        <Copy size={11} /> 複製連結
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                            {lpQr && ASSETS.LINE_QRS[item.amount] && (
+                                                                <div className="flex items-center gap-3">
+                                                                    <img src={lpQr} alt="LINE Pay QR" className="w-20 h-20 object-contain bg-white rounded-lg border border-stone-600 p-1" loading="lazy" />
+                                                                    <div className="text-xs text-stone-400">
+                                                                        <p className="font-bold text-stone-300 mb-1">LINE Pay QR Code</p>
+                                                                        <p>NT$ {item.amount?.toLocaleString()}</p>
+                                                                        <button onClick={() => { navigator.clipboard.writeText(lpQr); showToast('QR 連結已複製', 'success'); }}
+                                                                            className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 bg-stone-700 hover:bg-stone-600 text-stone-300 rounded-lg text-xs font-bold transition-colors">
                                                                             <Copy size={10} /> 複製圖片連結
                                                                         </button>
                                                                     </div>
@@ -11040,7 +12275,18 @@
                                                 
                                                 {item.tags && item.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-1.5">
-     <button onClick={() => openRechargeConfirm(item)} className="w-full min-h-[48px] rounded-xl text-base font-black bg-emerald-500 text-white border-2 border-emerald-400/50 hover:bg-emerald-400 shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 mb-3">
+                                                        {item.tags.map((tagValue, idx) => {
+                                                            const tagOption = TAG_OPTIONS.find(t => t.value === tagValue);
+                                                            return tagOption ? <span key={idx} className={`px-2 py-0.5 rounded-md text-xs font-medium ${tagOption.color}`}>{tagOption.label}</span> : null;
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            {/* 卡片底部操作：待處理時「給予儲值」主按鈕置頂，手機必見 */}
+                                            {item.status === 'pending' && (
+                                                <div className="px-4 py-3 border-t border-emerald-700/30 bg-emerald-950/20">
+                                                    <button onClick={() => openRechargeConfirm(item)} className="w-full min-h-[48px] rounded-xl text-base font-black bg-emerald-500 text-white border-2 border-emerald-400/50 hover:bg-emerald-400 shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 mb-3">
                                                         <CheckCircle size={20} /> 給予儲值
                                                     </button>
                                                 </div>
@@ -14349,7 +15595,7 @@
       "name": "蘇打石器",
       "alternateName": "Soda Stone Age",
       "url": "https://sodasa.org",
-    "logo": "https://sodasa.org/images/logo-official-v2.webp",
+    "logo": "https://sodasa.org/images/logo-official-transparent.png",
       "description": "蘇打石器是經典石器時代 2.5 版本的公益私服，致力於提供純淨、長久、有人情味的遊戲環境。",
       "sameAs": [
         "https://sodasa.org"
