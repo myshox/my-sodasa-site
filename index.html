@@ -9,7 +9,7 @@
          保留 no-cache 會強制每次重新下載所有靜態資源（首屏速度減半），是錯誤設定。 -->
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="蘇打石器經典 2.5 公益服，免費遊玩、支援 Windows／Android／iOS。遊戲帳號請在遊戲內註冊；儲值需另註冊網站會員並完成遊戲帳號綁定。">
+    <meta name="description" content="蘇打石器經典 2.5 公益服，免費遊玩、支援 Windows／Android／iOS。遊戲帳號請在遊戲內註冊；需要儲值時，註冊網站會員即可同步綁定既有遊戲主帳號。">
     <meta name="keywords" content="石器時代,石器私服,蘇打石器,2.5版本,石器時代私服,免費遊戲,線上遊戲,MMORPG,復古遊戲,經典遊戲">
     <meta name="author" content="蘇打石器團隊">
     <meta name="robots" content="index, follow">
@@ -1762,6 +1762,8 @@
         
         // --- Supabase 配置 ---
         const SUPABASE_URL = 'https://pheoswycciabslxpsjyw.supabase.co';
+        const GAME_DATA_API_URL = 'https://soda-recharge.myshoxisgood.workers.dev';
+        const DISCORD_INVITE_URL = 'https://discord.gg/RGXbRm474q';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZW9zd3ljY2lhYnNseHBzanl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTA4NDcsImV4cCI6MjA4NTY2Njg0N30.zQm1nL1mbg4ClpCEo_upK4eHVKODF6gy9hB-JevXb38';
         // 自訂 fetch：對 AbortError（專案冷啟動、網路慢）自動重試，最多 2 次
         const fetchWithRetry = (url, opts = {}) => {
@@ -1854,18 +1856,47 @@
             }
         };
         
+        // --- 遊戲主帳號查詢與角色同步 ---
+        const gameAccountHelpers = {
+            lookupMaster: async (masterName) => {
+                const name = String(masterName || '').trim();
+                if (!name) return { data: null, error: '請輸入遊戲主帳號' };
+                try {
+                    const res = await fetch(`${GAME_DATA_API_URL}/master/${encodeURIComponent(name)}`);
+                    if (!res.ok) {
+                        const body = await res.json().catch(() => ({}));
+                        return { data: null, error: body.message || `找不到主帳號「${name}」，請確認輸入是否正確` };
+                    }
+                    const data = await res.json();
+                    if (!Array.isArray(data?.chars) || data.chars.length === 0) {
+                        return { data: null, error: `主帳號「${name}」下沒有任何角色，請確認帳號正確` };
+                    }
+                    return { data, error: '' };
+                } catch {
+                    return { data: null, error: '查詢失敗，請確認網路或稍後再試' };
+                }
+            },
+            toGameAccounts: (lookup) => (lookup?.chars || []).map((ch, i) => ({
+                id: `${Date.now()}-${i}`,
+                name: ch.account,
+                charName: ch.charName,
+                is_primary: i === 0,
+                created_at: Date.now(),
+            }))
+        };
+
         // --- Authentication Helper Functions ---
         const authHelpers = {
             // 註冊新用戶
-            signUp: async (email, password) => {
+            signUp: async (email, password, { gameMaster = '', gameAccounts = [] } = {}) => {
                 const { data, error } = await supabase.auth.signUp({ 
                     email, 
                     password,
                     options: {
                         data: {
-                            // 網站會員與遊戲帳號是兩套系統。
-                            // 遊戲帳號須先在遊戲內註冊，再到會員中心查詢並綁定。
-                            game_accounts: []
+                            // 遊戲帳號先在遊戲內建立；網站註冊時查詢並同步綁定。
+                            game_master: gameMaster,
+                            game_accounts: gameAccounts
                         }
                     }
                 });
@@ -3212,8 +3243,8 @@
         const PlayerJourneyStrip = ({ current = 1, purpose = 'play' }) => {
             const steps = purpose === 'recharge' ? [
                 { n: 1, label: '先有遊戲帳號', to: '/download' },
-                { n: 2, label: '註冊網站會員', to: '/auth?mode=register' },
-                { n: 3, label: '會員中心綁定', to: '/member' }
+                { n: 2, label: '註冊＋同步綁定', to: '/auth?mode=register' },
+                { n: 3, label: '加入 Discord', to: DISCORD_INVITE_URL, external: true }
             ] : [
                 { n: 1, label: '下載遊戲', to: '/download' },
                 { n: 2, label: '遊戲內註冊', to: '/download' },
@@ -3228,12 +3259,21 @@
                                 const done = step.n < current;
                                 return (
                                     <React.Fragment key={step.n}>
-                                        <Link to={step.to} className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-teal-600 text-white shadow-md' : done ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
-                                            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-white text-teal-700' : done ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-600'}`}>
-                                                {done ? <Check size={14} /> : step.n}
-                                            </span>
-                                            <span className="truncate">{step.label}</span>
-                                        </Link>
+                                        {step.external ? (
+                                            <a href={step.to} target="_blank" rel="noopener noreferrer" className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-indigo-600 text-white shadow-md' : done ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
+                                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-white text-indigo-700' : done ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-600'}`}>
+                                                    {done ? <Check size={14} /> : step.n}
+                                                </span>
+                                                <span className="truncate">{step.label}</span>
+                                            </a>
+                                        ) : (
+                                            <Link to={step.to} className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-teal-600 text-white shadow-md' : done ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
+                                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-white text-teal-700' : done ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-600'}`}>
+                                                    {done ? <Check size={14} /> : step.n}
+                                                </span>
+                                                <span className="truncate">{step.label}</span>
+                                            </Link>
+                                        )}
                                         {idx < steps.length - 1 && <ArrowRight size={15} className="shrink-0 text-stone-300" aria-hidden />}
                                     </React.Fragment>
                                 );
@@ -3266,6 +3306,11 @@
             const [newPasswordConfirm, setNewPasswordConfirm] = useState(''); // 確認新密碼
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState('');
+            const [registrationMaster, setRegistrationMaster] = useState('');
+            const [registrationMasterLookup, setRegistrationMasterLookup] = useState(null);
+            const [registrationMasterError, setRegistrationMasterError] = useState('');
+            const [registrationMasterLoading, setRegistrationMasterLoading] = useState(false);
+            const [registrationComplete, setRegistrationComplete] = useState(null);
 
             useEffect(() => {
                 if (searchParams.get('mode') === 'register') setIsLogin(false);
@@ -3360,6 +3405,22 @@
                 }
             };
             
+            const handleRegistrationMasterLookup = async () => {
+                const name = registrationMaster.trim();
+                setError('');
+                setRegistrationMasterError('');
+                setRegistrationMasterLookup(null);
+                if (!name) {
+                    setRegistrationMasterError('請輸入遊戲主帳號；不是角色名稱，也不是網站 Email');
+                    return;
+                }
+                setRegistrationMasterLoading(true);
+                const { data, error: lookupError } = await gameAccountHelpers.lookupMaster(name);
+                if (lookupError) setRegistrationMasterError(lookupError);
+                else setRegistrationMasterLookup(data);
+                setRegistrationMasterLoading(false);
+            };
+
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 setError('');
@@ -3370,6 +3431,14 @@
                 }
                 
                 if (!isLogin) {
+                    if (!registrationMaster.trim()) {
+                        setError('請輸入既有的遊戲主帳號，註冊網站會員時會同步完成綁定');
+                        return;
+                    }
+                    if (!registrationMasterLookup || registrationMasterError) {
+                        setError('請先按「查詢帳號」，確認主帳號與角色資料正確');
+                        return;
+                    }
                     if (password !== confirmPassword) {
                         setError('密碼不一致');
                         return;
@@ -3408,12 +3477,22 @@
                             navigate('/member');
                         }
                     } else {
-                        const { error } = await authHelpers.signUp(email, password);
+                        const gameAccounts = gameAccountHelpers.toGameAccounts(registrationMasterLookup);
+                        const normalizedMaster = registrationMasterLookup.masterName || registrationMaster.trim();
+                        const { data, error } = await authHelpers.signUp(email, password, {
+                            gameMaster: normalizedMaster,
+                            gameAccounts
+                        });
                         if (error) {
                             setError(error.message);
                         } else {
-                            showToast('網站會員註冊成功！請先驗證信箱，登入後再到會員中心綁定遊戲帳號', 'success');
-                            setIsLogin(true);
+                            setRegistrationComplete({
+                                email,
+                                gameMaster: normalizedMaster,
+                                roleCount: gameAccounts.length,
+                                needsEmailConfirmation: !data?.session
+                            });
+                            showToast(`註冊完成！已同步綁定 ${gameAccounts.length} 個角色`, 'success');
                         }
                     }
                 } catch (err) {
@@ -3510,7 +3589,7 @@
                                             <li>• 您必須提供真實且正確的註冊資訊</li>
                                             <li>• 帳號密碼請妥善保管，不得轉讓或出借他人</li>
                                             <li>• 網站帳號與遊戲帳號是不同系統；遊戲帳號須先在遊戲內註冊</li>
-                                            <li>• 儲值前須登入網站會員，並在會員中心綁定既有的遊戲主帳號</li>
+                                            <li>• 註冊網站會員時須輸入既有遊戲主帳號，系統會查詢角色並同步完成綁定</li>
                                         </ul>
                                     </div>
 
@@ -3641,25 +3720,65 @@
                         </div>
                     )}
 
-                    {!isRecoveryMode && <PlayerJourneyStrip current={2} purpose="recharge" />}
+                    {!isRecoveryMode && <PlayerJourneyStrip current={registrationComplete ? 3 : 2} purpose="recharge" />}
                     <div className="max-w-md mx-auto">
                         <div className="stone-panel p-5 sm:p-8 md:p-10">
-                            <p className="section-kicker mx-auto mb-3 w-fit">{isRecoveryMode ? '帳號安全' : (isLogin ? '歡迎回來' : '新朋友你好')}</p>
+                            <p className="section-kicker mx-auto mb-3 w-fit">{registrationComplete ? '註冊與綁定完成' : (isRecoveryMode ? '帳號安全' : (isLogin ? '歡迎回來' : '新朋友你好'))}</p>
                             <h1 className="section-title text-2xl md:text-3xl mb-2 text-center">
-                                {isRecoveryMode ? '設定新密碼' : (isLogin ? '網站會員登入' : '註冊網站帳號')}
+                                {registrationComplete ? '歡迎加入蘇打石器' : (isRecoveryMode ? '設定新密碼' : (isLogin ? '網站會員登入' : '網站註冊＋遊戲綁定'))}
                             </h1>
                             <p className="section-sub text-center mb-6 md:mb-8 text-sm md:text-base">
-                                {isRecoveryMode ? '設定一組好記又安全的新密碼吧' : (isLogin ? '這裡登入的是網站會員，不是遊戲登入帳號' : '網站帳號用於會員中心、遊戲帳號綁定與儲值管理')}
+                                {registrationComplete ? '網站會員已建立，既有遊戲主帳號也已同步綁定' : (isRecoveryMode ? '設定一組好記又安全的新密碼吧' : (isLogin ? '這裡登入的是網站會員，不是遊戲登入帳號' : '一次建立網站會員、同步角色，之後就能使用儲值功能'))}
                             </p>
-                            {!isRecoveryMode && (
+                            {!isRecoveryMode && !registrationComplete && (
                                 <div className="ux-hint mb-6">
                                     <span aria-hidden>💡</span>
-                                    <span>{isLogin ? <>遊戲請在遊戲程式內登入；此處只登入<strong>網站會員</strong>。</> : <>請先在<strong>遊戲內註冊遊戲帳號</strong>。網站會員註冊並驗證 Email 後，再到會員中心綁定既有遊戲帳號，才可使用儲值。</>}</span>
+                                    <span>{isLogin ? <>遊戲請在遊戲程式內登入；此處只登入<strong>網站會員</strong>。</> : <>請先在<strong>遊戲內註冊遊戲帳號</strong>，再於下方輸入既有遊戲主帳號。系統會在網站註冊時同步綁定角色。</>}</span>
                                 </div>
                             )}
                             
-                            {/* 密碼重設表單 */}
-                            {isRecoveryMode ? (
+                            {registrationComplete ? (
+                                <div className="space-y-5">
+                                    <div className="rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-5 text-center">
+                                        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
+                                            <CheckCircle size={34} />
+                                        </span>
+                                        <h2 className="mt-4 text-xl font-black text-stone-900">兩個步驟已一次完成</h2>
+                                        <div className="mt-4 space-y-2 text-left text-sm font-semibold text-stone-700">
+                                            <p className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-emerald-600" /> 網站會員：{registrationComplete.email}</p>
+                                            <p className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-emerald-600" /> 遊戲主帳號：{registrationComplete.gameMaster}</p>
+                                            <p className="flex items-start gap-2"><Check size={18} className="mt-0.5 shrink-0 text-emerald-600" /> 已同步 {registrationComplete.roleCount} 個角色</p>
+                                        </div>
+                                    </div>
+                                    {registrationComplete.needsEmailConfirmation && (
+                                        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">
+                                            最後請到信箱點擊驗證連結；驗證後即可登入網站會員並使用儲值。
+                                        </div>
+                                    )}
+                                    <a
+                                        href={DISCORD_INVITE_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-2xl bg-indigo-600 px-5 py-4 text-lg font-black text-white shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:bg-indigo-500"
+                                    >
+                                        <MessageCircle size={23} /> 加入 Discord 玩家部落 <ExternalLink size={18} />
+                                    </a>
+                                    <p className="text-center text-sm font-semibold leading-6 text-stone-500">新手公告、活動消息與玩家交流都在 Discord；加入後先到新手區報到。</p>
+                                    {registrationComplete.needsEmailConfirmation ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setRegistrationComplete(null); setIsLogin(true); setError(''); }}
+                                            className="w-full rounded-xl border-2 border-stone-200 bg-white px-4 py-3 font-black text-stone-700 transition-colors hover:bg-stone-50"
+                                        >
+                                            我已驗證 Email，前往登入
+                                        </button>
+                                    ) : (
+                                        <Link to="/member" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-stone-200 bg-white px-4 py-3 font-black text-stone-700 transition-colors hover:bg-stone-50">
+                                            前往會員中心 <ArrowRight size={18} />
+                                        </Link>
+                                    )}
+                                </div>
+                            ) : isRecoveryMode ? (
                                 <form onSubmit={handleUpdatePassword} className="space-y-4">
                                     {error && (
                                         <div className="bg-fire-50 border-2 border-fire-300 rounded-xl p-4 flex items-center gap-2">
@@ -3736,6 +3855,67 @@
                                         disabled={loading}
                                     />
                                 </div>
+
+                                {!isLogin && (
+                                    <div className="rounded-2xl border-2 border-sky-200 bg-sky-50/70 p-4">
+                                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                            <label htmlFor="registration-game-master" className="font-black text-stone-800">既有遊戲主帳號</label>
+                                            <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-black text-sky-700">註冊時同步綁定</span>
+                                        </div>
+                                        <p id="registration-game-master-help" className="mb-3 text-xs font-semibold leading-5 text-stone-600">請輸入遊戲登入用的主帳號，不是角色名稱，也不需要輸入遊戲密碼。</p>
+                                        <div className="flex flex-col gap-2 sm:flex-row">
+                                            <input
+                                                id="registration-game-master"
+                                                type="text"
+                                                value={registrationMaster}
+                                                onChange={(e) => {
+                                                    setRegistrationMaster(e.target.value);
+                                                    setRegistrationMasterLookup(null);
+                                                    setRegistrationMasterError('');
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        handleRegistrationMasterLookup();
+                                                    }
+                                                }}
+                                                placeholder="輸入遊戲主帳號"
+                                                autoComplete="username"
+                                                aria-describedby="registration-game-master-help"
+                                                className="min-w-0 flex-1 rounded-xl border-2 border-sky-200 bg-white px-4 py-3 font-bold text-stone-800 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+                                                disabled={loading || registrationMasterLoading}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleRegistrationMasterLookup}
+                                                disabled={loading || registrationMasterLoading}
+                                                className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 font-black text-white transition-colors hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {registrationMasterLoading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                                                {registrationMasterLoading ? '查詢中' : '查詢帳號'}
+                                            </button>
+                                        </div>
+                                        {registrationMasterError && (
+                                            <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">{registrationMasterError}</p>
+                                        )}
+                                        {registrationMasterLookup && !registrationMasterError && (
+                                            <div className="mt-3 rounded-xl border border-emerald-200 bg-white p-3">
+                                                <p className="flex items-center gap-2 text-sm font-black text-emerald-700"><CheckCircle size={18} /> 已找到主帳號「{registrationMasterLookup.masterName}」</p>
+                                                <p className="mt-1 text-xs font-semibold text-stone-500">確認以下角色是你的，再完成網站註冊：</p>
+                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                    {registrationMasterLookup.chars.slice(0, 6).map((ch, i) => (
+                                                        <span key={`${ch.account}-${i}`} className="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-stone-700">
+                                                            {ch.charName || ch.account}
+                                                        </span>
+                                                    ))}
+                                                    {registrationMasterLookup.chars.length > 6 && (
+                                                        <span className="rounded-lg bg-stone-100 px-2.5 py-1.5 text-xs font-bold text-stone-500">另有 {registrationMasterLookup.chars.length - 6} 個角色</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -3820,10 +4000,10 @@
                                     type="submit"
                                     variant="gold"
                                     className="w-full py-4 text-lg"
-                                    disabled={loading}
+                                    disabled={loading || registrationMasterLoading}
                                 >
                                     {loading ? <Loader2 size={20} className="animate-spin" /> : null}
-                                    <span>{loading ? '處理中...' : (isLogin ? '登入網站會員' : '註冊網站會員')}</span>
+                                    <span>{loading ? '處理中...' : (isLogin ? '登入網站會員' : '建立網站會員並同步綁定')}</span>
                                 </Button>
                                 </form>
                             
@@ -3832,10 +4012,13 @@
                                         onClick={() => {
                                             setIsLogin(!isLogin);
                                             setError('');
-                                            setEmail('');
-                                            setPassword('');
-                                            setConfirmPassword('');
-                                        }}
+                                             setEmail('');
+                                             setPassword('');
+                                             setConfirmPassword('');
+                                             setRegistrationMaster('');
+                                             setRegistrationMasterLookup(null);
+                                             setRegistrationMasterError('');
+                                         }}
                                         className="text-gold-600 font-bold hover:text-gold-700 transition-colors"
                                     >
                                         {isLogin ? '還沒有網站帳號？立即註冊' : '已有網站帳號？立即登入'}
@@ -4402,8 +4585,8 @@
                                         <span className="text-xs text-stone-500 w-full sm:w-auto">（輸入主帳號後按查詢，系統自動同步角色）</span>
                                     </div>
                                     <div className="mb-3 rounded-xl border-2 border-amber-300 bg-amber-50 px-3.5 py-3 text-sm font-semibold leading-6 text-amber-900">
-                                        <strong>這裡只做綁定，不是註冊遊戲帳號。</strong>
-                                        <span className="block text-amber-800">請先在遊戲登入畫面建立遊戲帳號，再回來輸入既有的遊戲主帳號。完成綁定後才可儲值。</span>
+                                        <strong>網站新會員會在註冊時同步完成第一組主帳號綁定。</strong>
+                                        <span className="block text-amber-800">如果你是尚未綁定的舊會員，或需要重新查詢同步，才需要在這裡輸入既有遊戲主帳號；這裡不會建立遊戲帳號。</span>
                                     </div>
                                     <p className="text-xs text-stone-600 leading-relaxed mb-3 rounded-xl border border-sky-100 bg-white/80 px-3 py-2.5 break-words shadow-sm">
                                         換機或跨 <strong className="text-stone-800">iOS／Android</strong> 時，請在遊戲內使用<strong className="text-sky-800">與此處綁定相同的主帳號</strong>登入，並選同一伺服器，角色資料才會與伺服器一致。
@@ -5138,7 +5321,7 @@
                     accent: 'text-amber-700 bg-amber-100', glow: 'rgba(245, 184, 46, 0.2)'
                 },
                 {
-                    label: '準備儲值', title: '我要儲值', desc: '先確認已有遊戲帳號，再註冊網站會員並到會員中心完成遊戲主帳號綁定。',
+                    label: '準備儲值', title: '我要儲值', desc: '先確認已有遊戲帳號；註冊網站會員時輸入遊戲主帳號，就會同步綁定旗下角色。',
                     cta: '查看儲值流程', to: '/recharge', icon: Coins,
                     accent: 'text-teal-700 bg-teal-100', glow: 'rgba(45, 212, 191, 0.2)'
                 },
@@ -5248,11 +5431,14 @@
                                         <Link to="/download" className="mt-5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3.5 font-black text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-400">
                                             帶我開始 <ArrowRight size={18} />
                                         </Link>
-                                        <p className="mt-3 text-center text-xs font-semibold text-stone-400">卡住時隨時找客服，不用自己猜</p>
+                                        <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-indigo-300/25 bg-indigo-500/20 px-5 py-3 font-black text-indigo-100 transition-colors hover:bg-indigo-500/35">
+                                            <MessageCircle size={18} /> 加入 Discord 玩家部落 <ExternalLink size={15} />
+                                        </a>
+                                        <p className="mt-2 text-center text-xs font-semibold text-stone-400">看公告、問新手問題，也能找其他玩家一起冒險</p>
                                         <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-stone-300">
                                             <strong className="text-amber-200">要儲值？</strong> 請先在遊戲內建立遊戲帳號，再
                                             <Link to="/auth?mode=register" className="mx-1 font-black text-emerald-300 hover:text-emerald-200">註冊網站會員</Link>
-                                            並到會員中心綁定。
+                                            ，註冊時會同步完成遊戲主帳號綁定。
                                         </div>
                                     </div>
                                 </motion.aside>
@@ -5436,7 +5622,7 @@
                                             <li>您必須提供真實且正確的註冊資訊</li>
                                             <li>帳號密碼請妥善保管，不得轉讓或出借他人</li>
                                             <li><strong>網站帳號與遊戲帳號是不同系統</strong>；遊戲帳號必須先在遊戲程式內完成註冊</li>
-                                            <li>需要儲值時，必須另行註冊網站會員並在會員中心綁定既有的遊戲主帳號</li>
+                                            <li>需要儲值時，須另行註冊網站會員；註冊表單會查詢並同步綁定既有遊戲主帳號</li>
                                             <li>因個人疏失導致的帳號遺失，本服務不負任何責任</li>
                                         </ul>
                                     </div>
@@ -7243,7 +7429,7 @@
                                 </div>
                                 <div className="flex gap-3">
                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white"><User size={18} /></span>
-                                    <div><p className="font-black text-stone-900">網站帳號</p><p className="font-semibold text-stone-600">只用於會員中心與儲值；需要儲值時才註冊並綁定遊戲帳號。</p></div>
+                                    <div><p className="font-black text-stone-900">網站帳號</p><p className="font-semibold text-stone-600">只用於會員中心與儲值；需要儲值時註冊，表單會同步綁定既有遊戲主帳號。</p></div>
                                 </div>
                             </div>
                         </div>
@@ -7812,12 +7998,12 @@
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black text-white">尚未綁定遊戲主帳號</h2>
-                                        <p className="text-red-100 text-sm mt-0.5">網站會員登入後，仍需綁定既有遊戲帳號才能儲值</p>
+                                        <p className="text-red-100 text-sm mt-0.5">新會員通常已在註冊時完成綁定；舊會員可在會員中心補綁</p>
                                     </div>
                                 </div>
                                 <div className="p-8 space-y-5">
                                     <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3">
-                                        <p className="text-stone-700 font-bold text-base">📋 綁定步驟：</p>
+                                        <p className="text-stone-700 font-bold text-base">📋 舊會員補綁步驟：</p>
                                         <p className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">還沒有遊戲帳號？請先下載並從遊戲登入畫面完成註冊，網站無法建立遊戲帳號。</p>
                                         <ol className="space-y-2 text-stone-700 text-sm font-medium list-none">
                                             <li className="flex items-start gap-3">
@@ -16060,7 +16246,7 @@
           "name": "網站帳號和遊戲帳號一樣嗎？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "不一樣。遊戲帳號必須先在遊戲程式內註冊，用於登入遊戲；網站帳號用於會員中心與儲值。需要儲值時，請註冊網站帳號並在會員中心綁定既有的遊戲主帳號。"
+            "text": "不一樣。遊戲帳號必須先在遊戲程式內註冊，用於登入遊戲；網站帳號用於會員中心與儲值。需要儲值時，註冊網站帳號並輸入既有遊戲主帳號，系統會同步查詢角色並完成綁定。"
           }
         },
         {
