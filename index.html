@@ -9,7 +9,7 @@
          保留 no-cache 會強制每次重新下載所有靜態資源（首屏速度減半），是錯誤設定。 -->
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="蘇打石器經典 2.5 公益服，免費遊玩、支援 Windows／Android／iOS。下載、建立帳號、新手上路一次完成，遇到問題有真人客服。">
+    <meta name="description" content="蘇打石器經典 2.5 公益服，免費遊玩、支援 Windows／Android／iOS。遊戲帳號請在遊戲內註冊；儲值需另註冊網站會員並完成遊戲帳號綁定。">
     <meta name="keywords" content="石器時代,石器私服,蘇打石器,2.5版本,石器時代私服,免費遊戲,線上遊戲,MMORPG,復古遊戲,經典遊戲">
     <meta name="author" content="蘇打石器團隊">
     <meta name="robots" content="index, follow">
@@ -1757,7 +1757,7 @@
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
             BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2, Gift,
-            Laptop, QrCode, Circle, Zap
+            Laptop, Gamepad2, QrCode, Circle, Zap
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -1857,18 +1857,15 @@
         // --- Authentication Helper Functions ---
         const authHelpers = {
             // 註冊新用戶
-            signUp: async (email, password, gameAccount = '') => {
+            signUp: async (email, password) => {
                 const { data, error } = await supabase.auth.signUp({ 
                     email, 
                     password,
                     options: {
                         data: {
-                            game_accounts: [{ // 儲存為陣列，支援多個遊戲帳號（最多5個）
-                                id: Date.now().toString(),
-                                name: gameAccount,
-                                is_primary: true,
-                                created_at: Date.now()
-                            }]
+                            // 網站會員與遊戲帳號是兩套系統。
+                            // 遊戲帳號須先在遊戲內註冊，再到會員中心查詢並綁定。
+                            game_accounts: []
                         }
                     }
                 });
@@ -3212,14 +3209,18 @@
             );
         };
 
-        const PlayerJourneyStrip = ({ current = 1 }) => {
-            const steps = [
+        const PlayerJourneyStrip = ({ current = 1, purpose = 'play' }) => {
+            const steps = purpose === 'recharge' ? [
+                { n: 1, label: '先有遊戲帳號', to: '/download' },
+                { n: 2, label: '註冊網站會員', to: '/auth?mode=register' },
+                { n: 3, label: '會員中心綁定', to: '/member' }
+            ] : [
                 { n: 1, label: '下載遊戲', to: '/download' },
-                { n: 2, label: '建立帳號', to: '/auth?mode=register' },
-                { n: 3, label: '新手上路', to: '/guides?from=start' }
+                { n: 2, label: '遊戲內註冊', to: '/download' },
+                { n: 3, label: '建立角色', to: '/guides?from=start' }
             ];
             return (
-                <nav className="max-w-3xl mx-auto mb-7 md:mb-10" aria-label="新玩家開玩進度">
+                <nav className="max-w-3xl mx-auto mb-7 md:mb-10" aria-label={purpose === 'recharge' ? '儲值準備流程' : '新玩家開玩進度'}>
                     <div className="rounded-2xl border border-teal-200/80 bg-white/90 p-3 sm:p-4 shadow-sm backdrop-blur-sm">
                         <div className="flex items-center justify-between gap-1 sm:gap-3">
                             {steps.map((step, idx) => {
@@ -3253,7 +3254,6 @@
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
             const [confirmPassword, setConfirmPassword] = useState('');
-            const [gameAccount, setGameAccount] = useState(''); // 遊戲帳號
             const [agreeTerms, setAgreeTerms] = useState(false); // 同意服務條款
             const [rememberMe, setRememberMe] = useState(false); // 僅記住 Email，不儲存密碼
             const [showTermsModal, setShowTermsModal] = useState(false); // 顯示服務條款彈窗
@@ -3370,10 +3370,6 @@
                 }
                 
                 if (!isLogin) {
-                    if (!gameAccount.trim()) {
-                        setError('請填寫遊戲帳號');
-                        return;
-                    }
                     if (password !== confirmPassword) {
                         setError('密碼不一致');
                         return;
@@ -3412,11 +3408,11 @@
                             navigate('/member');
                         }
                     } else {
-                        const { error } = await authHelpers.signUp(email, password, gameAccount);
+                        const { error } = await authHelpers.signUp(email, password);
                         if (error) {
                             setError(error.message);
                         } else {
-                            showToast('註冊成功！請檢查信箱驗證', 'success');
+                            showToast('網站會員註冊成功！請先驗證信箱，登入後再到會員中心綁定遊戲帳號', 'success');
                             setIsLogin(true);
                         }
                     }
@@ -3492,6 +3488,7 @@
                                     <button 
                                         onClick={() => setShowTermsModal(false)}
                                         className="p-2 hover:bg-stone-100 rounded-xl transition-colors shrink-0"
+                                        aria-label="關閉服務條款"
                                     >
                                         <X size={20} className="text-stone-600" />
                                     </button>
@@ -3512,7 +3509,8 @@
                                         <ul className="space-y-1 ml-4 text-xs">
                                             <li>• 您必須提供真實且正確的註冊資訊</li>
                                             <li>• 帳號密碼請妥善保管，不得轉讓或出借他人</li>
-                                            <li>• 一個 Email 最多可註冊 5 個遊戲帳號</li>
+                                            <li>• 網站帳號與遊戲帳號是不同系統；遊戲帳號須先在遊戲內註冊</li>
+                                            <li>• 儲值前須登入網站會員，並在會員中心綁定既有的遊戲主帳號</li>
                                         </ul>
                                     </div>
 
@@ -3643,20 +3641,20 @@
                         </div>
                     )}
 
-                    {!isRecoveryMode && <PlayerJourneyStrip current={2} />}
+                    {!isRecoveryMode && <PlayerJourneyStrip current={2} purpose="recharge" />}
                     <div className="max-w-md mx-auto">
                         <div className="stone-panel p-5 sm:p-8 md:p-10">
                             <p className="section-kicker mx-auto mb-3 w-fit">{isRecoveryMode ? '帳號安全' : (isLogin ? '歡迎回來' : '新朋友你好')}</p>
                             <h1 className="section-title text-2xl md:text-3xl mb-2 text-center">
-                                {isRecoveryMode ? '設定新密碼' : (isLogin ? '會員登入' : '註冊帳號')}
+                                {isRecoveryMode ? '設定新密碼' : (isLogin ? '網站會員登入' : '註冊網站帳號')}
                             </h1>
                             <p className="section-sub text-center mb-6 md:mb-8 text-sm md:text-base">
-                                {isRecoveryMode ? '設定一組好記又安全的新密碼吧' : (isLogin ? '登入後就能綁定遊戲帳號、查看儲值紀錄' : '免費加入，一個 Email 就能開始冒險')}
+                                {isRecoveryMode ? '設定一組好記又安全的新密碼吧' : (isLogin ? '這裡登入的是網站會員，不是遊戲登入帳號' : '網站帳號用於會員中心、遊戲帳號綁定與儲值管理')}
                             </p>
                             {!isRecoveryMode && (
                                 <div className="ux-hint mb-6">
                                     <span aria-hidden>💡</span>
-                                    <span>{isLogin ? <>忘記密碼也沒關係，點下方「忘記密碼」就能重設。</> : <>註冊後記得先到<strong>會員中心綁定遊戲主帳號</strong>，儲值才發得到金幣喔。</>}</span>
+                                    <span>{isLogin ? <>遊戲請在遊戲程式內登入；此處只登入<strong>網站會員</strong>。</> : <>請先在<strong>遊戲內註冊遊戲帳號</strong>。網站會員註冊並驗證 Email 後，再到會員中心綁定既有遊戲帳號，才可使用儲值。</>}</span>
                                 </div>
                             )}
                             
@@ -3738,34 +3736,6 @@
                                         disabled={loading}
                                     />
                                 </div>
-                                
-                                {!isLogin && (
-                                    <div>
-                                        <label className="block text-stone-700 font-bold mb-2 flex items-center gap-2">
-                                            <User size={18} className="text-gold-500" />
-                                            遊戲帳號
-                                            <span className="text-fire-600 text-xs font-medium">（注意：是遊戲帳號，並非角色ID）</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={gameAccount}
-                                            onChange={(e) => setGameAccount(e.target.value)}
-                                            placeholder="請輸入您的遊戲帳號（登入用的帳號，與角色ID不同）"
-                                            className="w-full text-lg font-bold p-4 rounded-2xl border-2 border-stone-200 focus:border-gold-400 focus:ring-4 focus:ring-gold-100/50 focus:outline-none bg-stone-50/80 text-stone-700 placeholder-stone-400"
-                                            disabled={loading}
-                                        />
-                                        <div className="bg-gold-50 border-2 border-gold-300 rounded-xl p-3 mt-3">
-                                            <p className="text-gold-800 font-bold text-sm flex items-start gap-2">
-                                                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                                                <span>
-                                                    <strong>⚠️ 重要提醒：</strong>請填寫遊戲帳號（登入用），並非角色ID！
-                                                    <br />
-                                                    <span className="text-xs text-gold-700 mt-1 inline-block">虛寶將由管理員人工審核後發放至此帳號，填寫錯誤將無法領取</span>
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
                                 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -3853,7 +3823,7 @@
                                     disabled={loading}
                                 >
                                     {loading ? <Loader2 size={20} className="animate-spin" /> : null}
-                                    <span>{loading ? '處理中...' : (isLogin ? '登入' : '註冊')}</span>
+                                    <span>{loading ? '處理中...' : (isLogin ? '登入網站會員' : '註冊網站會員')}</span>
                                 </Button>
                                 </form>
                             
@@ -3865,11 +3835,10 @@
                                             setEmail('');
                                             setPassword('');
                                             setConfirmPassword('');
-                                            setGameAccount('');
                                         }}
                                         className="text-gold-600 font-bold hover:text-gold-700 transition-colors"
                                     >
-                                        {isLogin ? '還沒有帳號？立即註冊' : '已有帳號？立即登入'}
+                                        {isLogin ? '還沒有網站帳號？立即註冊' : '已有網站帳號？立即登入'}
                                     </button>
                                 </div>
                                 </>
@@ -4431,6 +4400,10 @@
                                             <span className="info-chip bg-red-100 text-red-700 border-red-300 animate-pulse">⚠️ 必填 — 儲值需要此資料</span>
                                         )}
                                         <span className="text-xs text-stone-500 w-full sm:w-auto">（輸入主帳號後按查詢，系統自動同步角色）</span>
+                                    </div>
+                                    <div className="mb-3 rounded-xl border-2 border-amber-300 bg-amber-50 px-3.5 py-3 text-sm font-semibold leading-6 text-amber-900">
+                                        <strong>這裡只做綁定，不是註冊遊戲帳號。</strong>
+                                        <span className="block text-amber-800">請先在遊戲登入畫面建立遊戲帳號，再回來輸入既有的遊戲主帳號。完成綁定後才可儲值。</span>
                                     </div>
                                     <p className="text-xs text-stone-600 leading-relaxed mb-3 rounded-xl border border-sky-100 bg-white/80 px-3 py-2.5 break-words shadow-sm">
                                         換機或跨 <strong className="text-stone-800">iOS／Android</strong> 時，請在遊戲內使用<strong className="text-sky-800">與此處綁定相同的主帳號</strong>登入，並選同一伺服器，角色資料才會與伺服器一致。
@@ -5056,12 +5029,12 @@
                                         time: '約 1 分鐘'
                                     },
                                     {
-                                        n: '02', t: '建立會員帳號', d: '使用 Email 註冊，完成信箱驗證並填入遊戲登入帳號',
-                                        i: User, color: 'emerald', cta: '建立帳號', to: '/auth?mode=register',
-                                        time: '約 1～2 分鐘'
+                                        n: '02', t: '遊戲內註冊帳號', d: '開啟遊戲，從登入畫面建立用來遊玩的遊戲帳號',
+                                        i: User, color: 'emerald', cta: '查看下載說明', to: '/download',
+                                        time: '約 1 分鐘'
                                     },
                                     {
-                                        n: '03', t: '跟著新手攻略', d: '確認登入帳號與伺服器，再創建角色、選擇起始寵物',
+                                        n: '03', t: '建立角色開始玩', d: '登入遊戲帳號、選擇伺服器，再創建角色與起始寵物',
                                         i: Sparkles, color: 'teal', cta: '查看新手攻略', to: '/guides?from=start',
                                         time: '即刻開玩'
                                     }
@@ -5160,13 +5133,13 @@
 
             const playerPaths = [
                 {
-                    label: '第一次來', title: '我想開始玩', desc: '先選擇裝置下載，再建立免費帳號，照著新手路線就能進入遊戲。',
+                    label: '第一次來', title: '我想開始玩', desc: '先選擇裝置下載，再從遊戲登入畫面註冊遊戲帳號，就能建立角色開始冒險。',
                     cta: '從下載開始', to: '/download', icon: Download,
                     accent: 'text-amber-700 bg-amber-100', glow: 'rgba(245, 184, 46, 0.2)'
                 },
                 {
-                    label: '老玩家回歸', title: '我已經有帳號', desc: '登入會員中心，查看遊戲帳號、儲值紀錄與個人資料。',
-                    cta: '登入會員', to: '/auth', icon: User,
+                    label: '準備儲值', title: '我要儲值', desc: '先確認已有遊戲帳號，再註冊網站會員並到會員中心完成遊戲主帳號綁定。',
+                    cta: '查看儲值流程', to: '/recharge', icon: Coins,
                     accent: 'text-teal-700 bg-teal-100', glow: 'rgba(45, 212, 191, 0.2)'
                 },
                 {
@@ -5178,8 +5151,8 @@
 
             const quickSteps = [
                 { n: '01', title: '下載遊戲', text: '自動推薦適合你的版本', icon: Download },
-                { n: '02', title: '建立帳號', text: 'Email 驗證，約 1 分鐘', icon: UserPlus },
-                { n: '03', title: '進入冒險', text: '照著新手攻略建立角色', icon: Sparkles }
+                { n: '02', title: '遊戲內註冊', text: '在遊戲登入畫面建立遊戲帳號', icon: UserPlus },
+                { n: '03', title: '建立角色', text: '選擇伺服器，開始冒險', icon: Sparkles }
             ];
 
             return (
@@ -5231,7 +5204,7 @@
                                                 to="/auth"
                                                 className="inline-flex min-h-[56px] items-center justify-center gap-2.5 rounded-2xl border-2 border-white/20 bg-black/35 px-6 py-4 text-base font-black text-white backdrop-blur-md transition-all hover:border-emerald-300/50 hover:bg-emerald-950/65"
                                             >
-                                                <User size={20} /> 已有帳號，直接登入
+                                                <User size={20} /> 網站會員登入
                                             </Link>
                                         </div>
 
@@ -5276,6 +5249,11 @@
                                             帶我開始 <ArrowRight size={18} />
                                         </Link>
                                         <p className="mt-3 text-center text-xs font-semibold text-stone-400">卡住時隨時找客服，不用自己猜</p>
+                                        <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-stone-300">
+                                            <strong className="text-amber-200">要儲值？</strong> 請先在遊戲內建立遊戲帳號，再
+                                            <Link to="/auth?mode=register" className="mx-1 font-black text-emerald-300 hover:text-emerald-200">註冊網站會員</Link>
+                                            並到會員中心綁定。
+                                        </div>
                                     </div>
                                 </motion.aside>
                             </div>
@@ -5457,7 +5435,8 @@
                                         <ul className="space-y-2 text-stone-700 ml-6 list-disc">
                                             <li>您必須提供真實且正確的註冊資訊</li>
                                             <li>帳號密碼請妥善保管，不得轉讓或出借他人</li>
-                                            <li>一個 Email 最多可註冊 5 個遊戲帳號</li>
+                                            <li><strong>網站帳號與遊戲帳號是不同系統</strong>；遊戲帳號必須先在遊戲程式內完成註冊</li>
+                                            <li>需要儲值時，必須另行註冊網站會員並在會員中心綁定既有的遊戲主帳號</li>
                                             <li>因個人疏失導致的帳號遺失，本服務不負任何責任</li>
                                         </ul>
                                     </div>
@@ -7249,12 +7228,25 @@
                         <p className="section-kicker mb-3">下載遊戲 · 免費開玩</p>
                         <h1 className="section-title text-3xl md:text-4xl lg:text-5xl mb-2">遊戲下載</h1>
                         <p className="section-sub text-sm md:text-base max-w-xl mx-auto">
-                            選你的裝置下載就好，安裝後就能進入尼斯大陸
+                            選擇裝置完成安裝，再從遊戲登入畫面註冊遊戲帳號
                         </p>
                         <p className="text-stone-500 text-sm mt-4 flex items-center justify-center gap-2">
                             <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-500" /> 點擊後會在新分頁開啟下載連結
                         </p>
                     </div>
+
+                        <div className="max-w-5xl mx-auto mb-5 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-emerald-50 px-5 py-4 shadow-sm">
+                            <div className="grid md:grid-cols-2 gap-4 text-sm leading-6">
+                                <div className="flex gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-stone-900"><Gamepad2 size={18} /></span>
+                                    <div><p className="font-black text-stone-900">遊戲帳號</p><p className="font-semibold text-stone-600">從下載好的遊戲登入畫面註冊，用來登入遊戲與建立角色。</p></div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white"><User size={18} /></span>
+                                    <div><p className="font-black text-stone-900">網站帳號</p><p className="font-semibold text-stone-600">只用於會員中心與儲值；需要儲值時才註冊並綁定遊戲帳號。</p></div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="max-w-5xl mx-auto mb-6 rounded-2xl border border-teal-200 bg-teal-50/90 px-4 py-3 text-center text-sm font-bold text-teal-800">
                             <span aria-hidden>✨</span> 依你目前的裝置，建議選擇 <strong>{recommendedPlatform.label}</strong>
@@ -7404,14 +7396,14 @@
                         {/* 明確下一步 */}
                         <div className="mt-10 md:mt-12 rounded-3xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-white p-6 md:p-8 text-center shadow-card">
                             <p className="section-kicker mx-auto mb-3 w-fit"><CheckCircle size={15} /> 下載完成了嗎？</p>
-                            <h3 className="text-xl md:text-2xl font-black text-stone-800 mb-2">下一步：建立會員帳號</h3>
-                            <p className="text-stone-600 text-sm mb-5">完成 Email 驗證並填入遊戲登入帳號，之後查詢紀錄與客服處理會更順暢。</p>
+                            <h3 className="text-xl md:text-2xl font-black text-stone-800 mb-2">下一步：開啟遊戲並註冊遊戲帳號</h3>
+                            <p className="text-stone-600 text-sm mb-5">遊戲帳號必須從遊戲登入畫面建立；網站不會替你建立遊戲帳號。</p>
                             <div className="flex flex-col sm:flex-row justify-center gap-3">
-                                <Link to="/auth?mode=register" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-btn transition-all">
-                                    <UserPlus size={20} /> 建立帳號 <ArrowRight size={18} />
+                                <Link to="/guides?from=start" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-btn transition-all">
+                                    <BookOpen size={20} /> 查看新手上路 <ArrowRight size={18} />
                                 </Link>
-                                <Link to="/support" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold border-2 border-stone-200 bg-white text-stone-700 hover:bg-stone-50 transition-all">
-                                    <MessageCircle size={20} /> 安裝遇到問題
+                                <Link to="/auth?mode=register" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold border-2 border-stone-200 bg-white text-stone-700 hover:bg-stone-50 transition-all">
+                                    <UserPlus size={20} /> 儲值用｜註冊網站會員
                                 </Link>
                             </div>
                         </div>
@@ -7599,7 +7591,7 @@
                         
                         if (!currentUser) {
                             console.log('未登入，跳轉到登入頁');
-                            showToast('請先登入才能贊助', 'warning');
+                            showToast('儲值需要先登入網站會員；網站帳號不等於遊戲帳號', 'warning');
                             setTimeout(() => navigate('/auth'), 500);
                             return;
                         }
@@ -7820,12 +7812,13 @@
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black text-white">尚未綁定遊戲主帳號</h2>
-                                        <p className="text-red-100 text-sm mt-0.5">儲值前必須完成帳號綁定</p>
+                                        <p className="text-red-100 text-sm mt-0.5">網站會員登入後，仍需綁定既有遊戲帳號才能儲值</p>
                                     </div>
                                 </div>
                                 <div className="p-8 space-y-5">
                                     <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3">
                                         <p className="text-stone-700 font-bold text-base">📋 綁定步驟：</p>
+                                        <p className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">還沒有遊戲帳號？請先下載並從遊戲登入畫面完成註冊，網站無法建立遊戲帳號。</p>
                                         <ol className="space-y-2 text-stone-700 text-sm font-medium list-none">
                                             <li className="flex items-start gap-3">
                                                 <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
@@ -16035,7 +16028,7 @@
           "name": "蘇打石器是免費的嗎？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "是的，蘇打石器是完全免費的公益服，玩家可隨意下載、註冊、遊玩。儲值僅為自願贊助伺服器運作。"
+            "text": "是的，蘇打石器是完全免費的公益服。下載後請從遊戲登入畫面註冊遊戲帳號即可遊玩；儲值僅為自願贊助伺服器運作。"
           }
         },
         {
@@ -16064,10 +16057,18 @@
         },
         {
           "@type": "Question",
+          "name": "網站帳號和遊戲帳號一樣嗎？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不一樣。遊戲帳號必須先在遊戲程式內註冊，用於登入遊戲；網站帳號用於會員中心與儲值。需要儲值時，請註冊網站帳號並在會員中心綁定既有的遊戲主帳號。"
+          }
+        },
+        {
+          "@type": "Question",
           "name": "忘記密碼怎麼辦？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "在登入頁點「忘記密碼」輸入註冊 Email，系統會寄送密碼重設信件。若 5 分鐘內未收到請查垃圾信匣或聯絡官方 LINE 客服。"
+            "text": "若忘記的是網站會員密碼，請在網站會員登入頁點「忘記密碼」並輸入註冊 Email。遊戲帳號問題請直接聯絡官方 LINE 客服。"
           }
         }
       ]
