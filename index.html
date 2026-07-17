@@ -20,7 +20,7 @@
     <meta property="og:url" content="https://sodasa.org/">
     <meta property="og:title" content="蘇打石器 - 最人情味的石器時代私服">
     <meta property="og:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定，免費遊玩！重溫經典，找回童年的感動。">
-    <meta property="og:image" content="https://sodasa.org/images/og-image.jpg">
+    <meta property="og:image" content="https://sodasa.org/images/og-ux-v2.jpg">
     <meta property="og:locale" content="zh_TW">
     <meta property="og:site_name" content="蘇打石器">
     
@@ -28,7 +28,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="蘇打石器 - 最人情味的石器時代私服">
     <meta name="twitter:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定">
-    <meta name="twitter:image" content="https://sodasa.org/images/og-image.jpg">
+    <meta name="twitter:image" content="https://sodasa.org/images/og-ux-v2.jpg">
     
     <!-- Meta Pixel（Facebook/Instagram 廣告用）：請到 Meta 事件管理工具取得 Pixel ID，替換下方的 YOUR_PIXEL_ID -->
     <script>
@@ -3046,10 +3046,9 @@
             const navItems = useMemo(() => {
                 const base = [
                     { path: '/', label: '首頁', icon: Home, hint: '網站首頁' },
-                    { path: '/download', label: '下載', icon: Download, hint: '下載遊戲' },
+                    { path: '/download', label: '開玩', icon: Download, hint: '下載遊戲並開始遊玩' },
                     { path: '/guides', label: '攻略', icon: BookOpen, hint: '活動攻略' },
                     { path: '/events', label: '活動', icon: Calendar, hint: '最新活動' },
-                    { path: '/recharge', label: '儲值', icon: Coins, hint: '金幣贊助' },
                 ];
                 const role = user?.user_metadata?.role;
                 if (role === 'admin' || role === 'super_admin') {
@@ -3091,18 +3090,50 @@
             );
         };
 
+        const PlayerJourneyStrip = ({ current = 1 }) => {
+            const steps = [
+                { n: 1, label: '下載遊戲', to: '/download' },
+                { n: 2, label: '建立帳號', to: '/auth?mode=register' },
+                { n: 3, label: '新手上路', to: '/guides?from=start' }
+            ];
+            return (
+                <nav className="max-w-3xl mx-auto mb-7 md:mb-10" aria-label="新玩家開玩進度">
+                    <div className="rounded-2xl border border-teal-200/80 bg-white/90 p-3 sm:p-4 shadow-sm backdrop-blur-sm">
+                        <div className="flex items-center justify-between gap-1 sm:gap-3">
+                            {steps.map((step, idx) => {
+                                const active = step.n === current;
+                                const done = step.n < current;
+                                return (
+                                    <React.Fragment key={step.n}>
+                                        <Link to={step.to} className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-teal-600 text-white shadow-md' : done ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
+                                            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-white text-teal-700' : done ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-600'}`}>
+                                                {done ? <Check size={14} /> : step.n}
+                                            </span>
+                                            <span className="truncate">{step.label}</span>
+                                        </Link>
+                                        {idx < steps.length - 1 && <ArrowRight size={15} className="shrink-0 text-stone-300" aria-hidden />}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
         // --- Pages ---
         
         // 登入/註冊頁面
         const AuthPage = () => {
             const navigate = useNavigate();
-            const [isLogin, setIsLogin] = useState(true);
+            const [searchParams] = useSearchParams();
+            const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'register');
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
             const [confirmPassword, setConfirmPassword] = useState('');
             const [gameAccount, setGameAccount] = useState(''); // 遊戲帳號
             const [agreeTerms, setAgreeTerms] = useState(false); // 同意服務條款
-            const [rememberMe, setRememberMe] = useState(false); // 記住帳號密碼
+            const [rememberMe, setRememberMe] = useState(false); // 僅記住 Email，不儲存密碼
             const [showTermsModal, setShowTermsModal] = useState(false); // 顯示服務條款彈窗
             const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false); // 顯示忘記密碼彈窗
             const [resetEmail, setResetEmail] = useState(''); // 重設密碼用的 Email
@@ -3113,18 +3144,19 @@
             const [newPasswordConfirm, setNewPasswordConfirm] = useState(''); // 確認新密碼
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState('');
+
+            useEffect(() => {
+                if (searchParams.get('mode') === 'register') setIsLogin(false);
+            }, [searchParams]);
             
-            // 載入記住的帳號密碼
+            // 僅載入記住的 Email；密碼不應儲存在瀏覽器
             useEffect(() => {
                 const savedEmail = localStorage.getItem('rememberedEmail');
-                const savedPassword = localStorage.getItem('rememberedPassword');
                 if (savedEmail) {
                     setEmail(savedEmail);
                     setRememberMe(true);
                 }
-                if (savedPassword) {
-                    setPassword(atob(savedPassword)); // 簡單解碼（非安全加密）
-                }
+                localStorage.removeItem('rememberedPassword');
             }, []);
             
             // 檢測是否為密碼重設模式（多種觸發來源都接受）：
@@ -3247,14 +3279,13 @@
                             else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) errText = '網路連線失敗，請檢查網路或稍後再試';
                             setError(errText);
                         } else {
-                            // 處理記住帳號密碼
+                            // 僅記住 Email，不在本機保存密碼
                             if (rememberMe) {
                                 localStorage.setItem('rememberedEmail', email);
-                                localStorage.setItem('rememberedPassword', btoa(password)); // 簡單編碼（非安全加密）
                             } else {
                                 localStorage.removeItem('rememberedEmail');
-                                localStorage.removeItem('rememberedPassword');
                             }
+                            localStorage.removeItem('rememberedPassword');
                             showToast('登入成功！', 'success');
                             navigate('/member');
                         }
@@ -3490,6 +3521,7 @@
                         </div>
                     )}
 
+                    {!isRecoveryMode && <PlayerJourneyStrip current={2} />}
                     <div className="max-w-md mx-auto">
                         <div className="stone-panel p-5 sm:p-8 md:p-10">
                             <p className="section-kicker mx-auto mb-3 w-fit">{isRecoveryMode ? '帳號安全' : (isLogin ? '歡迎回來' : '新朋友你好')}</p>
@@ -3647,7 +3679,7 @@
                                             className="w-4 h-4 text-gold-600 bg-stone-100 border-stone-300 rounded focus:ring-gold-500 focus:ring-2"
                                         />
                                         <label htmlFor="rememberMe" className="text-stone-600 text-sm cursor-pointer select-none">
-                                            記住帳號密碼
+                                            記住 Email
                                         </label>
                                     </div>
                                 )}
@@ -4718,19 +4750,6 @@
             
             const [events, setEvents] = useState([]);
             const [banners, setBanners] = useState([]);
-            const [onlinePlayers, setOnlinePlayers] = useState(1247);
-            
-            // 模擬線上人數變化
-            useEffect(() => {
-                const interval = setInterval(() => {
-                    setOnlinePlayers(prev => {
-                        const change = Math.floor(Math.random() * 20) - 10; // -10 到 +10
-                        const newValue = prev + change;
-                        return Math.max(1200, Math.min(1500, newValue)); // 保持在 1200-1500 之間
-                    });
-                }, 5000); // 每 5 秒更新
-                return () => clearInterval(interval);
-            }, []);
             
             // Load Events for Marquee（僅載入標題等，不載入 content 以加速）
             useEffect(() => {
@@ -4774,29 +4793,6 @@
 
                         <div className="relative z-20 text-center max-w-7xl px-6 w-full">
                             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, ease: "easeOut" }}>
-                                <nav className="mb-5 flex flex-wrap items-center justify-center gap-2 px-2 sm:gap-3" aria-label="常用捷徑">
-                                    <Link
-                                        to="/download"
-                                        className="inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-black/50 px-4 py-2.5 text-sm font-black text-amber-100 shadow-lg backdrop-blur-sm transition hover:bg-black/65 hover:border-amber-300"
-                                    >
-                                        <Download size={18} className="text-amber-300 shrink-0" aria-hidden />
-                                        下載遊戲
-                                    </Link>
-                                    <Link
-                                        to="/auth"
-                                        className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/40 px-4 py-2.5 text-sm font-black text-white shadow-lg backdrop-blur-sm transition hover:bg-black/55"
-                                    >
-                                        <User size={18} className="text-gold-300 shrink-0" aria-hidden />
-                                        登入／註冊
-                                    </Link>
-                                    <Link
-                                        to="/support"
-                                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/70 px-4 py-2.5 text-sm font-black text-emerald-100 shadow-lg backdrop-blur-sm transition hover:bg-emerald-950/90"
-                                    >
-                                        <MessageCircle size={18} className="text-emerald-300 shrink-0" aria-hidden />
-                                        需要協助
-                                    </Link>
-                                </nav>
                                 <div className="mb-5 md:mb-10 animate-float drop-shadow-lg">
                                     <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-32 md:h-80 w-auto mx-auto object-contain" alt="蘇打石器" priority />
                                 </div>
@@ -4812,8 +4808,8 @@
                                     最初的感動，最純粹的冒險
                                 </p>
                                 
-                                <p className="text-sm md:text-base text-amber-100/95 font-semibold mb-8 md:mb-10 px-4 py-2 rounded-md border border-amber-700/40 bg-black/35 backdrop-blur-sm inline-block max-w-md mx-auto leading-relaxed">
-                                    營收 1% 捐贈公益 · 與你一起讓世界更好一點
+                                <p className="text-sm md:text-base text-amber-100/95 font-semibold mb-8 md:mb-10 px-4 py-2 rounded-md border border-amber-700/40 bg-black/35 backdrop-blur-sm inline-block max-w-xl mx-auto leading-relaxed">
+                                    免費遊玩 · 支援 Windows、Android、iOS · 遇到問題有真人客服
                                 </p>
                                 
                                 {/* 主要 CTA：遊戲 HUD 風格 */}
@@ -4825,17 +4821,17 @@
                                             icon={Download}
                                             onClick={handleDownload}
                                         >
-                                            前往下載頁（免費）
+                                            新玩家｜從下載開始
                                         </Button>
-                                        <p className="text-white/90 text-sm font-medium drop-shadow-md">選擇 Windows、Android 或 iOS 安裝檔</p>
+                                        <p className="text-white/90 text-sm font-medium drop-shadow-md">跟著 3 個步驟走，約 3 分鐘即可開始冒險</p>
                                     </div>
                                     <div className="relative z-[2] flex flex-wrap justify-center gap-3 mt-6 pt-5 border-t border-amber-700/30">
-                                        <Button variant="line" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={LineIcon} onClick={handleLineCommunity}>LINE 社群</Button>
-                                        <Button variant="discord" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={DiscordIcon} onClick={handleDiscord}>Discord</Button>
+                                        <Button variant="line" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={User} onClick={() => navigate('/auth')}>已有帳號｜登入</Button>
+                                        <Button variant="discord" className="flex-1 sm:flex-none sm:min-w-[140px] py-3.5 rounded-xl text-base font-bold shadow-lg" icon={MessageCircle} onClick={() => navigate('/support')}>我需要協助</Button>
                                     </div>
                                 </div>
 
-                                {/* 線上玩家計數器 */}
+                                {/* 真實、可理解的服務狀態 */}
                                 <motion.div 
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -4851,15 +4847,8 @@
                                             <User size={18} className="text-emerald-400/90" />
                                         </div>
                                         <div className="flex items-baseline gap-1.5">
-                                            <motion.span 
-                                                key={onlinePlayers}
-                                                initial={{ y: -5, opacity: 0 }}
-                                                animate={{ y: 0, opacity: 1 }}
-                                                className="text-2xl font-black text-amber-300 font-mono tabular-nums drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]"
-                                            >
-                                                {onlinePlayers.toLocaleString()}
-                                            </motion.span>
-                                            <span className="text-xs md:text-sm font-bold text-stone-300 tracking-wide">位馴獸師在線</span>
+                                            <span className="text-sm md:text-base font-black text-emerald-200">伺服器運作中</span>
+                                            <span className="text-xs md:text-sm font-bold text-stone-300 tracking-wide">· Ver 2.5</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -4926,7 +4915,7 @@
                     </section>
 
                     {/* ★ 新手 3 步開玩引導：下載 → 註冊 → 進遊戲 */}
-                    <section className="py-12 md:py-20 px-4 md:px-6 relative bg-gradient-to-b from-amber-50/70 via-white to-emerald-50/40 border-y border-amber-200/50">
+                    <section id="new-player-start" className="scroll-mt-24 py-12 md:py-20 px-4 md:px-6 relative bg-gradient-to-b from-amber-50/70 via-white to-emerald-50/40 border-y border-amber-200/50">
                         <div className="max-w-6xl mx-auto">
                             <ScrollReveal>
                                 <div className="text-center mb-8 md:mb-14">
@@ -4945,13 +4934,13 @@
                                         time: '約 1 分鐘'
                                     },
                                     {
-                                        n: '02', t: '註冊主帳號', d: 'Email 註冊免認證，可建立多個遊戲角色',
-                                        i: User, color: 'emerald', cta: '建立帳號', to: '/auth',
-                                        time: '約 30 秒'
+                                        n: '02', t: '建立會員帳號', d: '使用 Email 註冊，完成信箱驗證並填入遊戲登入帳號',
+                                        i: User, color: 'emerald', cta: '建立帳號', to: '/auth?mode=register',
+                                        time: '約 1～2 分鐘'
                                     },
                                     {
-                                        n: '03', t: '進入尼斯大陸', d: '創建角色、選擇起始寵物，開始你的冒險',
-                                        i: Sparkles, color: 'teal', cta: '查看新手攻略', to: '/guides',
+                                        n: '03', t: '跟著新手攻略', d: '確認登入帳號與伺服器，再創建角色、選擇起始寵物',
+                                        i: Sparkles, color: 'teal', cta: '查看新手攻略', to: '/guides?from=start',
                                         time: '即刻開玩'
                                     }
                                 ].map((s, idx) => {
@@ -5688,6 +5677,7 @@
         const GuidesPage = () => {
             const { id: guideIdFromUrl } = useParams();
             const navigate = useNavigate();
+            const [guideSearchParams] = useSearchParams();
             const [guides, setGuides] = useState([]);
             const [loading, setLoading] = useState(true);
             const [selectedGuide, setSelectedGuide] = useState(null);
@@ -5846,6 +5836,7 @@
                     className="page-content min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/50"
                 >
                     <div className="max-w-7xl mx-auto">
+                        {guideSearchParams.get('from') === 'start' && <PlayerJourneyStrip current={3} />}
                         <header className="text-center mb-8 md:mb-12">
                             <div className="page-hero-card max-w-2xl mx-auto mb-2">
                                 <div className="px-5 py-7 md:px-8 md:py-9 relative">
@@ -6808,19 +6799,31 @@
 
         // 下載頁面
         const DownloadPage = () => {
+            const recommendedPlatform = useMemo(() => {
+                const ua = navigator.userAgent || '';
+                if (/iPhone|iPad|iPod/i.test(ua)) return { id: 'ios', label: 'iOS（iPhone／iPad）' };
+                if (/Android/i.test(ua)) return { id: 'android', label: 'Android' };
+                return { id: 'pc', label: 'Windows PC' };
+            }, []);
+            const rememberDownload = (platform) => {
+                try { localStorage.setItem('sodasa-player-platform', platform); } catch {}
+            };
             const handlePcDownload = () => {
+                rememberDownload('pc');
                 // PC 下載連結（Google Drive）
                 window.open('https://drive.google.com/file/d/1Veg24JJ7ekhICd6p9liztaIavSdFBEhT/view?usp=sharing', '_blank');
                 showToast("正在開啟下載頁面...", "success");
             };
 
             const handleAndroidDownload = () => {
+                rememberDownload('android');
                 // Android APK 下載連結（Google Drive）
                 window.open('https://drive.google.com/file/d/1OGKAIKfkP-rk5qYY8XJ8sOY9ZgaQkT7O/view?usp=sharing', '_blank');
                 showToast("正在開啟 Android 下載頁面...", "success");
             };
 
             const handleIosDownload = () => {
+                rememberDownload('ios');
                 // iOS 下載連結
                 window.open('https://www.fir040.org/FkpeU', '_blank');
                 showToast("正在開啟 iOS 下載頁面...", "success");
@@ -6836,6 +6839,7 @@
                     <div className="page-shell-glow" aria-hidden="true" />
                     <div className="absolute inset-0 pointer-events-none opacity-[0.03]" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #8b5a2b 1px, transparent 0)', backgroundSize: '22px 22px' }} />
 
+                    <PlayerJourneyStrip current={1} />
                     {/* 標題區 */}
                     <div className="max-w-3xl mx-auto text-center mb-10 md:mb-14 relative">
                         <motion.div
@@ -6856,7 +6860,10 @@
                         </p>
                     </div>
 
-                    {/* 平台卡片 */}
+                        <div className="max-w-5xl mx-auto mb-6 rounded-2xl border border-teal-200 bg-teal-50/90 px-4 py-3 text-center text-sm font-bold text-teal-800">
+                            <span aria-hidden>✨</span> 依你目前的裝置，建議選擇 <strong>{recommendedPlatform.label}</strong>
+                        </div>
+                        {/* 平台卡片 */}
                     <div className="max-w-5xl mx-auto relative">
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                             {/* PC */}
@@ -6998,13 +7005,19 @@
                             </div>
                         </div>
 
-                        {/* CTA */}
-                        <div className="mt-10 md:mt-12 text-center">
-                            <p className="text-stone-600 font-medium mb-4">下載或安裝遇到問題？</p>
-                            <Link to="/support" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-gold-400 to-gold-600 text-white shadow-btn hover:shadow-btn-press hover:translate-y-0.5 transition-all border-2 border-gold-500/50">
-                                <MessageCircle size={22} />
-                                <span>聯繫客服</span>
-                            </Link>
+                        {/* 明確下一步 */}
+                        <div className="mt-10 md:mt-12 rounded-3xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-white p-6 md:p-8 text-center shadow-card">
+                            <p className="section-kicker mx-auto mb-3 w-fit"><CheckCircle size={15} /> 下載完成了嗎？</p>
+                            <h3 className="text-xl md:text-2xl font-black text-stone-800 mb-2">下一步：建立會員帳號</h3>
+                            <p className="text-stone-600 text-sm mb-5">完成 Email 驗證並填入遊戲登入帳號，之後查詢紀錄與客服處理會更順暢。</p>
+                            <div className="flex flex-col sm:flex-row justify-center gap-3">
+                                <Link to="/auth?mode=register" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-btn transition-all">
+                                    <UserPlus size={20} /> 建立帳號 <ArrowRight size={18} />
+                                </Link>
+                                <Link to="/support" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold border-2 border-stone-200 bg-white text-stone-700 hover:bg-stone-50 transition-all">
+                                    <MessageCircle size={20} /> 安裝遇到問題
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </motion.div>
@@ -8117,19 +8130,8 @@
                                     </div>
                                     <h3 className="font-display text-2xl font-black text-white md:text-3xl">儲值有疑問？</h3>
                                     <p className="max-w-xl text-sm leading-relaxed text-stone-300">
-                                        請備妥以下資料聯繫官方 LINE，客服將依訂單與憑證協助查核。
-                                    </p>
-                                    <ul className="grid gap-2 text-sm text-stone-200 sm:grid-cols-1">
-                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                                            <span><strong className="text-white">官網頁面截圖</strong>（含訂單資訊）</span></li>
-                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                                            <span><strong className="text-white">付款／轉帳紀錄</strong>（時間、金額）</span></li>
-                                        <li className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                                            <span><strong className="text-white">遊戲帳號</strong>與<strong className="text-white">註冊信箱</strong></span></li>
-                                    </ul>
-                                </div>
-                                <div className="shrink-0 md:pl-4">
-... 93072 bytes omitted ...
+                                        請備妥以下資料聯繫官方 LINE，客服將依訂單與憑�
+... 94309 bytes omitted ...
 event: 'DELETE', schema: 'public', table: 'donations' }, payload => {
                         setData(prev => prev.filter(d => d.id !== payload.old.id));
                     })
