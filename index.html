@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
-    <title>蘇打石器：公益服 | 最人情味的石器時代私服 2.5</title>
+    <title>蘇打石器｜今天，就回尼斯大陸</title>
     <!-- ⚠️ 已移除 no-cache meta：Service Worker (sw.js) 已透過 CACHE_NAME 版本號自動失效舊快取，
          保留 no-cache 會強制每次重新下載所有靜態資源（首屏速度減半），是錯誤設定。 -->
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="蘇打石器 - 經典石器時代 2.5 私服，完美復刻原汁原味，純淨遊戲環境，長久穩定經營。免費遊玩，公平競技，最有人情味的石器時代社群。">
+    <meta name="description" content="蘇打石器經典 2.5 公益服，免費遊玩、支援 Windows／Android／iOS。下載、建立帳號、新手上路一次完成，遇到問題有真人客服。">
     <meta name="keywords" content="石器時代,石器私服,蘇打石器,2.5版本,石器時代私服,免費遊戲,線上遊戲,MMORPG,復古遊戲,經典遊戲">
     <meta name="author" content="蘇打石器團隊">
     <meta name="robots" content="index, follow">
@@ -18,17 +18,17 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sodasa.org/">
-    <meta property="og:title" content="蘇打石器 - 最人情味的石器時代私服">
-    <meta property="og:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定，免費遊玩！重溫經典，找回童年的感動。">
-    <meta property="og:image" content="https://sodasa.org/images/og-ux-v3.jpg">
+    <meta property="og:title" content="蘇打石器｜今天，就回尼斯大陸">
+    <meta property="og:description" content="免費遊玩・跨裝置冒險。從下載到新手上路，我們一步一步帶你開始。">
+    <meta property="og:image" content="https://sodasa.org/images/og-player-v4.png">
     <meta property="og:locale" content="zh_TW">
     <meta property="og:site_name" content="蘇打石器">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="蘇打石器 - 最人情味的石器時代私服">
-    <meta name="twitter:description" content="完美復刻石器時代 2.5 版本，純淨環境，長久穩定">
-    <meta name="twitter:image" content="https://sodasa.org/images/og-ux-v3.jpg">
+    <meta name="twitter:title" content="蘇打石器｜今天，就回尼斯大陸">
+    <meta name="twitter:description" content="免費遊玩・跨裝置冒險。從下載到新手上路，我們一步一步帶你開始。">
+    <meta name="twitter:image" content="https://sodasa.org/images/og-player-v4.png">
     
     <!-- Meta Pixel（Facebook/Instagram 廣告用）：請到 Meta 事件管理工具取得 Pixel ID，替換下方的 YOUR_PIXEL_ID -->
     <script>
@@ -1592,6 +1592,117 @@
         .h-section { font-size: clamp(1.375rem, 2.5vw, 1.75rem); font-weight: 800; letter-spacing: -0.015em; line-height: 1.25; }
         .h-card    { font-size: 1.125rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; }
         .text-meta { font-size: 0.8125rem; color: rgba(120, 113, 108, 1); }
+
+        /* ========== 2026 玩家入口大改版 ========== */
+        .home-v3 {
+            --home-ink: #1b2a25;
+            --home-teal: #0f766e;
+            --home-mint: #2dd4bf;
+            --home-gold: #f5b82e;
+            --home-paper: #fbf6e8;
+            color: var(--home-ink);
+            background:
+                radial-gradient(circle at 8% 18%, rgba(45, 212, 191, 0.12), transparent 24rem),
+                radial-gradient(circle at 92% 62%, rgba(245, 184, 46, 0.14), transparent 26rem),
+                var(--home-paper);
+        }
+        .home-v3-hero {
+            isolation: isolate;
+            background: #13221d;
+        }
+        .home-v3-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(9, 20, 17, 0.97) 0%, rgba(9, 20, 17, 0.86) 42%, rgba(9, 20, 17, 0.42) 72%, rgba(9, 20, 17, 0.68) 100%),
+                linear-gradient(180deg, rgba(8, 18, 15, 0.3), rgba(8, 18, 15, 0.86));
+        }
+        .home-v3-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.22;
+            background-image: radial-gradient(circle, rgba(255, 232, 175, 0.75) 1px, transparent 1.5px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(90deg, #000, transparent 76%);
+        }
+        .home-v3-panel {
+            position: relative;
+            border: 1px solid rgba(255, 226, 160, 0.25);
+            background: linear-gradient(145deg, rgba(16, 38, 31, 0.92), rgba(8, 21, 17, 0.86));
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(16px);
+        }
+        .home-v3-panel::before {
+            content: '';
+            position: absolute;
+            inset: 7px;
+            border: 1px solid rgba(45, 212, 191, 0.16);
+            border-radius: 1.25rem;
+            pointer-events: none;
+        }
+        .home-v3-step {
+            position: relative;
+        }
+        .home-v3-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 2.65rem;
+            left: 1.18rem;
+            width: 2px;
+            height: calc(100% - 1.25rem);
+            background: linear-gradient(#f5b82e, rgba(45, 212, 191, 0.35));
+        }
+        .home-v3-path-card {
+            position: relative;
+            overflow: hidden;
+            border: 1.5px solid rgba(15, 118, 110, 0.18);
+            background: rgba(255,255,255,0.88);
+            box-shadow: 0 18px 50px -30px rgba(15, 53, 45, 0.7);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .home-v3-path-card::after {
+            content: '';
+            position: absolute;
+            inset: auto -2rem -3rem auto;
+            width: 8rem;
+            height: 8rem;
+            border-radius: 999px;
+            background: var(--path-glow, rgba(45, 212, 191, 0.14));
+            pointer-events: none;
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .home-v3-path-card:hover {
+                transform: translateY(-5px);
+                border-color: rgba(15, 118, 110, 0.45);
+                box-shadow: 0 26px 60px -30px rgba(15, 53, 45, 0.75);
+            }
+        }
+        .home-v3-news {
+            background:
+                linear-gradient(135deg, rgba(17, 45, 37, 0.98), rgba(15, 82, 71, 0.96)),
+                #123c34;
+            box-shadow: 0 24px 60px -35px rgba(4, 47, 40, 0.9);
+        }
+        .home-v3-platform {
+            background: linear-gradient(145deg, #fff, #f4fbf8);
+            border: 1px solid rgba(15, 118, 110, 0.14);
+            box-shadow: 0 12px 35px -26px rgba(15, 53, 45, 0.7);
+        }
+        @media (max-width: 1023px) {
+            .home-v3-hero::before {
+                background: linear-gradient(180deg, rgba(8, 20, 16, 0.82) 0%, rgba(8, 20, 16, 0.73) 44%, rgba(8, 20, 16, 0.94) 100%);
+            }
+            .home-v3-hero::after { mask-image: linear-gradient(#000, transparent 74%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .home-v3 * { scroll-behavior: auto !important; }
+        }
     </style>
 </head>
 <body>
@@ -1604,20 +1715,31 @@
     <div id="root"></div>
 
     <!-- 白畫面提示：載入後顯示數秒，若畫面異常可依提示操作 -->
-    <div id="white-screen-hint" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.5s ease;">
+    <div id="white-screen-hint" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,0.85);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.5s ease;">
         💡 若畫面空白，請按 <kbd style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:6px;">Ctrl+F5</kbd>（Mac: Cmd+Shift+R）強制重新整理
     </div>
     <script>
         (function(){
             var hint = document.getElementById('white-screen-hint');
             if (!hint) return;
+            var root = document.getElementById('root');
             var hideHint = function(){
                 hint.style.opacity = '0';
                 setTimeout(function(){ hint.style.display = 'none'; }, 500);
             };
             window.addEventListener('load', function(){
-                setTimeout(hideHint, 5000);
+                setTimeout(function(){
+                    if (!root || root.children.length === 0) {
+                        hint.style.display = 'block';
+                        hint.style.opacity = '1';
+                    }
+                }, 6500);
             });
+            if (root) {
+                new MutationObserver(function(){
+                    if (root.children.length > 0) hideHint();
+                }).observe(root, { childList: true });
+            }
         })();
     </script>
 
@@ -5005,6 +5127,280 @@
                                     </motion.div>
                                     </ScrollReveal>
                                 ))}
+                            </div>
+                        </div>
+                    </section>
+                </motion.div>
+            );
+        };
+
+        const HomePageV3 = () => {
+            const navigate = useNavigate();
+            const [events, setEvents] = useState([]);
+            const [banners, setBanners] = useState([]);
+
+            useEffect(() => {
+                const loadHomeData = async () => {
+                    const [loadedEvents, loadedBanners] = await Promise.all([
+                        getSupabaseData(DB_TABLES.EVENTS, { columns: 'id, title, tag, timestamp', limit: 8 }),
+                        getSupabaseData(DB_TABLES.ANNOUNCEMENTS, { columns: 'id, title, subtitle, link, icon, badge, is_active, sort_order' })
+                    ]);
+                    setEvents((loadedEvents || []).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
+                    setBanners((loadedBanners || []).filter(b => b.is_active).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
+                };
+                loadHomeData();
+                const refresh = () => loadHomeData();
+                window.addEventListener('storage-update', refresh);
+                window.addEventListener('banner-updated', refresh);
+                return () => {
+                    window.removeEventListener('storage-update', refresh);
+                    window.removeEventListener('banner-updated', refresh);
+                };
+            }, []);
+
+            const playerPaths = [
+                {
+                    label: '第一次來', title: '我想開始玩', desc: '先選擇裝置下載，再建立免費帳號，照著新手路線就能進入遊戲。',
+                    cta: '從下載開始', to: '/download', icon: Download,
+                    accent: 'text-amber-700 bg-amber-100', glow: 'rgba(245, 184, 46, 0.2)'
+                },
+                {
+                    label: '老玩家回歸', title: '我已經有帳號', desc: '登入會員中心，查看遊戲帳號、儲值紀錄與個人資料。',
+                    cta: '登入會員', to: '/auth', icon: User,
+                    accent: 'text-teal-700 bg-teal-100', glow: 'rgba(45, 212, 191, 0.2)'
+                },
+                {
+                    label: '遇到問題', title: '我需要有人幫忙', desc: '下載、登入、角色資料或付款問題，都能直接找到真人客服。',
+                    cta: '前往客服', to: '/support', icon: MessageCircle,
+                    accent: 'text-sky-700 bg-sky-100', glow: 'rgba(56, 189, 248, 0.18)'
+                }
+            ];
+
+            const quickSteps = [
+                { n: '01', title: '下載遊戲', text: '自動推薦適合你的版本', icon: Download },
+                { n: '02', title: '建立帳號', text: 'Email 驗證，約 1 分鐘', icon: UserPlus },
+                { n: '03', title: '進入冒險', text: '照著新手攻略建立角色', icon: Sparkles }
+            ];
+
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="home-v3"
+                >
+                    <section className="home-v3-hero relative min-h-[92dvh] overflow-hidden pt-[max(6.5rem,calc(5rem+env(safe-area-inset-top,0px)))] pb-14 md:pt-28 md:pb-20">
+                        <div className="absolute inset-0 z-0">
+                            <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="尼斯大陸與可愛恐龍" className="w-full h-full object-cover object-center" priority />
+                        </div>
+                        <HeroParticles />
+
+                        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-7 lg:px-10">
+                            <div className="grid lg:grid-cols-[1.08fr_.92fr] gap-10 lg:gap-14 items-center">
+                                <div className="text-white max-w-2xl">
+                                    <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                        <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-300/30 bg-emerald-950/60 px-4 py-2 text-sm font-black text-emerald-100 backdrop-blur-md shadow-lg">
+                                            <span className="relative flex h-2.5 w-2.5">
+                                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60"></span>
+                                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                                            </span>
+                                            伺服器開放中
+                                            <span className="text-emerald-300/60">·</span>
+                                            <span className="font-mono text-amber-200">Ver 2.5</span>
+                                        </div>
+
+                                        <h1 className="mt-7 font-display text-[2.55rem] leading-[1.08] sm:text-5xl lg:text-[4.5rem] font-black tracking-[-0.045em] text-white drop-shadow-2xl">
+                                            回到最熟悉的<br />
+                                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-orange-400">尼斯大陸</span>
+                                        </h1>
+                                        <p className="mt-6 max-w-xl text-base sm:text-lg leading-8 text-stone-200 font-semibold drop-shadow-md">
+                                            經典石器 2.5、免費遊玩、跨裝置冒險。沒有複雜門檻，從下載到建立角色，我們一步一步帶你開始。
+                                        </p>
+
+                                        <div className="mt-8 flex flex-col sm:flex-row gap-3.5">
+                                            <button
+                                                onClick={() => navigate('/download')}
+                                                className="group inline-flex min-h-[56px] items-center justify-center gap-3 rounded-2xl bg-gradient-to-b from-amber-300 to-amber-500 px-7 py-4 text-lg font-black text-stone-900 shadow-[0_12px_35px_rgba(245,184,46,0.3),0_4px_0_#9a5b12] transition-all hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-400 active:translate-y-1 active:shadow-none"
+                                            >
+                                                <Download size={22} strokeWidth={2.7} />
+                                                免費下載，開始遊戲
+                                                <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                                            </button>
+                                            <Link
+                                                to="/auth"
+                                                className="inline-flex min-h-[56px] items-center justify-center gap-2.5 rounded-2xl border-2 border-white/20 bg-black/35 px-6 py-4 text-base font-black text-white backdrop-blur-md transition-all hover:border-emerald-300/50 hover:bg-emerald-950/65"
+                                            >
+                                                <User size={20} /> 已有帳號，直接登入
+                                            </Link>
+                                        </div>
+
+                                        <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2.5 text-sm font-bold text-stone-200/95">
+                                            <span className="inline-flex items-center gap-1.5"><CheckCircle size={16} className="text-emerald-300" /> 完全免費</span>
+                                            <span className="inline-flex items-center gap-1.5"><Laptop size={16} className="text-emerald-300" /> 電腦、手機都能玩</span>
+                                            <span className="inline-flex items-center gap-1.5"><HeartHandshake size={16} className="text-emerald-300" /> 真人客服協助</span>
+                                        </div>
+                                    </motion.div>
+                                </div>
+
+                                <motion.aside
+                                    initial={{ opacity: 0, x: 28 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.18, duration: 0.55 }}
+                                    className="home-v3-panel rounded-[1.7rem] p-5 sm:p-7 lg:p-8"
+                                    aria-label="新玩家快速開始"
+                                >
+                                    <div className="relative z-10">
+                                        <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-28 lg:h-32 w-auto object-contain mx-auto drop-shadow-[0_10px_25px_rgba(0,0,0,0.45)]" alt="蘇打石器" priority />
+                                        <div className="mt-5 flex items-end justify-between gap-4 border-b border-white/10 pb-5">
+                                            <div>
+                                                <p className="text-xs font-black tracking-[0.18em] text-amber-300">NEW PLAYER ROUTE</p>
+                                                <h2 className="mt-1.5 text-2xl font-black text-white">第一次玩？照這條路走</h2>
+                                            </div>
+                                            <span className="hidden sm:inline-flex rounded-full bg-emerald-400/15 px-3 py-1.5 text-xs font-bold text-emerald-200 border border-emerald-300/20">約 3 分鐘</span>
+                                        </div>
+
+                                        <ol className="mt-5 space-y-1">
+                                            {quickSteps.map((step) => (
+                                                <li key={step.n} className="home-v3-step flex gap-4 pb-5 last:pb-1">
+                                                    <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/15 text-xs font-black text-amber-200">{step.n}</span>
+                                                    <div className="pt-0.5">
+                                                        <div className="flex items-center gap-2 text-white font-black"><step.icon size={17} className="text-emerald-300" /> {step.title}</div>
+                                                        <p className="mt-1 text-sm leading-6 text-stone-400">{step.text}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ol>
+
+                                        <Link to="/download" className="mt-5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3.5 font-black text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-400">
+                                            帶我開始 <ArrowRight size={18} />
+                                        </Link>
+                                        <p className="mt-3 text-center text-xs font-semibold text-stone-400">卡住時隨時找客服，不用自己猜</p>
+                                    </div>
+                                </motion.aside>
+                            </div>
+                        </div>
+                    </section>
+
+                    {banners.length > 0 && (
+                        <section className="border-b border-amber-300/40 bg-amber-100/90">
+                            <div className="max-w-7xl mx-auto px-5 py-3.5">
+                                <Link to={banners[0].link || '/events'} className="flex items-center gap-3 rounded-xl text-stone-800 group">
+                                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-stone-900"><Megaphone size={18} /></span>
+                                    {banners[0].badge && <span className="hidden sm:inline-flex rounded-full bg-red-500 px-2.5 py-1 text-xs font-black text-white">{banners[0].badge}</span>}
+                                    <span className="min-w-0 flex-1 truncate font-black">{banners[0].title}</span>
+                                    <span className="hidden md:block truncate text-sm font-semibold text-stone-600">{banners[0].subtitle}</span>
+                                    <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" />
+                                </Link>
+                            </div>
+                        </section>
+                    )}
+
+                    <section className="px-5 py-14 sm:py-20" aria-labelledby="choose-path-title">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="max-w-2xl">
+                                <p className="section-kicker">你的下一步</p>
+                                <h2 id="choose-path-title" className="mt-4 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-900">不用找選單，選你現在的狀況</h2>
+                                <p className="mt-3 text-stone-600 font-semibold leading-7">每一條路都只保留現在真正需要的資訊。</p>
+                            </div>
+                            <div className="mt-9 grid md:grid-cols-3 gap-5">
+                                {playerPaths.map((path) => (
+                                    <Link key={path.title} to={path.to} className="home-v3-path-card group rounded-3xl p-6 sm:p-7" style={{ '--path-glow': path.glow }}>
+                                        <div className={`relative z-10 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${path.accent}`}><path.icon size={24} /></div>
+                                        <p className="relative z-10 mt-5 text-xs font-black tracking-[0.15em] text-stone-400">{path.label}</p>
+                                        <h3 className="relative z-10 mt-1.5 text-2xl font-black text-stone-900">{path.title}</h3>
+                                        <p className="relative z-10 mt-3 min-h-[4.5rem] text-sm font-semibold leading-6 text-stone-600">{path.desc}</p>
+                                        <span className="relative z-10 mt-5 inline-flex items-center gap-2 font-black text-teal-700">{path.cta} <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" /></span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="px-5 pb-14 sm:pb-20">
+                        <div className="home-v3-news max-w-7xl mx-auto overflow-hidden rounded-[2rem] p-6 sm:p-8 lg:p-10 text-white">
+                            <div className="grid lg:grid-cols-[.72fr_1.28fr] gap-8 lg:gap-12">
+                                <div>
+                                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-300 text-stone-900"><Megaphone size={23} /></span>
+                                    <p className="mt-5 text-xs font-black tracking-[0.18em] text-emerald-300">TRIBE NEWS</p>
+                                    <h2 className="mt-2 font-display text-3xl font-black">部落正在發生什麼？</h2>
+                                    <p className="mt-3 text-sm font-semibold leading-6 text-emerald-50/70">維護、福利與活動集中在這裡，不用一進站就被彈窗打斷。</p>
+                                    <Link to="/events" className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 font-black transition-colors hover:bg-white/15">查看全部活動 <ArrowRight size={17} /></Link>
+                                </div>
+                                <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-black/10 px-5 sm:px-6">
+                                    {(events.length ? events.slice(0, 3) : [{ id: 'empty', title: '目前沒有新的活動公告', tag: '' }]).map((event, index) => {
+                                        const tag = EVENT_TAGS.find(t => t.id === event.tag)?.label || (index === 0 ? '最新' : '公告');
+                                        return (
+                                            <Link key={event.id || index} to="/events" className="group flex items-center gap-4 py-5">
+                                                <span className="w-12 shrink-0 text-xs font-black text-amber-300">{tag}</span>
+                                                <span className="min-w-0 flex-1 truncate font-bold text-stone-100 group-hover:text-white">{event.title}</span>
+                                                <ArrowRight size={17} className="shrink-0 text-emerald-300 transition-transform group-hover:translate-x-1" />
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="border-y border-teal-900/10 bg-white/65 px-5 py-14 sm:py-20" aria-labelledby="anywhere-title">
+                        <div className="max-w-7xl mx-auto grid lg:grid-cols-[.8fr_1.2fr] gap-10 lg:gap-16 items-center">
+                            <div>
+                                <p className="section-kicker">跨裝置冒險</p>
+                                <h2 id="anywhere-title" className="mt-4 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-900">在哪裡，都能回到部落</h2>
+                                <p className="mt-4 text-stone-600 font-semibold leading-7">Windows、Android、iOS 使用同一組遊戲帳號。換裝置不用重練，角色資料跟著你走。</p>
+                                <Link to="/download" className="mt-6 inline-flex items-center gap-2 font-black text-teal-700 hover:text-teal-600">查看下載與安裝說明 <ArrowRight size={17} /></Link>
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-4">
+                                {[
+                                    { name: 'Windows', sub: '完整體驗', icon: Laptop, color: 'bg-sky-100 text-sky-700' },
+                                    { name: 'Android', sub: '隨時出發', icon: Smartphone, color: 'bg-emerald-100 text-emerald-700' },
+                                    { name: 'iOS', sub: '手機同步', icon: Smartphone, color: 'bg-stone-100 text-stone-700' }
+                                ].map((item) => (
+                                    <div key={item.name} className="home-v3-platform rounded-2xl p-5 text-center">
+                                        <span className={`mx-auto flex h-12 w-12 items-center justify-center rounded-2xl ${item.color}`}><item.icon size={24} /></span>
+                                        <h3 className="mt-4 font-black text-stone-900">{item.name}</h3>
+                                        <p className="mt-1 text-sm font-semibold text-stone-500">{item.sub}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="px-5 py-14 sm:py-20">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="text-center max-w-2xl mx-auto">
+                                <p className="section-kicker">我們在意的事</p>
+                                <h2 className="mt-4 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-900">好玩之外，也要玩得安心</h2>
+                            </div>
+                            <div className="mt-9 grid md:grid-cols-3 gap-5">
+                                {[
+                                    { title: '公平環境', desc: '商城以便利道具為主，成長與裝備回到遊戲本身。', icon: ShieldCheck },
+                                    { title: '經典 2.5', desc: '熟悉的地水火風與回合策略，保留記憶中的節奏。', icon: Flame },
+                                    { title: '有人回應', desc: '遇到問題能找到真人，不必在社群裡反覆求救。', icon: HeartHandshake }
+                                ].map((item) => (
+                                    <div key={item.title} className="rounded-3xl border border-stone-200 bg-white p-6 sm:p-7 shadow-sm">
+                                        <item.icon size={25} className="text-teal-700" />
+                                        <h3 className="mt-4 text-xl font-black text-stone-900">{item.title}</h3>
+                                        <p className="mt-2 text-sm font-semibold leading-6 text-stone-600">{item.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="px-5 pb-20 sm:pb-24">
+                        <div className="max-w-7xl mx-auto rounded-[2rem] bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 px-6 py-9 sm:px-10 sm:py-11 shadow-[0_24px_60px_-32px_rgba(154,91,18,0.75)]">
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-7">
+                                <div>
+                                    <p className="text-sm font-black tracking-[0.15em] text-stone-700">READY FOR ADVENTURE?</p>
+                                    <h2 className="mt-2 font-display text-3xl sm:text-4xl font-black text-stone-950">今天，就回尼斯大陸看看</h2>
+                                    <p className="mt-3 font-bold text-stone-700">免費下載；需要協助時，我們就在這裡。</p>
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <Link to="/download" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-stone-950 px-6 py-3.5 font-black text-white hover:bg-stone-800"><Download size={20} /> 開始遊戲</Link>
+                                    <Link to="/support" className="inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl border-2 border-stone-900/20 bg-white/70 px-6 py-3.5 font-black text-stone-900 hover:bg-white"><MessageCircle size={20} /> 問客服</Link>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -14949,9 +15345,11 @@
             // 首頁自動彈窗：不依賴「一進站就寫 session」（舊版會誤鎖死導致永遠不彈）
             // 離開首頁會重置計時狀態，再次進入首頁仍會自動開（除非勾「不再自動」）
             // 延遲須晚於全站 Loading（z-[100]）結束與退場動畫
+            // 玩家體驗改版：活動保留右下角入口，但不再自動打斷第一次進站流程。
+            const HOMEPAGE_POPUP_ENABLED = false;
             const HOMEPAGE_POPUP_DELAY_MS = 2800;
             useEffect(() => {
-                if (neverAuto) return;
+                if (!HOMEPAGE_POPUP_ENABLED || neverAuto) return;
                 try {
                     HOMEPAGE_POPUP_LEGACY_KEYS.forEach((k) => sessionStorage.removeItem(k));
                 } catch (e) { /* 私密模式等 */ }
@@ -15033,7 +15431,7 @@
                             onClick={handleDismiss}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDismiss(e); } }}
                             className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-stone-600 text-white flex items-center justify-center hover:bg-stone-500 transition-colors text-xs font-bold z-10"
-                            aria-label="關閉浮動按鈕（仍可在首頁自動彈出活動）"
+                            aria-label="關閉活動浮動按鈕"
                         >
                             <X size={12} strokeWidth={3} />
                         </span>
@@ -15064,7 +15462,7 @@
                                             <Megaphone size={24} className="text-fire-500" />
                                             最新活動
                                         </h3>
-                                        <button onClick={() => setShowModal(false)} className="p-2 rounded-xl hover:bg-stone-100 text-stone-500">
+                                        <button onClick={() => setShowModal(false)} className="p-2 rounded-xl hover:bg-stone-100 text-stone-500" aria-label="關閉最新活動視窗">
                                             <X size={20} />
                                         </button>
                                     </div>
@@ -15383,10 +15781,15 @@
                                         <span className="hidden xl:inline">會員</span>
                                     </Link>
                                 ) : (
-                                    <Link to="/auth" className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-bold bg-gradient-to-b from-amber-400 to-amber-600 text-stone-900 hover:from-amber-300 hover:to-amber-500 shadow-[0_2px_0_rgba(0,0,0,0.35)] border border-amber-300/50" title="登入/註冊">
-                                        <User className="w-4 h-4 shrink-0" />
-                                        <span className="hidden xl:inline">登入</span>
-                                    </Link>
+                                    <>
+                                        <Link to="/auth" className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-2 rounded-md text-sm font-bold text-stone-300 hover:text-white" title="登入/註冊">
+                                            <User className="w-4 h-4 shrink-0" /> 登入
+                                        </Link>
+                                        <Link to="/download" className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-black bg-gradient-to-b from-amber-300 to-amber-500 text-stone-900 hover:from-amber-200 hover:to-amber-400 shadow-[0_3px_0_#7c4a12] border border-amber-200/60" title="免費下載遊戲">
+                                            <Download className="w-4 h-4 shrink-0" />
+                                            <span>開始遊戲</span>
+                                        </Link>
+                                    </>
                                 )}
                                 
                                 {(user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'super_admin') && (
@@ -15404,7 +15807,7 @@
                     <main id="main-content" className="flex-grow" tabIndex={-1}>
                         <AnimatePresence mode="wait">
                             <Routes location={location} key={location.pathname}>
-                                <Route path="/" element={<HomePage />} />
+                                <Route path="/" element={<HomePageV3 />} />
                                 <Route path="/auth" element={<AuthPage />} />
                                 <Route path="/member" element={<MemberPage />} />
                                 <Route path="/recharge" element={<RechargePage />} />
