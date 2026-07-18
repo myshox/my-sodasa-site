@@ -1829,6 +1829,98 @@
             background: color-mix(in srgb, var(--hero-accent) 11%, transparent);
             color: color-mix(in srgb, var(--hero-accent) 70%, white);
         }
+        /* ========== 舒適版：所有內頁使用同一套低飽和部落紙張語言 ========== */
+        .player-shell {
+            background:
+                radial-gradient(circle at 0% 18%, rgba(116, 165, 135, 0.08), transparent 27rem),
+                radial-gradient(circle at 100% 52%, rgba(206, 163, 93, 0.08), transparent 30rem),
+                linear-gradient(180deg, #f7faf6 0%, #fbf8f1 45%, #f7f2e8 100%);
+        }
+        .player-shell .stone-panel {
+            border-color: rgba(92, 80, 62, 0.13);
+            border-radius: 1.35rem;
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 14px 36px -30px rgba(61, 48, 35, 0.42);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .player-shell .stone-panel:hover {
+                transform: none;
+                border-color: rgba(92, 80, 62, 0.2);
+                box-shadow: 0 18px 42px -32px rgba(61, 48, 35, 0.48);
+            }
+        }
+        .player-page-header .page-hero-card {
+            --hero-accent: #4f806a;
+            --hero-tint: #edf5ef;
+            --hero-ink: #294338;
+            border-color: color-mix(in srgb, var(--hero-accent) 22%, #ded7c9);
+            background:
+                radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--hero-accent) 11%, transparent), transparent 18rem),
+                linear-gradient(135deg, rgba(255,255,255,0.98), var(--hero-tint));
+            box-shadow: 0 18px 44px -34px rgba(61, 48, 35, 0.42);
+        }
+        .player-page-header .page-hero-card::after {
+            opacity: 0.045;
+            background-image: radial-gradient(circle, #514838 1px, transparent 1.2px);
+        }
+        .page-hero-card--download { --hero-accent: #3d7f8b; --hero-tint: #edf7f8; --hero-ink: #28545d; }
+        .page-hero-card--guides { --hero-accent: #9b7541; --hero-tint: #faf3e7; --hero-ink: #674b28; }
+        .page-hero-card--events { --hero-accent: #a65f59; --hero-tint: #fbefec; --hero-ink: #70403c; }
+        .page-hero-card--auth { --hero-accent: #4b836f; --hero-tint: #edf6f1; --hero-ink: #315847; }
+        .page-hero-card--member { --hero-accent: #52768f; --hero-tint: #eef4f7; --hero-ink: #365063; }
+        .page-hero-card--recharge { --hero-accent: #a47a37; --hero-tint: #fbf5e8; --hero-ink: #6d5024; }
+        .page-hero-card--support { --hero-accent: #6c6f9d; --hero-tint: #f1f1f8; --hero-ink: #474a6b; }
+        .page-hero-card--terms { --hero-accent: #6f685e; --hero-tint: #f3f1ed; --hero-ink: #4c473f; }
+        .page-hero-card .section-title {
+            color: var(--hero-ink) !important;
+            text-shadow: none;
+        }
+        .page-hero-card .section-sub { color: #69645b !important; }
+        .page-hero-card .section-kicker {
+            color: var(--hero-ink) !important;
+            border-color: color-mix(in srgb, var(--hero-accent) 20%, transparent) !important;
+            background: color-mix(in srgb, var(--hero-accent) 9%, white) !important;
+        }
+        .player-page-header__icon {
+            color: white !important;
+            background: var(--hero-accent) !important;
+            border-color: rgba(255,255,255,0.72) !important;
+            box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--hero-accent) 70%, #000) !important;
+        }
+        .page-hero-note {
+            border-color: color-mix(in srgb, var(--hero-accent) 16%, #ded7c9);
+            background: rgba(255,255,255,0.72);
+            box-shadow: none;
+            backdrop-filter: blur(6px);
+            color: var(--hero-ink) !important;
+        }
+        .page-hero-note p:last-child { color: #6f6a61 !important; }
+        .page-hero-fact {
+            border-color: color-mix(in srgb, var(--hero-accent) 18%, transparent);
+            background: color-mix(in srgb, var(--hero-accent) 8%, white);
+            color: var(--hero-ink);
+        }
+        .recharge-page .recharge-flow-card {
+            border-color: rgba(164, 122, 55, 0.16);
+            background: rgba(255,255,255,0.96);
+            box-shadow: 0 18px 46px -36px rgba(91, 67, 31, 0.45);
+        }
+        .recharge-trust-strip article {
+            border: 1px solid rgba(164,122,55,0.14);
+            background: rgba(255,255,255,0.78);
+        }
+        .auth-story-panel {
+            background:
+                radial-gradient(circle at 88% 12%, rgba(246, 214, 150, 0.16), transparent 17rem),
+                linear-gradient(145deg, #426b5b, #294a3e) !important;
+            box-shadow: 0 22px 52px -40px rgba(41, 74, 62, 0.65);
+        }
+        .player-context-section {
+            background:
+                radial-gradient(circle at 85% 20%, rgba(246,214,150,0.13), transparent 20rem),
+                linear-gradient(135deg, #385f50, #2b493e);
+            box-shadow: 0 22px 50px -40px rgba(41,74,62,0.62);
+        }
         .player-shell .section-kicker {
             color: #0f766e;
             background: rgba(204, 251, 241, 0.75);
@@ -6435,27 +6527,27 @@
                             )}
 
                             {/* 標題 + 作者區 */}
-                            <div className="relative overflow-hidden rounded-3xl border border-amber-300/20 bg-gradient-to-br from-stone-900 via-[#3b2412] to-[#12372f] p-6 text-white shadow-2xl md:p-9">
-                                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-300/15 blur-3xl" aria-hidden />
+                            <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-[#fffdf8] p-6 text-stone-800 shadow-[0_18px_46px_-36px_rgba(91,67,31,0.45)] md:p-9">
+                                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-200/35 blur-3xl" aria-hidden />
                                 <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className={`${catInfo.color} text-white px-3 py-1.5 rounded-lg text-sm font-semibold`}>{catInfo.icon} {catInfo.label}</span>
-                                    {guide.is_pinned && <span className="inline-flex items-center gap-1 rounded-lg border border-amber-300/30 bg-amber-300/15 px-2.5 py-1 text-xs font-black text-amber-200"><Star size={14} fill="currentColor" /> 精選攻略</span>}
+                                    {guide.is_pinned && <span className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-800"><Star size={14} fill="currentColor" /> 精選攻略</span>}
                                 </div>
-                                <h1 className="text-2xl md:text-4xl font-black text-white mb-6 leading-snug">
+                                <h1 className="text-2xl md:text-4xl font-black text-stone-900 mb-6 leading-snug">
                                     {guide.title}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-4 border-y border-white/10 py-4">
+                                <div className="flex flex-wrap items-center gap-4 border-y border-stone-200 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-amber-300/15 ring-1 ring-amber-200/25 flex items-center justify-center shrink-0">
-                                            <User size={24} className="text-amber-200" />
+                                        <div className="w-12 h-12 rounded-full bg-amber-100 ring-1 ring-amber-200 flex items-center justify-center shrink-0">
+                                            <User size={24} className="text-amber-700" />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-white">{guide.author_name || '管理員'}</p>
-                                            <p className="text-sm text-stone-400">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                            <p className="font-bold text-stone-800">{guide.author_name || '管理員'}</p>
+                                            <p className="text-sm text-stone-500">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm text-stone-300 ml-auto flex-wrap">
+                                    <div className="flex items-center gap-4 text-sm text-stone-500 ml-auto flex-wrap">
                                         <span className="flex items-center gap-1.5"><Eye size={18} />{guide.views || 0} 次瀏覽</span>
                                         <span className="flex items-center gap-1.5"><Heart size={18} />{guide.likes || 0} 人覺得有幫助</span>
                                         <button
@@ -6463,7 +6555,7 @@
                                                 const url = `${window.location.origin}${(window.location.pathname || '/').replace(/\/$/, '')}/#/guides/${guide.id}`;
                                                 navigator.clipboard?.writeText(url).then(() => showToast('連結已複製到剪貼簿', 'success')).catch(() => showToast('無法複製，請手動複製網址列', 'error'));
                                             }}
-                                            className="flex items-center gap-1.5 text-amber-200 hover:text-amber-100 transition-colors font-bold"
+                                            className="flex items-center gap-1.5 text-amber-700 hover:text-amber-600 transition-colors font-bold"
                                             title="複製分享連結"
                                         >
                                             <Share2 size={18} />
@@ -8201,7 +8293,7 @@
                                         <div className={`p-6 sm:p-8 ${index === 0 ? 'md:p-10' : ''}`}>
                                             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    {index === 0 && <span className="rounded-lg bg-rose-600 px-3 py-1 text-sm font-black text-white shadow-sm">最新焦點</span>}
+                                                    {index === 0 && <span className="rounded-lg bg-rose-100 px-3 py-1 text-sm font-black text-rose-700 ring-1 ring-rose-200">最新焦點</span>}
                                                     <span className={`${tag.color} px-3 py-1 rounded-lg text-sm font-bold tracking-wide shadow-sm`}>
                                                         {tag.label}
                                                     </span>
@@ -8552,18 +8644,18 @@
             // 主帳號未綁定時擋牆
             if (gameMasterBound !== null && (!gameMasterBound || gameAccounts.length === 0)) {
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
-                        <PageHeader title="金幣贊助" subtitle="謝謝你願意支持部落。填完資料後會先請你截圖，再安心前往付款。" icon={Crown} color="text-gold-500" kicker="自願贊助 · 感謝有你" />
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="recharge-page page-content min-h-screen">
+                        <PageHeader title="遊戲儲值" subtitle="開始前先確認遊戲主帳號，才能確保金幣發送到正確角色。" icon={Crown} kicker="清楚確認 · 安心付款" />
                         <div className="max-w-2xl mx-auto mt-8">
-                            <div className="overflow-hidden rounded-3xl border-2 border-amber-300 bg-white shadow-xl">
-                                <div className="flex items-center gap-4 bg-gradient-to-r from-teal-700 to-emerald-600 px-6 py-6 sm:px-8">
-                                    <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                        <Key size={28} className="text-white" />
+                            <div className="overflow-hidden rounded-3xl border border-amber-200 bg-white shadow-[0_18px_46px_-36px_rgba(91,67,31,0.45)]">
+                                <div className="flex items-center gap-4 border-b border-amber-200 bg-amber-50 px-6 py-6 sm:px-8">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-200 flex items-center justify-center shrink-0">
+                                        <Key size={26} className="text-amber-900" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-black tracking-[0.14em] text-emerald-100">儲值前的安全確認</p>
-                                        <h2 className="mt-1 text-xl font-black text-white">還差一步：綁定遊戲主帳號</h2>
-                                        <p className="mt-1 text-sm text-emerald-50">確認金幣要發到哪一個帳號，避免送錯角色。</p>
+                                        <p className="text-xs font-black tracking-[0.14em] text-amber-700">儲值前的安全確認</p>
+                                        <h2 className="mt-1 text-xl font-black text-stone-900">還差一步：綁定遊戲主帳號</h2>
+                                        <p className="mt-1 text-sm font-semibold text-stone-600">確認金幣要發到哪一個帳號，避免送錯角色。</p>
                                     </div>
                                 </div>
                                 <div className="p-8 space-y-5">
@@ -8608,12 +8700,12 @@
             }
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen pb-12 sm:pb-16">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="recharge-page page-content min-h-screen pb-12 sm:pb-16">
                     <PageHeader
-                        title="金幣贊助"
-                        subtitle="依序確認接收帳號、付款方式與方案；送出前會再顯示完整摘要，不會直接扣款。"
+                        title="遊戲儲值"
+                        subtitle="跟著三個步驟完成：確認接收帳號、選擇付款與方案、核對摘要後再前往支付。"
                         icon={Crown}
-                        kicker="自願贊助 · 感謝有你"
+                        kicker="清楚確認 · 安心付款"
                     />
 
                     <section className="mx-auto mb-7 max-w-7xl px-3 sm:px-4" aria-label="儲值填寫進度">
@@ -8621,7 +8713,7 @@
                             {[
                                 { label: '接收帳號', ready: Boolean(selectedAccountId), value: selectedAccountId ? '已選擇' : '尚未選擇', icon: User },
                                 { label: '付款方式', ready: Boolean(selectedMethod), value: selectedMethod ? '已選擇' : '尚未選擇', icon: CreditCard },
-                                { label: '贊助方案', ready: Boolean(planValidPay), value: planValidPay ? '已選擇' : '尚未選擇', icon: Gift },
+                                { label: '儲值方案', ready: Boolean(planValidPay), value: planValidPay ? '已選擇' : '尚未選擇', icon: Gift },
                                 { label: '聯絡名稱', ready: Boolean(lineTrimmedPay), value: lineTrimmedPay ? '已填寫' : '尚未填寫', icon: MessageCircle },
                             ].map(({ label, ready, value, icon: StatusIcon }) => (
                                 <div key={label} className={`rounded-xl border px-3 py-3 transition-colors ${ready ? 'border-emerald-200 bg-emerald-50/90' : 'border-stone-200 bg-stone-50/80'}`}>
@@ -8638,7 +8730,7 @@
                     </section>
 
                     {/* 頂部：條款與感謝（單一視覺區塊） */}
-                    <div className="mx-auto mb-9 max-w-7xl px-3 sm:mb-10 sm:px-4">
+                    <div className="hidden">
                         <div className="relative overflow-hidden rounded-3xl border border-amber-400/25 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-950 shadow-[0_20px_60px_-20px_rgba(28,25,23,0.45)] ring-1 ring-white/10">
                             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-30%,rgba(251,191,36,0.22),transparent_55%)]" />
                             <div className="pointer-events-none absolute bottom-0 right-0 h-44 w-44 rounded-full bg-amber-500/12 blur-3xl" />
@@ -8675,6 +8767,19 @@
                         </div>
                     </div>
                     
+                    <section className="recharge-trust-strip mx-auto mb-7 grid max-w-6xl gap-3 px-3 sm:grid-cols-3 sm:px-4" aria-label="儲值安全提醒">
+                        {[
+                            { title: '不會直接扣款', text: '資料填完後，仍會先看到完整摘要。', icon: Eye },
+                            { title: '先截圖再付款', text: '建立訂單後會提醒保存訂單編號。', icon: Clipboard },
+                            { title: '真人核對發放', text: '金幣由管理員確認後發送到指定帳號。', icon: ShieldCheck },
+                        ].map(({ title, text, icon: TrustIcon }) => (
+                            <article key={title} className="flex items-start gap-3 rounded-2xl p-4">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800"><TrustIcon size={19} /></span>
+                                <div><h2 className="font-black text-stone-800">{title}</h2><p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{text}</p></div>
+                            </article>
+                        ))}
+                    </section>
+
                     {showModal && selectedPlan && (
                         <PaymentModal 
                             method={selectedMethod}
@@ -8757,9 +8862,9 @@
                         </div>
                     )}
 
-                    <div className="mx-auto grid max-w-7xl gap-7 px-3 sm:gap-9 sm:px-4 lg:grid-cols-3 lg:gap-10">
-                        <div className="min-w-0 lg:col-span-2">
-                            <div className="recharge-flow-card overflow-hidden rounded-[1.5rem] border border-amber-100/90 bg-gradient-to-b from-white via-amber-50/25 to-stone-50/30 shadow-[0_16px_56px_-20px_rgba(120,53,15,0.12)] ring-1 ring-stone-100/90 sm:rounded-[2rem]">
+                    <div className="mx-auto grid max-w-6xl gap-6 px-3 sm:px-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-7">
+                        <div className="min-w-0">
+                            <div className="recharge-flow-card overflow-hidden rounded-[1.5rem] border sm:rounded-[1.75rem]">
                                 <div ref={accountRef} className="p-6 sm:p-8 md:p-10">
                                 <div className="mb-7 rounded-2xl border border-stone-100/90 bg-gradient-to-r from-stone-50/90 to-amber-50/40 px-4 py-4 sm:px-5 sm:py-5">
                                     <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200/40 pb-4">
@@ -8769,7 +8874,7 @@
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400">Step</p>
-                                            <h3 className="font-display text-lg font-black leading-snug text-stone-800 sm:text-xl">贊助帳號</h3>
+                                            <h3 className="font-display text-lg font-black leading-snug text-stone-800 sm:text-xl">接收帳號</h3>
                                             <p className="mt-1 text-xs text-stone-500 sm:text-sm">選擇接收金幣的遊戲帳號（CDKEY）<span className="rounded-md bg-amber-100/90 px-1.5 py-0.5 text-[10px] font-black text-amber-900">必填</span></p>
                                         </div>
                                     </div>
@@ -9007,7 +9112,7 @@
                                                         <p className="mt-1 text-xs font-medium leading-snug text-stone-500 sm:text-sm">{method.tagline}</p>
                                                     </div>
 
-                                                    <ul className="space-y-2 text-[11px] font-medium leading-snug text-stone-600 sm:text-xs">
+                                                    <ul className="hidden">
                                                         {method.bullets.map((line, bi) => (
                                                             <li key={bi} className="flex gap-2.5">
                                                                 <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${isLine ? 'bg-emerald-400/90' : 'bg-amber-400/90'}`} />
@@ -9016,7 +9121,7 @@
                                                         ))}
                                                     </ul>
 
-                                                    <p className={`mt-0.5 border-t pt-3 text-[10px] font-medium leading-relaxed text-stone-500 sm:text-[11px] ${isLine ? 'border-emerald-100/80' : 'border-amber-100/80'}`}>
+                                                    <p className="hidden">
                                                         {method.footnote}
                                                     </p>
                                                 </div>
@@ -9034,7 +9139,7 @@
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">Step · 金額</p>
-                                                <h3 className="font-display text-base font-black text-stone-800 sm:text-lg">贊助檔位</h3>
+                                                <h3 className="font-display text-base font-black text-stone-800 sm:text-lg">儲值方案</h3>
                                             </div>
                                         </div>
                                         <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-900 ring-1 ring-amber-200/80">擇一檔位</span>
@@ -9119,7 +9224,7 @@
                                                 )}
                                                 <div className="mt-5 flex flex-col gap-4 sm:mt-1 sm:flex-row sm:items-center sm:gap-6">
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="mb-2 text-xs font-semibold leading-snug text-stone-600 sm:text-sm">自訂贊助金額（請先選 SHOPLINE 或 LINE 支付）</p>
+                                                        <p className="mb-2 text-xs font-semibold leading-snug text-stone-600 sm:text-sm">自訂儲值金額（請先選 SHOPLINE 或 LINE 支付）</p>
                                                         <div className="flex min-w-0 items-center gap-2">
                                                             <span className="shrink-0 text-base font-bold text-stone-600 sm:text-lg">NT$</span>
                                                             <input
@@ -9168,12 +9273,11 @@
                         </div>
 
                         <div className="min-w-0 space-y-6 sm:space-y-8">
-                            <div className={`overflow-hidden rounded-[1.5rem] border bg-white shadow-[0_12px_40px_-16px_rgba(28,25,23,0.18)] transition-[box-shadow,ring] duration-300 lg:sticky lg:top-28 xl:top-32 sm:rounded-[2rem] ${rechargeReady ? 'border-emerald-200/90 ring-2 ring-emerald-400/35' : 'border-stone-200/85 ring-1 ring-stone-100/85'}`}>
-                                <div className="relative overflow-hidden bg-gradient-to-br from-stone-900 via-stone-800 to-amber-950 px-5 py-4 text-center sm:py-5">
-                                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(105deg,transparent_0%,rgba(251,191,36,0.12)_55%,transparent_100%)]" aria-hidden />
-                                    <p className="relative text-[10px] font-black uppercase tracking-[0.35em] text-amber-200/95">Step 03</p>
-                                    <div className="relative mt-1.5 flex items-center justify-center gap-2 text-white">
-                                        <ScrollText size={20} className="text-amber-300/95" />
+                            <div className={`overflow-hidden rounded-[1.5rem] border bg-white shadow-[0_16px_42px_-34px_rgba(61,48,35,0.48)] transition-colors lg:sticky lg:top-28 ${rechargeReady ? 'border-emerald-300' : 'border-stone-200'}`}>
+                                <div className="relative overflow-hidden border-b border-amber-200 bg-amber-50 px-5 py-4 text-center sm:py-5">
+                                    <p className="relative text-[10px] font-black uppercase tracking-[0.28em] text-amber-700">Step 03</p>
+                                    <div className="relative mt-1.5 flex items-center justify-center gap-2 text-stone-800">
+                                        <ScrollText size={20} className="text-amber-700" />
                                         <span className="font-display text-lg font-black tracking-tight">訂單摘要</span>
                                     </div>
                                 </div>
@@ -9206,7 +9310,7 @@
                                         </span>
                                     </div>
                                     <div className="flex min-h-[52px] items-start justify-between gap-3 border-b border-dashed border-stone-200 px-4 py-3.5 sm:px-5 sm:py-4">
-                                        <span className="pt-0.5 text-xs font-bold text-stone-400">贊助金額</span>
+                                        <span className="pt-0.5 text-xs font-bold text-stone-400">儲值金額</span>
                                         <span className={`font-display text-lg font-black tabular-nums ${selectedPlan && planValidPay ? 'text-amber-600' : 'text-stone-300'}`}>
                                             {selectedPlan && planValidPay ? `NT$ ${selectedPlan.amount.toLocaleString()}` : '—'}
                                         </span>
@@ -9397,16 +9501,16 @@
                         
                         {/* 先分流需求，再提供對應管道 */}
                         <div id="support-channels" className="grid scroll-mt-24 gap-5 md:grid-cols-2">
-                            <article className="stone-panel relative overflow-hidden bg-gradient-to-br from-indigo-600 to-violet-700 p-6 text-white sm:p-8">
-                                <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" aria-hidden />
+                            <article className="stone-panel relative overflow-hidden border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-6 text-stone-800 sm:p-8">
+                                <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-indigo-200/30 blur-2xl" aria-hidden />
                                 <div className="relative">
-                                    <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                                    <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200">
                                         <MessageCircle size={29} aria-hidden />
                                     </span>
-                                    <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-100">玩家社群</p>
+                                    <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-600">玩家社群</p>
                                     <h2 className="mt-2 font-display text-2xl font-black">新手交流、活動消息、找隊友</h2>
-                                    <p className="mt-3 min-h-[4rem] text-sm font-medium leading-7 text-indigo-100">一般遊戲問題與玩家交流，推薦先到 Discord；消息最快，也更容易找到一起玩的夥伴。</p>
-                                    <button type="button" onClick={handleDiscord} className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-indigo-700 hover:bg-indigo-50 transition-colors">
+                                    <p className="mt-3 min-h-[4rem] text-sm font-medium leading-7 text-stone-600">一般遊戲問題與玩家交流，推薦先到 Discord；消息最快，也更容易找到一起玩的夥伴。</p>
+                                    <button type="button" onClick={handleDiscord} className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-black text-white hover:bg-indigo-500 transition-colors">
                                         加入 Discord <ExternalLink size={16} />
                                     </button>
                                 </div>
