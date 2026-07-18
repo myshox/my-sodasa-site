@@ -1767,25 +1767,67 @@
             max-width: 72rem;
         }
         .player-page-header .page-hero-card {
-            border: 1px solid rgba(20, 184, 166, 0.2);
-            border-radius: 1.75rem;
+            --hero-a: #0f4c40;
+            --hero-b: #08241f;
+            --hero-accent: #5eead4;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid color-mix(in srgb, var(--hero-accent) 38%, transparent);
+            border-radius: 2rem;
             background:
-                radial-gradient(circle at 92% 0%, rgba(245, 184, 46, 0.18), transparent 18rem),
-                linear-gradient(135deg, rgba(255,255,255,0.98), rgba(239, 253, 248, 0.94));
-            box-shadow: 0 24px 64px -42px rgba(9, 55, 46, 0.78);
+                radial-gradient(circle at 89% 10%, color-mix(in srgb, var(--hero-accent) 28%, transparent), transparent 18rem),
+                radial-gradient(circle at 8% 100%, rgba(255,255,255,0.09), transparent 19rem),
+                linear-gradient(128deg, var(--hero-a), var(--hero-b));
+            box-shadow: 0 30px 70px -38px color-mix(in srgb, var(--hero-a) 76%, #000);
         }
         .player-page-header .page-hero-card::before {
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(180deg, #2dd4bf, #f5b82e);
-            background-size: 100% 100%;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--hero-accent), #fcd34d, var(--hero-accent));
+            background-size: 200% 100%;
             animation: none;
         }
+        .player-page-header .page-hero-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.11;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.85) 1px, transparent 1.25px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(100deg, transparent 28%, #000);
+        }
+        .page-hero-card--download { --hero-a: #075985; --hero-b: #0f3d4a; --hero-accent: #7dd3fc; }
+        .page-hero-card--guides { --hero-a: #92400e; --hero-b: #4a2711; --hero-accent: #fbbf24; }
+        .page-hero-card--events { --hero-a: #9f1239; --hero-b: #7c2d12; --hero-accent: #fb7185; }
+        .page-hero-card--auth { --hero-a: #0f766e; --hero-b: #10352f; --hero-accent: #5eead4; }
+        .page-hero-card--member { --hero-a: #1e3a8a; --hero-b: #0f4c40; --hero-accent: #67e8f9; }
+        .page-hero-card--recharge { --hero-a: #92400e; --hero-b: #713f12; --hero-accent: #fcd34d; }
+        .page-hero-card--support { --hero-a: #4338ca; --hero-b: #312e81; --hero-accent: #c4b5fd; }
+        .page-hero-card--terms { --hero-a: #44403c; --hero-b: #1c1917; --hero-accent: #d6d3d1; }
+        .page-hero-card .section-title { color: #fff !important; text-shadow: 0 2px 18px rgba(0,0,0,0.2); }
+        .page-hero-card .section-sub { color: rgba(255,255,255,0.76) !important; }
+        .page-hero-card .section-kicker {
+            color: color-mix(in srgb, var(--hero-accent) 88%, white) !important;
+            border-color: color-mix(in srgb, var(--hero-accent) 30%, transparent) !important;
+            background: color-mix(in srgb, var(--hero-accent) 12%, transparent) !important;
+        }
         .player-page-header__icon {
-            background: linear-gradient(145deg, #0f766e, #115e59) !important;
-            border-color: rgba(255,255,255,0.65) !important;
+            background: color-mix(in srgb, var(--hero-accent) 18%, transparent) !important;
+            border-color: color-mix(in srgb, var(--hero-accent) 44%, transparent) !important;
             color: #fff;
-            box-shadow: 0 12px 28px -14px rgba(15, 118, 110, 0.65) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 14px 30px -18px rgba(0,0,0,0.8) !important;
+        }
+        .page-hero-note {
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(0,0,0,0.17);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+        }
+        .page-hero-fact {
+            border: 1px solid color-mix(in srgb, var(--hero-accent) 30%, transparent);
+            background: color-mix(in srgb, var(--hero-accent) 11%, transparent);
+            color: color-mix(in srgb, var(--hero-accent) 70%, white);
         }
         .player-shell .section-kicker {
             color: #0f766e;
@@ -1898,7 +1940,7 @@
         @media (max-width: 767px) {
             .player-page-header { margin-bottom: 1.5rem; }
             .player-page-header .page-hero-card { border-radius: 1.35rem; }
-            .player-page-header .page-hero-card::before { width: 4px; }
+            .player-page-header .page-hero-card::before { height: 4px; }
             .player-shell .stone-panel { border-radius: 1.25rem; }
             .player-context-section { border-radius: 1.5rem; }
             .player-section-nav {
@@ -3347,6 +3389,18 @@
         const PageHeader = memo(function PageHeader({ title, subtitle, icon: Icon, color = "text-teal-600", kicker = "蘇打石器 · 陪你慢慢玩" }) {
             const { pathname } = useLocation();
             const showBreadcrumb = pathname !== '/' && pathname !== '';
+            const routeKey = pathname.startsWith('/guides') ? '/guides' : pathname;
+            const identities = {
+                '/download': { mood: 'download', label: '啟程準備', note: '先選裝置下載；遊戲帳號要從遊戲登入畫面建立。', facts: ['Windows／Android／iOS', '免費遊玩', '同帳號跨裝置'] },
+                '/guides': { mood: 'guides', label: '冒險資料庫', note: '不必從頭全部看，直接選你現在卡住的任務。', facts: ['新手上路', '寵物攻略', '副本任務'] },
+                '/events': { mood: 'events', label: '部落情報站', note: '網站看完整公告；臨時消息與找隊友請加入 Discord。', facts: ['活動福利', '維護公告', '即時消息'] },
+                '/auth': { mood: 'auth', label: '網站會員', note: '這裡不是遊戲登入。網站會員用於綁定、會員中心與儲值。', facts: ['Email 會員', '同步綁定', '儲值準備'] },
+                '/member': { mood: 'member', label: '馴獸師檔案', note: '先確認遊戲主帳號與角色同步正確，再進行儲值。', facts: ['帳號狀態', '角色資料', '訂單紀錄'] },
+                '/recharge': { mood: 'recharge', label: '贊助補給站', note: '送出前會再次顯示帳號、方案與付款摘要，不會直接扣款。', facts: ['帳號確認', '付款選擇', '人工核對'] },
+                '/support': { mood: 'support', label: '玩家協助站', note: '交流找 Discord；帳號、儲值與異常查詢找 LINE 真人客服。', facts: ['Discord 社群', 'LINE 客服', '防詐提醒'] },
+                '/terms': { mood: 'terms', label: '玩家權益', note: '我們把帳號、贊助、公平遊戲與隱私規則分段整理。', facts: ['帳號規範', '贊助說明', '隱私安全'] },
+            };
+            const identity = identities[routeKey] || { mood: 'forest', label: '尼斯大陸', note: '需要協助時，可以隨時前往客服中心。', facts: [] };
             return (
                 <header className="player-page-header mb-8 md:mb-10 mx-auto px-1">
                     {showBreadcrumb && (
@@ -3356,20 +3410,29 @@
                             <span className="font-bold text-stone-600">{title}</span>
                         </nav>
                     )}
-                    <div className="page-hero-card">
-                        <div className="relative flex flex-col gap-5 px-5 py-6 sm:flex-row sm:items-center md:px-8 md:py-8">
-                            <div className="absolute -right-10 -top-12 w-44 h-44 rounded-full bg-amber-300/25 blur-3xl pointer-events-none" aria-hidden />
-                            <div className="absolute -left-12 bottom-0 w-36 h-36 rounded-full bg-teal-300/25 blur-3xl pointer-events-none" aria-hidden />
-                            {Icon && (
-                                <span className="player-page-header__icon relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-2 sm:h-16 sm:w-16" aria-hidden>
-                                    <Icon size={32} className="shrink-0 text-white" strokeWidth={1.9} />
-                                </span>
-                            )}
-                            <div className="relative min-w-0 flex-1 text-left">
-                                <p className="section-kicker mb-3">{kicker}</p>
-                                <h1 className="section-title text-3xl sm:text-4xl md:text-[2.55rem]">{title}</h1>
-                                {subtitle && <p className="section-sub mt-3 max-w-2xl text-base md:text-lg">{subtitle}</p>}
+                    <div className={`page-hero-card page-hero-card--${identity.mood}`}>
+                        <div className="relative z-10 grid gap-6 px-5 py-6 md:grid-cols-[1fr_19rem] md:items-center md:px-8 md:py-8 lg:px-10 lg:py-9">
+                            <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+                                {Icon && (
+                                    <span className="player-page-header__icon relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border sm:h-16 sm:w-16" aria-hidden>
+                                        <Icon size={32} className="shrink-0 text-white" strokeWidth={1.9} />
+                                    </span>
+                                )}
+                                <div className="relative min-w-0 flex-1 text-left">
+                                    <p className="section-kicker mb-3">{kicker}</p>
+                                    <h1 className="section-title text-3xl sm:text-4xl md:text-[2.55rem]">{title}</h1>
+                                    {subtitle && <p className="section-sub mt-3 max-w-2xl text-base md:text-lg">{subtitle}</p>}
+                                    {identity.facts.length > 0 && (
+                                        <div className="mt-5 flex flex-wrap gap-2">
+                                            {identity.facts.map(fact => <span key={fact} className="page-hero-fact rounded-full px-3 py-1.5 text-xs font-black">{fact}</span>)}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                            <aside className="page-hero-note rounded-2xl p-4 text-left text-white sm:p-5">
+                                <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: 'var(--hero-accent)' }}>{identity.label}</p>
+                                <p className="mt-2 text-sm font-semibold leading-6 text-white/80">{identity.note}</p>
+                            </aside>
                         </div>
                     </div>
                 </header>
@@ -4030,6 +4093,12 @@
                     )}
 
                     <div className="auth-experience mx-auto max-w-6xl">
+                        <PageHeader
+                            title={isRecoveryMode ? '重新設定網站密碼' : '網站會員登入與註冊'}
+                            subtitle={isRecoveryMode ? '完成驗證後設定新密碼，再回到會員中心。' : '遊戲帳號在遊戲內建立；網站會員用於綁定角色、查看紀錄與安全儲值。'}
+                            icon={UserPlus}
+                            kicker={isRecoveryMode ? '帳號安全' : '網站會員 ≠ 遊戲帳號'}
+                        />
                         {!isRecoveryMode && <PlayerJourneyStrip current={registrationComplete ? 3 : 2} purpose="recharge" />}
                         <div className="grid items-start gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8">
                             <aside className="auth-story-panel relative hidden overflow-hidden rounded-[2rem] border border-teal-200/15 p-7 text-white lg:block lg:sticky lg:top-24">
@@ -4859,10 +4928,10 @@
                                 <p className="mt-1 font-black text-stone-900">已登入</p>
                                 <p className="mt-1 truncate text-xs font-semibold text-stone-500" title={user?.email}>{user?.email}</p>
                             </div>
-                            <div className={`player-status-card rounded-2xl p-4 ${gameMaster ? '' : 'border-red-200 bg-red-50/80'}`}>
-                                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${gameMaster ? 'bg-sky-100 text-sky-700' : 'bg-red-100 text-red-600'}`}><Gamepad2 size={20} /></div>
+                            <div className={`player-status-card rounded-2xl p-4 ${gameMaster ? '' : 'border-amber-200 bg-amber-50/80'}`}>
+                                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${gameMaster ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}><Gamepad2 size={20} /></div>
                                 <p className="text-xs font-black uppercase tracking-wider text-stone-400">遊戲主帳號</p>
-                                <p className={`mt-1 font-black ${gameMaster ? 'text-stone-900' : 'text-red-700'}`}>{gameMaster ? '已綁定' : '尚未綁定'}</p>
+                                <p className={`mt-1 font-black ${gameMaster ? 'text-stone-900' : 'text-amber-800'}`}>{gameMaster ? '已綁定' : '等待綁定'}</p>
                                 <p className="mt-1 truncate text-xs font-semibold text-stone-500" title={gameMaster}>{gameMaster || '完成後才能儲值'}</p>
                             </div>
                             <div className="player-status-card rounded-2xl p-4">
@@ -4872,7 +4941,7 @@
                                 {gameMaster ? (
                                     <Link to="/recharge" className="mt-2 inline-flex items-center gap-1 text-xs font-black text-teal-700 hover:text-teal-600">前往儲值 <ArrowRight size={13} /></Link>
                                 ) : (
-                                    <button type="button" onClick={() => document.getElementById('game-binding-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="mt-2 inline-flex items-center gap-1 text-xs font-black text-red-700 hover:text-red-600">立即完成綁定 <ArrowRight size={13} /></button>
+                                    <button type="button" onClick={() => document.getElementById('game-binding-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="mt-2 inline-flex items-center gap-1 text-xs font-black text-amber-800 hover:text-amber-700">立即完成綁定 <ArrowRight size={13} /></button>
                                 )}
                             </div>
                         </section>
@@ -4889,18 +4958,18 @@
 
                         {/* 未綁定主帳號警告橫幅 */}
                         {!gameMaster && (
-                            <div className="mb-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 shadow-lg shadow-red-200 max-w-full overflow-hidden">
+                            <div className="mb-6 flex max-w-full flex-col gap-3 overflow-hidden rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-emerald-50 p-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-5">
                                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                                        <AlertCircle size={24} className="text-white" />
+                                    <div className="w-10 h-10 rounded-xl bg-amber-400 flex items-center justify-center shrink-0">
+                                        <Key size={22} className="text-stone-900" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-white font-black text-base">⚠️ 尚未綁定遊戲主帳號</p>
-                                        <p className="text-red-100 text-sm mt-0.5 break-words">請至下方「遊戲主帳號綁定」欄位完成綁定，否則無法使用儲值功能</p>
+                                        <p className="text-stone-900 font-black text-base">會員已登入，還差遊戲主帳號綁定</p>
+                                        <p className="mt-0.5 break-words text-sm font-semibold text-stone-600">完成一次角色同步後，就能安心查看角色並使用儲值功能。</p>
                                     </div>
                                 </div>
-                                <button type="button" onClick={() => document.getElementById('game-binding-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="shrink-0 w-full sm:w-auto text-center px-4 py-2.5 bg-white text-red-600 font-black text-sm rounded-xl hover:bg-red-50 transition-colors">
-                                    立即綁定
+                                <button type="button" onClick={() => document.getElementById('game-binding-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="shrink-0 w-full rounded-xl bg-teal-700 px-4 py-2.5 text-center text-sm font-black text-white transition-colors hover:bg-teal-600 sm:w-auto">
+                                    帶我完成綁定
                                 </button>
                             </div>
                         )}
@@ -6000,6 +6069,26 @@
                             kicker="玩家權益與使用規範"
                         />
 
+                        <section className="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="玩家必讀摘要">
+                            {[
+                                { title: '帳號要自己保管', text: '網站帳號與遊戲帳號不同，請勿共用密碼。', icon: Key, tone: 'bg-sky-100 text-sky-700' },
+                                { title: '公平遊戲', text: '禁止外掛、腳本、漏洞獲利與現金交易。', icon: ShieldCheck, tone: 'bg-emerald-100 text-emerald-700' },
+                                { title: '贊助先看清楚', text: '自願贊助、人工發放，送出前再次確認帳號。', icon: Coins, tone: 'bg-amber-100 text-amber-800' },
+                                { title: '資料只用於服務', text: '會員、訂單與安全資訊不會販售給第三方。', icon: Lock, tone: 'bg-stone-200 text-stone-700' },
+                            ].map(({ title, text, icon: SummaryIcon, tone }, index) => (
+                                <article key={title} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+                                    <div className="flex items-start gap-3">
+                                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tone}`}><SummaryIcon size={19} /></span>
+                                        <div>
+                                            <p className="text-[11px] font-black uppercase tracking-wider text-stone-400">必讀 {index + 1}</p>
+                                            <h2 className="mt-1 font-black text-stone-900">{title}</h2>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-sm font-semibold leading-6 text-stone-600">{text}</p>
+                                </article>
+                            ))}
+                        </section>
+
                         <nav className="mb-8 grid grid-cols-2 gap-2 rounded-2xl border border-teal-900/10 bg-white/80 p-3 shadow-sm sm:grid-cols-5" aria-label="條款快速導覽">
                             {[
                                 ['terms-copyright', '版權'],
@@ -6346,25 +6435,27 @@
                             )}
 
                             {/* 標題 + 作者區 */}
-                            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-100">
+                            <div className="relative overflow-hidden rounded-3xl border border-amber-300/20 bg-gradient-to-br from-stone-900 via-[#3b2412] to-[#12372f] p-6 text-white shadow-2xl md:p-9">
+                                <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-amber-300/15 blur-3xl" aria-hidden />
+                                <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className={`${catInfo.color} text-white px-3 py-1.5 rounded-lg text-sm font-semibold`}>{catInfo.icon} {catInfo.label}</span>
-                                    {guide.is_pinned && <Star size={16} fill="#f97316" className="text-orange-500" />}
+                                    {guide.is_pinned && <span className="inline-flex items-center gap-1 rounded-lg border border-amber-300/30 bg-amber-300/15 px-2.5 py-1 text-xs font-black text-amber-200"><Star size={14} fill="currentColor" /> 精選攻略</span>}
                                 </div>
-                                <h1 className="text-2xl md:text-3xl font-black text-stone-900 mb-5 leading-snug">
+                                <h1 className="text-2xl md:text-4xl font-black text-white mb-6 leading-snug">
                                     {guide.title}
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-4 py-4 border-y border-stone-100">
+                                <div className="flex flex-wrap items-center gap-4 border-y border-white/10 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                                            <User size={24} className="text-amber-600" />
+                                        <div className="w-12 h-12 rounded-full bg-amber-300/15 ring-1 ring-amber-200/25 flex items-center justify-center shrink-0">
+                                            <User size={24} className="text-amber-200" />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-stone-800">{guide.author_name || '管理員'}</p>
-                                            <p className="text-sm text-stone-500">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                            <p className="font-bold text-white">{guide.author_name || '管理員'}</p>
+                                            <p className="text-sm text-stone-400">{new Date(guide.publish_date || guide.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm text-stone-500 ml-auto flex-wrap">
+                                    <div className="flex items-center gap-4 text-sm text-stone-300 ml-auto flex-wrap">
                                         <span className="flex items-center gap-1.5"><Eye size={18} />{guide.views || 0} 次瀏覽</span>
                                         <span className="flex items-center gap-1.5"><Heart size={18} />{guide.likes || 0} 人覺得有幫助</span>
                                         <button
@@ -6372,13 +6463,14 @@
                                                 const url = `${window.location.origin}${(window.location.pathname || '/').replace(/\/$/, '')}/#/guides/${guide.id}`;
                                                 navigator.clipboard?.writeText(url).then(() => showToast('連結已複製到剪貼簿', 'success')).catch(() => showToast('無法複製，請手動複製網址列', 'error'));
                                             }}
-                                            className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-colors font-medium"
+                                            className="flex items-center gap-1.5 text-amber-200 hover:text-amber-100 transition-colors font-bold"
                                             title="複製分享連結"
                                         >
                                             <Share2 size={18} />
                                             分享
                                         </button>
                                     </div>
+                                </div>
                                 </div>
                             </div>
 
@@ -7889,6 +7981,7 @@
                                 className={`feature-card group ${recommendedPlatform.id === 'pc' ? 'ring-4 ring-sky-200/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-water-500 to-water-600">
+                                    {recommendedPlatform.id === 'pc' && <span className="absolute right-3 top-3 z-10 rounded-full bg-white px-3 py-1 text-xs font-black text-sky-700 shadow-md">建議版本</span>}
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.22),transparent)]" />
                                     <div className="relative w-16 h-16 mx-auto bg-white/95 rounded-xl flex items-center justify-center mb-3 shadow-lg">
                                         <svg className="w-9 h-9 text-water-600" fill="currentColor" viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
@@ -7919,6 +8012,7 @@
                                 className={`feature-card group ${recommendedPlatform.id === 'android' ? 'ring-4 ring-emerald-200/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-wind-500 to-wind-600">
+                                    {recommendedPlatform.id === 'android' && <span className="absolute right-3 top-3 z-10 rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-700 shadow-md">建議版本</span>}
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.22),transparent)]" />
                                     <div className="relative w-16 h-16 mx-auto bg-white/95 rounded-xl flex items-center justify-center mb-3 shadow-lg">
                                         <svg className="w-9 h-9 text-wind-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
@@ -7949,6 +8043,7 @@
                                 className={`feature-card group sm:col-span-2 lg:col-span-1 ${recommendedPlatform.id === 'ios' ? 'ring-4 ring-stone-300/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-stone-500 to-stone-700">
+                                    {recommendedPlatform.id === 'ios' && <span className="absolute right-3 top-3 z-10 rounded-full bg-white px-3 py-1 text-xs font-black text-stone-700 shadow-md">建議版本</span>}
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.15),transparent)]" />
                                     <div className="relative w-16 h-16 mx-auto bg-white/95 rounded-xl flex items-center justify-center mb-3 shadow-lg">
                                         <svg className="w-9 h-9 text-stone-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
@@ -8080,32 +8175,33 @@
                         </a>
                     </section>
                     
-                    <div className="max-w-4xl mx-auto space-y-6">
+                    <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-2">
                         {loading ? (
                             <LoadingSpinner message="載入活動中..." />
                         ) : events.length === 0 ? (
-                            <div className="stone-panel p-16 text-center text-stone-400">
+                            <div className="stone-panel p-16 text-center text-stone-400 lg:col-span-2">
                                 <div className="bg-stone-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Megaphone size={32} className="opacity-30"/>
                                 </div>
                                 <p className="text-xl font-bold">目前沒有活動公告...</p>
                             </div>
                         ) : (
-                            events.map((event) => {
+                            events.map((event, index) => {
                                 const tag = EVENT_TAGS.find(t => t.id === event.tag) || EVENT_TAGS[0];
                                 const firstImg = (event.content || '').match(/<img[^>]+src=["']([^"']+)["']/i);
                                 const coverImg = firstImg ? firstImg[1] : null;
                                 const isExpanded = expandedEventId === event.id;
                                 return (
-                                    <div key={event.id} className="stone-panel overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                                    <article key={event.id} className={`stone-panel overflow-hidden transition-all duration-300 group ${index === 0 ? 'lg:col-span-2 ring-1 ring-rose-200/70' : ''}`}>
                                         {coverImg && (
                                             <div className="aspect-video w-full overflow-hidden rounded-t-2xl bg-stone-100">
                                                 <img src={coverImg} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
                                             </div>
                                         )}
-                                        <div className="p-8 md:p-10">
+                                        <div className={`p-6 sm:p-8 ${index === 0 ? 'md:p-10' : ''}`}>
                                             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                                                 <div className="flex items-center gap-3">
+                                                    {index === 0 && <span className="rounded-lg bg-rose-600 px-3 py-1 text-sm font-black text-white shadow-sm">最新焦點</span>}
                                                     <span className={`${tag.color} px-3 py-1 rounded-lg text-sm font-bold tracking-wide shadow-sm`}>
                                                         {tag.label}
                                                     </span>
@@ -8114,10 +8210,10 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-wood-600 transition-colors">
+                                            <h3 className={`${index === 0 ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-black text-stone-900 mb-4 group-hover:text-rose-700 transition-colors`}>
                                                 {event.title}
                                             </h3>
-                                            <div className={`text-stone-600 text-base sm:text-lg leading-relaxed font-medium content-prose max-w-none overflow-x-auto break-words event-content ${isExpanded ? '' : 'event-content--collapsed'}`} style={{ WebkitOverflowScrolling: 'touch' }} dangerouslySetInnerHTML={{ __html: event.content || '' }} />
+                                            <div className={`text-stone-600 ${index === 0 ? 'text-base sm:text-lg' : 'text-sm sm:text-base'} leading-relaxed font-medium content-prose max-w-none overflow-x-auto break-words event-content ${isExpanded ? '' : 'event-content--collapsed'}`} style={{ WebkitOverflowScrolling: 'touch' }} dangerouslySetInnerHTML={{ __html: event.content || '' }} />
                                             {event.content && (
                                                 <button
                                                     type="button"
@@ -8130,7 +8226,7 @@
                                                 </button>
                                             )}
                                         </div>
-                                    </div>
+                                    </article>
                                 );
                             })
                         )}
@@ -9283,6 +9379,21 @@
                                 { id: 'support-report', text: '遇到詐騙', icon: AlertCircle },
                             ]}
                         />
+
+                        <section className="mb-6 rounded-3xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-sky-50 p-5 shadow-sm sm:p-6" aria-label="客服聯絡準備">
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                {[
+                                    { n: '01', title: '先選管道', text: '交流與找隊友用 Discord；查帳與異常用 LINE。', icon: MessageCircle },
+                                    { n: '02', title: '準備資料', text: '遊戲主帳號、角色名稱、畫面截圖或訂單編號。', icon: Clipboard },
+                                    { n: '03', title: '一次說清楚', text: '描述發生時間與操作步驟，客服能更快協助。', icon: Send },
+                                ].map(({ n, title, text, icon: HelpIcon }) => (
+                                    <article key={n} className="flex gap-3 rounded-2xl border border-white bg-white/80 p-4">
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white"><HelpIcon size={19} /></span>
+                                        <div><p className="text-[10px] font-black tracking-wider text-indigo-500">STEP {n}</p><h2 className="mt-0.5 font-black text-stone-900">{title}</h2><p className="mt-1 text-xs font-semibold leading-5 text-stone-600">{text}</p></div>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
                         
                         {/* 先分流需求，再提供對應管道 */}
                         <div id="support-channels" className="grid scroll-mt-24 gap-5 md:grid-cols-2">
