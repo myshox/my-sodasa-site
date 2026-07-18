@@ -2346,6 +2346,371 @@
             background: linear-gradient(180deg, rgba(77, 51, 35, 0.98), rgba(43, 29, 22, 0.99));
             box-shadow: 0 -12px 42px rgba(51, 34, 24, 0.48) !important;
         }
+
+        /* ========== 儲值補給站：更清楚的玩家決策層級 ========== */
+        .recharge-page {
+            --recharge-gold: #d9a63f;
+            --recharge-gold-soft: #f5df9c;
+            --recharge-moss: #6d833f;
+            --recharge-wood: #60402b;
+            --recharge-wood-deep: #39271d;
+            --recharge-paper: #fff9ea;
+            --recharge-line: #dfc79e;
+        }
+        .recharge-progress__board {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(112, 75, 43, 0.24);
+            border-radius: 1.55rem;
+            padding: 1.15rem;
+            background:
+                radial-gradient(circle at 96% 0%, rgba(141, 170, 82, 0.14), transparent 14rem),
+                linear-gradient(145deg, rgba(255, 250, 237, 0.98), rgba(245, 231, 202, 0.96));
+            box-shadow: 0 18px 45px -34px rgba(75, 48, 29, 0.7), inset 0 1px 0 rgba(255,255,255,0.82);
+        }
+        .recharge-progress__board::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            pointer-events: none;
+            border: 1px solid rgba(184, 137, 61, 0.16);
+            border-radius: 1.2rem;
+        }
+        .recharge-progress__heading {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.15rem 0.25rem 0.9rem;
+        }
+        .recharge-progress__eyebrow {
+            color: #8d642d;
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.17em;
+        }
+        .recharge-progress__heading h2 {
+            margin-top: 0.2rem;
+            color: #493426;
+            font-family: "Zen Maru Gothic", sans-serif;
+            font-size: clamp(0.9rem, 2.3vw, 1.05rem);
+            font-weight: 900;
+        }
+        .recharge-progress__score {
+            display: flex;
+            align-items: baseline;
+            gap: 0.2rem;
+            color: #8d642d;
+            white-space: nowrap;
+        }
+        .recharge-progress__score strong {
+            color: var(--recharge-moss);
+            font-family: "Zen Maru Gothic", sans-serif;
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+        .recharge-progress__score span { font-size: 0.75rem; font-weight: 900; }
+        .recharge-progress__track {
+            position: relative;
+            z-index: 1;
+            height: 0.35rem;
+            margin-bottom: 0.85rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(113, 80, 52, 0.12);
+        }
+        .recharge-progress__track span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--recharge-moss), #91a953, var(--recharge-gold));
+            box-shadow: 0 0 12px rgba(109, 131, 63, 0.28);
+            transition: width 0.35s ease;
+        }
+        .recharge-progress__item {
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(115, 85, 57, 0.14);
+            border-radius: 1rem;
+            padding: 0.72rem;
+            background: rgba(255, 252, 243, 0.76);
+            color: #9b8a73;
+            transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+        }
+        .recharge-progress__item.is-ready {
+            border-color: rgba(109, 131, 63, 0.34);
+            background: rgba(235, 241, 216, 0.88);
+            color: #5d7438;
+        }
+        .recharge-progress__icon {
+            display: inline-flex;
+            width: 2rem;
+            height: 2rem;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.7rem;
+            color: #8d765e;
+            background: #efe2ca;
+        }
+        .recharge-progress__item.is-ready .recharge-progress__icon {
+            color: white;
+            background: var(--recharge-moss);
+            box-shadow: 0 5px 14px rgba(109, 131, 63, 0.22);
+        }
+
+        .recharge-trust-strip__inner {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            overflow: hidden;
+            border: 1px solid rgba(114, 78, 45, 0.18);
+            border-radius: 1.25rem;
+            background: rgba(255, 249, 234, 0.72);
+            box-shadow: 0 12px 32px -29px rgba(75, 48, 29, 0.66);
+        }
+        .recharge-trust-strip__inner article {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-width: 0;
+            padding: 0.9rem 1rem;
+        }
+        .recharge-trust-strip__inner article + article { border-left: 1px solid rgba(114, 78, 45, 0.13); }
+        .recharge-trust-strip__inner article > span {
+            display: inline-flex;
+            width: 2.15rem;
+            height: 2.15rem;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            color: #7d6330;
+            background: #f1dda8;
+        }
+        .recharge-trust-strip__inner h2 { color: #49382a; font-size: 0.78rem; font-weight: 900; }
+        .recharge-trust-strip__inner p { margin-top: 0.1rem; color: #877663; font-size: 0.68rem; font-weight: 700; line-height: 1.45; }
+
+        .recharge-page .recharge-flow-card {
+            position: relative;
+            border: 1px solid rgba(112, 75, 43, 0.25);
+            background: var(--recharge-paper);
+            box-shadow: 0 24px 65px -43px rgba(70, 44, 27, 0.72);
+        }
+        .recharge-page .recharge-flow-card::before {
+            content: '';
+            position: absolute;
+            z-index: 2;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--recharge-moss), var(--recharge-gold), #c96a3d);
+        }
+        .recharge-step { position: relative; }
+        .recharge-step--account {
+            background:
+                radial-gradient(circle at 100% 0%, rgba(141, 170, 82, 0.08), transparent 19rem),
+                var(--recharge-paper);
+        }
+        .recharge-step--method {
+            border-top: 1px solid rgba(112, 75, 43, 0.14);
+            background:
+                radial-gradient(circle at 0% 20%, rgba(217, 166, 63, 0.09), transparent 18rem),
+                linear-gradient(180deg, #f7ead0, #fff9ea 24%);
+        }
+        .recharge-step__heading {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(115, 78, 44, 0.15);
+            background:
+                radial-gradient(circle at 100% 0%, rgba(141, 170, 82, 0.1), transparent 13rem),
+                linear-gradient(135deg, #f7ead0, #fff9eb);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+        }
+        .recharge-step__heading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 4px;
+            background: linear-gradient(var(--recharge-gold), #b47a2f);
+        }
+        .recharge-account-card,
+        .recharge-method-card,
+        .recharge-plan-card,
+        .recharge-custom-plan {
+            background: rgba(255, 252, 244, 0.94) !important;
+            border-color: rgba(112, 75, 43, 0.18) !important;
+        }
+        .recharge-account-card:hover,
+        .recharge-method-card:hover,
+        .recharge-plan-card:hover,
+        .recharge-custom-plan:hover { border-color: rgba(180, 122, 47, 0.47) !important; }
+        .recharge-account-card.is-selected,
+        .recharge-method-card.is-selected,
+        .recharge-plan-card.is-selected,
+        .recharge-custom-plan.is-selected {
+            border-color: rgba(180, 122, 47, 0.78) !important;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(229, 184, 75, 0.18), transparent 10rem),
+                linear-gradient(145deg, #fff9e8, #f7e7c4) !important;
+            box-shadow: 0 14px 28px -22px rgba(125, 78, 35, 0.8), inset 0 0 0 1px rgba(255,255,255,0.58);
+        }
+        .recharge-method-card.is-line.is-selected {
+            border-color: rgba(109, 131, 63, 0.65) !important;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(141, 170, 82, 0.18), transparent 10rem),
+                linear-gradient(145deg, #f9f8e9, #e9efd2) !important;
+        }
+        .recharge-account-confirm {
+            border: 1px solid rgba(109, 131, 63, 0.3);
+            background: linear-gradient(135deg, #eef2dd, #f8f4df);
+        }
+        .recharge-contact-field {
+            border: 1px solid rgba(112, 75, 43, 0.16);
+            background: #f7edd8;
+        }
+        .recharge-contact-field input { background: #fffdf5 !important; }
+        .recharge-plan-section { border-top: 1px solid rgba(112, 75, 43, 0.14); }
+        .recharge-plan-card { isolation: isolate; }
+        .recharge-plan-card::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            right: -1.3rem;
+            bottom: -1.8rem;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 999px;
+            background: rgba(229, 184, 75, 0.1);
+        }
+        .recharge-plan-card.is-selected { transform: translateY(-2px); }
+
+        .recharge-summary {
+            border-color: rgba(112, 75, 43, 0.24) !important;
+            background: #fffaf0 !important;
+            box-shadow: 0 24px 58px -38px rgba(70, 44, 27, 0.8);
+        }
+        .recharge-summary.is-ready {
+            border-color: rgba(109, 131, 63, 0.52) !important;
+            box-shadow: 0 24px 58px -38px rgba(74, 87, 42, 0.72), 0 0 0 2px rgba(109, 131, 63, 0.09);
+        }
+        .recharge-summary__header {
+            color: #f8e8bb;
+            background:
+                radial-gradient(circle at 85% -30%, rgba(226, 182, 76, 0.3), transparent 11rem),
+                linear-gradient(135deg, var(--recharge-wood), var(--recharge-wood-deep));
+            box-shadow: inset 0 -1px 0 rgba(226, 182, 76, 0.22);
+        }
+        .recharge-summary__header p { color: #e6bd67; }
+        .recharge-summary__header svg { color: #e7bd62; }
+        .recharge-summary__total {
+            padding: 1.15rem 1.25rem;
+            border-bottom: 1px solid rgba(112, 75, 43, 0.14);
+            background:
+                radial-gradient(circle at 100% 0%, rgba(141, 170, 82, 0.13), transparent 10rem),
+                linear-gradient(145deg, #fff3d6, #f5e2b9);
+        }
+        .recharge-summary__total > p {
+            color: #8b765e;
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.13em;
+        }
+        .recharge-summary__total strong {
+            color: #5b3b27;
+            font-family: "Zen Maru Gothic", sans-serif;
+            font-size: 1.55rem;
+            font-weight: 900;
+            line-height: 1.15;
+        }
+        .recharge-summary__total span {
+            color: #6a7e3d;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-align: right;
+        }
+        .recharge-summary__total small {
+            display: block;
+            margin-top: 0.45rem;
+            color: #6d833f;
+            font-size: 0.67rem;
+            font-weight: 800;
+        }
+
+        .recharge-mobile-dock {
+            position: fixed;
+            z-index: 44;
+            right: 0.7rem;
+            bottom: calc(5.55rem + env(safe-area-inset-bottom, 0px));
+            left: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            max-width: 34rem;
+            margin-inline: auto;
+            padding: 0.72rem 0.75rem 0.72rem 1rem;
+            border: 1px solid rgba(224, 193, 141, 0.35);
+            border-radius: 1.2rem;
+            color: #f8ead0;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(141, 170, 82, 0.16), transparent 12rem),
+                linear-gradient(135deg, rgba(84, 56, 38, 0.98), rgba(48, 32, 24, 0.99));
+            box-shadow: 0 14px 34px rgba(49, 31, 21, 0.36), inset 0 1px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(16px);
+        }
+        .recharge-mobile-dock.is-ready { border-color: rgba(159, 185, 92, 0.56); }
+        .recharge-mobile-dock p { color: #d5c0a3; font-size: 0.63rem; font-weight: 800; }
+        .recharge-mobile-dock strong { display: block; margin-top: 0.08rem; color: #f4d36f; font-family: "Zen Maru Gothic", sans-serif; font-size: 1rem; font-weight: 900; }
+        .recharge-mobile-dock span { display: block; max-width: 11rem; overflow: hidden; color: #c8b59b; font-size: 0.58rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+        .recharge-mobile-dock button {
+            display: inline-flex;
+            min-height: 2.75rem;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            border: 1px solid rgba(135, 91, 38, 0.34);
+            border-radius: 0.9rem;
+            padding: 0.65rem 0.9rem;
+            color: #3b2a1d;
+            background: linear-gradient(180deg, #f1cf6d, #d9a33c);
+            box-shadow: 0 4px 0 #8c5a25;
+            font-size: 0.78rem;
+            font-weight: 900;
+        }
+        .recharge-mobile-dock button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8c5a25; }
+        .recharge-mobile-dock.is-ready button {
+            color: white;
+            border-color: rgba(64, 80, 35, 0.55);
+            background: linear-gradient(180deg, #859d4e, #667c3c);
+            box-shadow: 0 4px 0 #405326;
+        }
+
+        @media (min-width: 1024px) {
+            .recharge-mobile-dock { display: none; }
+        }
+
+        @media (max-width: 639px) {
+            .recharge-progress__board { padding: 1rem 0.85rem; border-radius: 1.3rem; }
+            .recharge-progress__heading { align-items: flex-start; }
+            .recharge-progress__heading h2 { max-width: 15rem; line-height: 1.45; }
+            .recharge-progress__score strong { font-size: 1.55rem; }
+            .recharge-progress__item { padding: 0.62rem; }
+            .recharge-progress__icon { width: 1.8rem; height: 1.8rem; }
+            .recharge-trust-strip__inner { grid-template-columns: 1fr; }
+            .recharge-trust-strip__inner article { padding: 0.72rem 0.9rem; }
+            .recharge-trust-strip__inner article + article { border-top: 1px solid rgba(114, 78, 45, 0.12); border-left: 0; }
+            .recharge-step--account { padding: 1.2rem 1rem; }
+            .recharge-step--method { padding-right: 1rem; padding-left: 1rem; }
+            .recharge-step__heading { margin-bottom: 1.2rem; }
+            .recharge-plan-card { min-height: 7.5rem; }
+            .recharge-plan-card .font-display { font-size: 1.02rem; }
+            .recharge-summary__total strong { font-size: 1.35rem; }
+        }
         </style>
 </head>
 <body>
@@ -8938,6 +9303,9 @@
                 gameMasterBound && gameAccounts.length > 0 &&
                 selectedAccountId && selectedMethod && planValidPay && lineTrimmedPay
             );
+            const selectedGameAccount = gameAccounts.find(acc => acc.id === selectedAccountId);
+            const selectedGameAccountLabel = String((selectedGameAccount && (selectedGameAccount.name || selectedGameAccount.account)) || '').trim();
+            const rechargeProgressCount = [selectedAccountId, selectedMethod, planValidPay, lineTrimmedPay].filter(Boolean).length;
 
             if (loading) {
                 return (
@@ -9006,32 +9374,46 @@
             }
 
             return (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="recharge-page page-content min-h-screen pb-12 sm:pb-16">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="recharge-page page-content min-h-screen pb-40 sm:pb-36 lg:pb-16">
                     <PageHeader
                         title="遊戲儲值"
-                        subtitle="跟著三個步驟完成：確認接收帳號、選擇付款與方案、核對摘要後再前往支付。"
+                        subtitle="先選接收帳號，再挑付款方式與方案；最後核對金額與可得金幣，確認無誤才前往支付。"
                         icon={Crown}
-                        kicker="清楚確認 · 安心付款"
+                        kicker="尼斯補給站 · 清楚確認"
                     />
 
-                    <section className="mx-auto mb-7 max-w-7xl px-3 sm:px-4" aria-label="儲值填寫進度">
-                        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-teal-900/10 bg-white/85 p-3 shadow-sm sm:grid-cols-4 sm:gap-3">
+                    <section className="recharge-progress mx-auto mb-7 max-w-6xl px-3 sm:px-4" aria-label="儲值填寫進度">
+                        <div className="recharge-progress__board">
+                            <div className="recharge-progress__heading">
+                                <div>
+                                    <p className="recharge-progress__eyebrow">本次補給進度</p>
+                                    <h2>完成四項資料後，再安心前往付款</h2>
+                                </div>
+                                <div className="recharge-progress__score" aria-label={`已完成 ${rechargeProgressCount} 項，共 4 項`}>
+                                    <strong>{rechargeProgressCount}</strong><span>/ 4</span>
+                                </div>
+                            </div>
+                            <div className="recharge-progress__track" aria-hidden>
+                                <span style={{ width: `${rechargeProgressCount * 25}%` }} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
                             {[
                                 { label: '接收帳號', ready: Boolean(selectedAccountId), value: selectedAccountId ? '已選擇' : '尚未選擇', icon: User },
                                 { label: '付款方式', ready: Boolean(selectedMethod), value: selectedMethod ? '已選擇' : '尚未選擇', icon: CreditCard },
                                 { label: '儲值方案', ready: Boolean(planValidPay), value: planValidPay ? '已選擇' : '尚未選擇', icon: Gift },
                                 { label: '聯絡名稱', ready: Boolean(lineTrimmedPay), value: lineTrimmedPay ? '已填寫' : '尚未填寫', icon: MessageCircle },
-                            ].map(({ label, ready, value, icon: StatusIcon }) => (
-                                <div key={label} className={`rounded-xl border px-3 py-3 transition-colors ${ready ? 'border-emerald-200 bg-emerald-50/90' : 'border-stone-200 bg-stone-50/80'}`}>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${ready ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'}`}><StatusIcon size={16} /></span>
+                            ].map(({ label, ready, value, icon: StatusIcon }, index) => (
+                                <div key={label} className={`recharge-progress__item ${ready ? 'is-ready' : ''}`}>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="recharge-progress__icon"><StatusIcon size={17} /></span>
                                         <div className="min-w-0">
-                                            <p className="truncate text-xs font-black text-stone-800">{label}</p>
-                                            <p className={`mt-0.5 text-[11px] font-bold ${ready ? 'text-emerald-700' : 'text-stone-400'}`}>{ready ? '✓ ' : ''}{value}</p>
+                                            <p className="truncate text-xs font-black text-stone-800"><span className="mr-1 text-[10px] text-stone-400">0{index + 1}</span>{label}</p>
+                                            <p className="mt-0.5 text-[11px] font-bold">{ready ? '✓ ' : ''}{value}</p>
                                         </div>
                                     </div>
                                 </div>
                             ))}
+                            </div>
                         </div>
                     </section>
 
@@ -9073,17 +9455,19 @@
                         </div>
                     </div>
                     
-                    <section className="recharge-trust-strip mx-auto mb-7 grid max-w-6xl gap-3 px-3 sm:grid-cols-3 sm:px-4" aria-label="儲值安全提醒">
-                        {[
-                            { title: '不會直接扣款', text: '資料填完後，仍會先看到完整摘要。', icon: Eye },
-                            { title: '先截圖再付款', text: '建立訂單後會提醒保存訂單編號。', icon: Clipboard },
-                            { title: '真人核對發放', text: '金幣由管理員確認後發送到指定帳號。', icon: ShieldCheck },
-                        ].map(({ title, text, icon: TrustIcon }) => (
-                            <article key={title} className="flex items-start gap-3 rounded-2xl p-4">
-                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800"><TrustIcon size={19} /></span>
-                                <div><h2 className="font-black text-stone-800">{title}</h2><p className="mt-1 text-xs font-semibold leading-5 text-stone-500">{text}</p></div>
-                            </article>
-                        ))}
+                    <section className="recharge-trust-strip mx-auto mb-8 max-w-6xl px-3 sm:px-4" aria-label="儲值安全提醒">
+                        <div className="recharge-trust-strip__inner">
+                            {[
+                                { title: '不會直接扣款', text: '送出前還會顯示完整摘要', icon: Eye },
+                                { title: '保留付款憑證', text: '訂單編號與成功畫面請截圖', icon: Clipboard },
+                                { title: '真人核對發放', text: '管理員確認後發送至遊戲帳號', icon: ShieldCheck },
+                            ].map(({ title, text, icon: TrustIcon }) => (
+                                <article key={title}>
+                                    <span><TrustIcon size={18} /></span>
+                                    <div><h2>{title}</h2><p>{text}</p></div>
+                                </article>
+                            ))}
+                        </div>
                     </section>
 
                     {showModal && selectedPlan && (
@@ -9168,11 +9552,11 @@
                         </div>
                     )}
 
-                    <div className="mx-auto grid max-w-6xl gap-6 px-3 sm:px-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-7">
+                    <div className="recharge-workspace mx-auto grid max-w-6xl gap-6 px-3 sm:px-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-7">
                         <div className="min-w-0">
                             <div className="recharge-flow-card overflow-hidden rounded-[1.5rem] border sm:rounded-[1.75rem]">
-                                <div ref={accountRef} className="p-6 sm:p-8 md:p-10">
-                                <div className="mb-7 rounded-2xl border border-stone-100/90 bg-gradient-to-r from-stone-50/90 to-amber-50/40 px-4 py-4 sm:px-5 sm:py-5">
+                                <div ref={accountRef} className="recharge-step recharge-step--account p-6 sm:p-8 md:p-10">
+                                <div className="recharge-step__heading mb-7 rounded-2xl px-4 py-4 sm:px-5 sm:py-5">
                                     <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200/40 pb-4">
                                     <div className="flex min-w-0 items-start gap-3 sm:gap-4">
                                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-800 text-white shadow-md shadow-amber-900/15 ring-2 ring-white/70">
@@ -9226,9 +9610,9 @@
                                                                 aria-pressed={isSelected}
                                                                 onClick={() => { setSelectedAccountId(account.id); setFormErrors(prev => ({ ...prev, gameAccount: '' })); }}
                                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedAccountId(account.id); setFormErrors(prev => ({ ...prev, gameAccount: '' })); } }}
-                                                                className={`flex min-h-[52px] cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3.5 transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 focus-visible:ring-offset-2 ${
+                                                                className={`recharge-account-card flex min-h-[52px] cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-3.5 transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 focus-visible:ring-offset-2 ${
                                                                     isSelected
-                                                                        ? 'border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50/80 shadow-md shadow-amber-200/25 ring-1 ring-amber-200/50'
+                                                                        ? 'is-selected border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50/80 shadow-md shadow-amber-200/25 ring-1 ring-amber-200/50'
                                                                         : 'border-stone-200/90 bg-white/90 hover:border-amber-300/60 hover:bg-amber-50/35 hover:shadow-sm'
                                                                 }`}
                                                             >
@@ -9264,7 +9648,7 @@
                                         {selectedAccountId && (() => {
                                             const sel = gameAccounts.find(acc => acc.id === selectedAccountId);
                                             return sel ? (
-                                                <div className="mt-2 rounded-2xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 p-4">
+                                                <div className="recharge-account-confirm mt-2 rounded-2xl p-4">
                                                     <p className="flex items-start gap-2 text-sm font-bold text-emerald-900">
                                                         <CheckCircle size={16} className="mt-0.5 shrink-0 text-emerald-600" />
                                                         <span>
@@ -9288,7 +9672,7 @@
                                         )}
                                         
                                         {/* LINE 名稱 或 Discord 名稱（必填） */}
-                                        <div ref={lineNameRef} className="mt-8 border-t border-stone-200/80 pt-6">
+                                        <div ref={lineNameRef} className="recharge-contact-field mt-8 rounded-2xl p-5 sm:p-6">
                                             <label className="mb-3 flex flex-wrap items-center gap-2 text-sm font-bold text-stone-700">
                                                 <MessageCircle size={16} className="text-emerald-600" aria-hidden />
                                                 LINE 名稱或 Discord 名稱
@@ -9320,8 +9704,8 @@
 
                             <div className="h-px bg-gradient-to-r from-transparent via-stone-200/80 to-transparent" aria-hidden />
 
-                            <div ref={methodRef} className="bg-gradient-to-b from-stone-50/50 via-amber-50/20 to-transparent px-6 pb-0 pt-7 sm:px-8 sm:pt-8 md:px-10">
-                                <div className="mb-7 rounded-2xl border border-stone-100/90 bg-gradient-to-r from-stone-50/90 to-amber-50/40 px-4 py-4 sm:px-5 sm:py-5">
+                            <div ref={methodRef} className="recharge-step recharge-step--method px-6 pb-0 pt-7 sm:px-8 sm:pt-8 md:px-10">
+                                <div className="recharge-step__heading mb-7 rounded-2xl px-4 py-4 sm:px-5 sm:py-5">
                                     <div className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200/40 pb-4">
                                     <div className="flex min-w-0 items-start gap-3 sm:gap-4">
                                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-800 text-white shadow-md shadow-amber-900/15 ring-2 ring-white/70">
@@ -9358,11 +9742,11 @@
                                                 tabIndex={0}
                                                 aria-pressed={isSelected}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMethod(method.id); setFormErrors(prev => ({ ...prev, method: '' })); } }}
-                                                className={`group relative flex cursor-pointer flex-col items-stretch overflow-hidden rounded-2xl border text-left shadow-sm transition-[box-shadow,border-color,background-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isLine ? 'focus-visible:ring-emerald-500/30' : 'focus-visible:ring-amber-500/30'} active:scale-[0.99] ${
+                                                className={`recharge-method-card group relative flex cursor-pointer flex-col items-stretch overflow-hidden rounded-2xl border text-left shadow-sm transition-[box-shadow,border-color,background-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isLine ? 'focus-visible:ring-emerald-500/30' : 'focus-visible:ring-amber-500/30'} active:scale-[0.99] ${
                                                     isSelected
                                                         ? (isLine
-                                                            ? 'border-emerald-400/80 bg-gradient-to-b from-emerald-50/90 to-white shadow-md ring-1 ring-emerald-200/60'
-                                                            : 'border-amber-400/80 bg-gradient-to-b from-amber-50/90 to-white shadow-md ring-1 ring-amber-200/60')
+                                                            ? 'is-selected is-line border-emerald-400/80 bg-gradient-to-b from-emerald-50/90 to-white shadow-md ring-1 ring-emerald-200/60'
+                                                            : 'is-selected border-amber-400/80 bg-gradient-to-b from-amber-50/90 to-white shadow-md ring-1 ring-amber-200/60')
                                                         : 'border-stone-200/90 bg-white hover:border-stone-300 hover:shadow'
                                                 }`}
                                             >
@@ -9436,8 +9820,8 @@
                                     })}
                                 </div>
                                 
-                                <div ref={planRef} className="mt-8 border-t border-stone-200/70 bg-gradient-to-b from-stone-50/40 to-transparent px-0 pb-7 pt-8 max-w-full overflow-hidden">
-                                    <div className="mb-6 rounded-2xl border border-stone-100/90 bg-gradient-to-r from-stone-50/90 to-amber-50/35 px-4 py-4 sm:px-5 sm:py-4">
+                                <div ref={planRef} className="recharge-plan-section mt-8 px-0 pb-7 pt-8 max-w-full overflow-hidden">
+                                    <div className="recharge-step__heading mb-6 rounded-2xl px-4 py-4 sm:px-5 sm:py-4">
                                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/50 pb-4">
                                         <div className="flex items-center gap-2.5">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-800 text-white shadow-sm ring-2 ring-white/80">
@@ -9452,7 +9836,7 @@
                                     </div>
                                     </div>
                                     {formErrors.plan && <p className="text-fire-500 font-bold mb-3 sm:mb-4 text-sm flex items-center gap-1"><AlertCircle size={14}/> {formErrors.plan}</p>}
-                                    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
+                                    <div className="recharge-plan-grid grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-4">
                                     {PLANS.map((plan, i) => {
                                         const isSelected = selectedPlan === plan;
                                         return (
@@ -9462,25 +9846,25 @@
                                                 role="button"
                                                 tabIndex={0}
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlan(plan); setIsCustomPlan(false); setFormErrors(prev => ({ ...prev, plan: '' })); } }}
-                                                className={`relative min-h-[88px] cursor-pointer overflow-hidden rounded-2xl border transition-[box-shadow,transform,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 active:scale-[0.99] sm:min-h-0 ${
+                                                className={`recharge-plan-card relative min-h-[126px] cursor-pointer overflow-hidden rounded-2xl border transition-[box-shadow,transform,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 active:scale-[0.99] ${
                                                     isSelected
-                                                        ? 'border-amber-400/90 bg-gradient-to-b from-amber-50 to-white shadow-md ring-1 ring-amber-200/70'
+                                                        ? 'is-selected border-amber-400/90 bg-gradient-to-b from-amber-50 to-white shadow-md ring-1 ring-amber-200/70'
                                                         : 'border-stone-200/90 bg-white shadow-sm hover:-translate-y-0.5 hover:border-amber-300/60 hover:shadow'
                                                 }`}
                                             >
                                                 <div className={`absolute left-0 top-0 h-full w-1 ${isSelected ? 'bg-amber-500' : 'bg-stone-200/70'}`} aria-hidden />
                                                 {plan.popular && (
-                                                    <div className="absolute left-3 top-2.5 z-10 rounded-full bg-amber-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
-                                                        熱門
+                                                    <div className="absolute left-3 top-2.5 z-10 rounded-full bg-[#6d833f] px-2 py-0.5 text-[9px] font-black tracking-wider text-white shadow-sm">
+                                                        玩家最常選
                                                     </div>
                                                 )}
                                                 {isSelected && (
-                                                    <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200/80">
+                                                    <div className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#6d833f] text-white shadow-sm ring-2 ring-white">
                                                         <CheckCircle size={16} strokeWidth={2.5} />
                                                     </div>
                                                 )}
 
-                                                {plan.bonus > 0 && !isSelected && (
+                                                {plan.bonus > 0 && (
                                                     <div className="absolute right-2 top-2 z-10 max-w-[calc(100%-0.75rem)] truncate rounded-md bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-900 ring-1 ring-amber-200/70">
                                                         +{getGmBonusPercentDisplay(plan)}
                                                     </div>
@@ -9493,6 +9877,9 @@
                                                             <span className={`text-sm font-black tabular-nums leading-none sm:text-xl md:text-2xl ${isSelected ? 'text-amber-800' : 'text-amber-700'}`}>{plan.total.toLocaleString()}</span>
                                                             <span className={`text-[10px] font-bold uppercase tracking-wide sm:text-xs ${isSelected ? 'text-amber-700/90' : 'text-amber-700/80'}`}>Gold</span>
                                                         </div>
+                                                        <p className={`mt-2 text-[10px] font-bold leading-snug sm:text-[11px] ${plan.bonus > 0 ? 'text-[#6d833f]' : 'text-stone-400'}`}>
+                                                            {plan.bonus > 0 ? `含加贈 ${plan.bonus.toLocaleString()} 金幣` : '基礎入門方案'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -9506,8 +9893,8 @@
                                         const customPlanObj = { amount: customAmt, base: customCoins, bonus: 0, total: customCoins, popular: false, url: 'https://pl.sl-pay.com/pTlaiLOe', isCustom: true };
                                         return (
                                             <div
-                                                className={`relative col-span-2 cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 pl-5 transition-[box-shadow,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 sm:p-5 sm:pl-6 md:p-6 ${
-                                                    isCustomPlan ? 'border-amber-400/90 bg-gradient-to-b from-amber-50/80 to-white shadow-md ring-1 ring-amber-200/60' : 'border-stone-200 hover:border-amber-300/70 hover:bg-amber-50/20 hover:shadow-sm'
+                                                className={`recharge-custom-plan relative col-span-2 cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 pl-5 transition-[box-shadow,border-color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 focus-visible:ring-offset-2 sm:p-5 sm:pl-6 md:col-span-3 md:p-6 ${
+                                                    isCustomPlan ? 'is-selected border-amber-400/90 bg-gradient-to-b from-amber-50/80 to-white shadow-md ring-1 ring-amber-200/60' : 'border-stone-200 hover:border-amber-300/70 hover:bg-amber-50/20 hover:shadow-sm'
                                                 }`}
                                                 onClick={() => {
                                                     setIsCustomPlan(true);
@@ -9579,13 +9966,23 @@
                         </div>
 
                         <div className="min-w-0 space-y-6 sm:space-y-8">
-                            <div className={`overflow-hidden rounded-[1.5rem] border bg-white shadow-[0_16px_42px_-34px_rgba(61,48,35,0.48)] transition-colors lg:sticky lg:top-28 ${rechargeReady ? 'border-emerald-300' : 'border-stone-200'}`}>
-                                <div className="relative overflow-hidden border-b border-amber-200 bg-amber-50 px-5 py-4 text-center sm:py-5">
-                                    <p className="relative text-[10px] font-black uppercase tracking-[0.28em] text-amber-700">Step 03</p>
-                                    <div className="relative mt-1.5 flex items-center justify-center gap-2 text-stone-800">
-                                        <ScrollText size={20} className="text-amber-700" />
+                            <div className={`recharge-summary overflow-hidden rounded-[1.5rem] border bg-white transition-colors lg:sticky lg:top-28 ${rechargeReady ? 'is-ready border-emerald-300' : 'border-stone-200'}`}>
+                                <div className="recharge-summary__header relative overflow-hidden px-5 py-4 text-center sm:py-5">
+                                    <p className="relative text-[10px] font-black uppercase tracking-[0.28em]">Step 03 · 最後確認</p>
+                                    <div className="relative mt-1.5 flex items-center justify-center gap-2">
+                                        <ScrollText size={20} />
                                         <span className="font-display text-lg font-black tracking-tight">訂單摘要</span>
                                     </div>
+                                </div>
+                                <div className="recharge-summary__total">
+                                    <p>本次儲值</p>
+                                    <div className="flex items-end justify-between gap-3">
+                                        <strong>{selectedPlan && planValidPay ? `NT$ ${selectedPlan.amount.toLocaleString()}` : '尚未選擇'}</strong>
+                                        <span>{selectedPlan && planValidPay ? `${selectedPlan.total.toLocaleString()} Gold` : '選擇方案後顯示'}</span>
+                                    </div>
+                                    {selectedPlan?.bonus > 0 && planValidPay && (
+                                        <small>已包含方案加贈 {selectedPlan.bonus.toLocaleString()} 金幣</small>
+                                    )}
                                 </div>
                                 <div className="border-b border-stone-100 bg-gradient-to-b from-stone-50/90 to-stone-50/40 px-4 py-3.5 sm:px-5">
                                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-stone-500">送出前檢核</p>
@@ -9600,7 +9997,7 @@
                                         </li>
                                         <li className="flex items-center gap-2.5">
                                             {planValidPay ? <CheckCircle size={15} className="shrink-0 text-emerald-600" strokeWidth={2.5} aria-hidden /> : <Circle size={15} className="shrink-0 text-stone-300" strokeWidth={2} aria-hidden />}
-                                            贊助檔位或自訂 ≥ NT$100
+                                            儲值方案或自訂 ≥ NT$100
                                         </li>
                                         <li className="flex items-center gap-2.5">
                                             {lineTrimmedPay ? <CheckCircle size={15} className="shrink-0 text-emerald-600" strokeWidth={2.5} aria-hidden /> : <Circle size={15} className="shrink-0 text-stone-300" strokeWidth={2} aria-hidden />}
@@ -9673,6 +10070,18 @@
                                 </ul>
                             </div>
                         </div>
+                    </div>
+
+                    <div className={`recharge-mobile-dock lg:hidden ${rechargeReady ? 'is-ready' : ''}`} role="region" aria-label="手機儲值摘要">
+                        <div className="min-w-0">
+                            <p>{rechargeReady ? '資料已完成' : `還有 ${4 - rechargeProgressCount} 項待完成`}</p>
+                            <strong>{selectedPlan && planValidPay ? `NT$ ${selectedPlan.amount.toLocaleString()}` : '請選擇方案'}</strong>
+                            {selectedGameAccountLabel && <span>發送至 {selectedGameAccountLabel}</span>}
+                        </div>
+                        <button type="button" onClick={handlePayment}>
+                            {rechargeReady ? '前往支付' : '檢查資料'}
+                            <ArrowRight size={17} />
+                        </button>
                     </div>
 
                     {/* 客服聯繫 - 儲值問題 */}
