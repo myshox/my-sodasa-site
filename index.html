@@ -43,7 +43,7 @@
     <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=5730561630332365&ev=PageView&noscript=1"/></noscript>
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#141210">
+    <meta name="theme-color" content="#4a3222">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="蘇打石器">
@@ -147,16 +147,16 @@
                         display: ['"Zen Maru Gothic"', 'sans-serif'],
                     },
                     colors: {
-                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1', 400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c', 800: '#4a4036', 900: '#2d2520', 950: '#1a1614' },
-                        fire: { 400: '#ff8e8e', 500: '#ff6b6b', 600: '#e05252' },
-                        water: { 400: '#7ed4e6', 500: '#4fc3dc', 600: '#2b9db3' },
-                        wind: { 400: '#6ce0ba', 500: '#42ca9f', 600: '#2da881' },
-                        earth: { 400: '#fad390', 500: '#f6b93b', 600: '#e58e26' },
-                        gold: { 400: '#ffeaa7', 500: '#fdcb6e', 600: '#e1b12c' },
+                        stone: { 50: '#fffaf0', 100: '#f8efdc', 200: '#ead9ba', 300: '#d6bd94', 400: '#aa8f6b', 500: '#806b54', 600: '#66513d', 700: '#4f3c2d', 800: '#453225', 900: '#33251c', 950: '#211711' },
+                        fire: { 400: '#df8a58', 500: '#c96a3d', 600: '#a95131' },
+                        water: { 400: '#8db4ae', 500: '#6c9b92', 600: '#517b73' },
+                        wind: { 400: '#9ebd68', 500: '#819f4f', 600: '#657e3f' },
+                        earth: { 400: '#e5bd70', 500: '#d39a3e', 600: '#ae722d' },
+                        gold: { 400: '#f2d477', 500: '#e5b84b', 600: '#bd8730' },
                         discord: { 500: '#5865F2', 600: '#4752C4' },
                         line: { 500: '#06C755', 600: '#05B34C' },
-                        sand: { 100: '#fdf6e3', 400: '#e6cca0', 500: '#d4b483', 600: '#b08d55' },
-                        wood: { 600: '#8b5a2b', 700: '#6d4c41' }
+                        sand: { 100: '#fbf1db', 400: '#dfc18e', 500: '#c9a56e', 600: '#9f784d' },
+                        wood: { 600: '#845331', 700: '#65402a' }
                     },
                     backgroundImage: {
                         'stone-texture': "url('https://www.transparenttextures.com/patterns/concrete-wall.png')",
@@ -2040,6 +2040,312 @@
                 margin-right: -0.15rem;
             }
         }
+
+        /* ========== 覺醒風格配色：石材、原木、苔蘚與陶土 ========== */
+        .player-shell {
+            --sa-ivory: #fbf3df;
+            --sa-parchment: #f0dfbd;
+            --sa-sand: #d8bb87;
+            --sa-wood: #6a442c;
+            --sa-wood-deep: #34231a;
+            --sa-moss: #6d833f;
+            --sa-leaf: #8daa52;
+            --sa-terracotta: #c96a3d;
+            --sa-gold: #e3b64c;
+            --sa-water: #6d9890;
+            --sa-ink: #433225;
+            --sa-muted: #786956;
+            --sa-line: #dcc49b;
+            --player-forest: var(--sa-moss);
+            --player-forest-deep: var(--sa-wood-deep);
+            --player-mint: var(--sa-leaf);
+            --player-gold: var(--sa-gold);
+            --player-paper: var(--sa-ivory);
+            --player-border: rgba(110, 76, 45, 0.18);
+            color: var(--sa-ink);
+            background:
+                radial-gradient(circle at 4% 17%, rgba(137, 168, 78, 0.12), transparent 27rem),
+                radial-gradient(circle at 96% 48%, rgba(201, 106, 61, 0.1), transparent 29rem),
+                linear-gradient(180deg, #f7edda 0%, #fbf4e5 43%, #f1dfbd 100%);
+        }
+        .player-top-nav {
+            border-top-color: var(--sa-leaf);
+            border-bottom-color: rgba(226, 189, 104, 0.25);
+            background:
+                radial-gradient(circle at 18% -60%, rgba(141, 170, 82, 0.2), transparent 24rem),
+                linear-gradient(180deg, rgba(77, 51, 35, 0.99), rgba(48, 32, 24, 0.985));
+            box-shadow: 0 11px 32px rgba(51, 34, 24, 0.34);
+        }
+        .player-top-nav.is-scrolled {
+            border-bottom-color: rgba(226, 189, 104, 0.42);
+            box-shadow: 0 14px 38px rgba(51, 34, 24, 0.45);
+        }
+        .player-nav-cluster {
+            border-color: rgba(232, 205, 145, 0.19);
+            background: rgba(255, 246, 221, 0.055);
+        }
+        .player-nav-link { color: #cbbba3; }
+        .player-nav-link:hover {
+            color: #fff7e8;
+            background: rgba(255, 242, 209, 0.09);
+        }
+        .player-nav-link.is-active {
+            color: #3d2a1e;
+            background: linear-gradient(180deg, #f2d376, #d9a93f);
+            box-shadow: 0 7px 18px rgba(209, 154, 48, 0.24), inset 0 1px 0 rgba(255,255,255,0.52);
+        }
+        .player-top-nav [class*="text-teal-300"] { color: #e2c86f !important; }
+        .player-top-nav [class*="drop-shadow"] { filter: drop-shadow(0 5px 10px rgba(20, 13, 9, 0.38)); }
+
+        .home-v3 {
+            --home-forest: #4e5d32;
+            --home-forest-deep: #2e251c;
+            --home-mint: #8daa52;
+            --home-gold: #e3b64c;
+            --home-paper: #fbf3df;
+            color: var(--sa-ink);
+            background:
+                radial-gradient(circle at 9% 20%, rgba(141, 170, 82, 0.11), transparent 24rem),
+                radial-gradient(circle at 91% 64%, rgba(201, 106, 61, 0.09), transparent 27rem),
+                var(--sa-ivory);
+        }
+        .home-v3-hero { background: #38281f; }
+        .home-v3-hero::before {
+            background:
+                linear-gradient(90deg, rgba(47, 33, 24, 0.96) 0%, rgba(47, 33, 24, 0.84) 43%, rgba(47, 33, 24, 0.36) 73%, rgba(47, 33, 24, 0.64) 100%),
+                linear-gradient(180deg, rgba(43, 31, 23, 0.22), rgba(36, 27, 20, 0.82));
+        }
+        .home-v3-hero::after {
+            opacity: 0.18;
+            background-image: radial-gradient(circle, rgba(245, 218, 152, 0.76) 1px, transparent 1.5px);
+        }
+        .home-v3-panel {
+            border-color: rgba(232, 205, 145, 0.31);
+            background:
+                radial-gradient(circle at 92% 0%, rgba(141, 170, 82, 0.16), transparent 17rem),
+                linear-gradient(145deg, rgba(75, 51, 35, 0.95), rgba(42, 31, 23, 0.93));
+            box-shadow: 0 28px 80px rgba(35, 23, 16, 0.46), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .home-v3-panel::before { border-color: rgba(226, 182, 76, 0.21); }
+        .home-v3-step:not(:last-child)::after {
+            background: linear-gradient(var(--sa-gold), rgba(141, 170, 82, 0.42));
+        }
+        .home-v3-path-card {
+            border-color: rgba(111, 76, 44, 0.2);
+            background: rgba(255, 250, 236, 0.94);
+            box-shadow: 0 18px 50px -31px rgba(83, 56, 34, 0.56);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .home-v3-path-card:hover {
+                border-color: rgba(109, 131, 63, 0.48);
+                box-shadow: 0 26px 58px -31px rgba(83, 56, 34, 0.62);
+            }
+        }
+        .home-v3-news {
+            background:
+                radial-gradient(circle at 90% 10%, rgba(226, 182, 76, 0.13), transparent 18rem),
+                linear-gradient(135deg, #58663a, #39442a);
+            box-shadow: 0 24px 60px -35px rgba(51, 44, 30, 0.88);
+        }
+        .home-v3-platform {
+            background: linear-gradient(145deg, #fffaf0, #f4e8cf);
+            border-color: rgba(111, 76, 44, 0.16);
+            box-shadow: 0 12px 35px -26px rgba(83, 56, 34, 0.58);
+        }
+
+        .player-shell .stone-panel,
+        .player-shell .card-base,
+        .player-shell .feature-card,
+        .player-status-card {
+            border-color: rgba(110, 76, 45, 0.17);
+            background: rgba(255, 250, 237, 0.95);
+            box-shadow: 0 15px 38px -30px rgba(79, 52, 32, 0.48);
+        }
+        .player-shell .feature-card__body {
+            background: linear-gradient(180deg, #fffaf0, #f8edd7);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .player-shell .stone-panel:hover {
+                border-color: rgba(109, 131, 63, 0.3);
+                box-shadow: 0 19px 44px -32px rgba(79, 52, 32, 0.54);
+            }
+        }
+        .player-page-header .page-hero-card {
+            --hero-accent: var(--sa-moss);
+            --hero-tint: #edf0dc;
+            --hero-ink: #4a392a;
+            border-color: color-mix(in srgb, var(--hero-accent) 29%, #d8bd8f);
+            background:
+                radial-gradient(circle at 92% 8%, color-mix(in srgb, var(--hero-accent) 15%, transparent), transparent 18rem),
+                linear-gradient(135deg, #fffaf0, var(--hero-tint));
+            box-shadow: 0 18px 44px -33px rgba(79, 52, 32, 0.47);
+        }
+        .player-page-header .page-hero-card::before {
+            background: linear-gradient(90deg, var(--hero-accent), var(--sa-gold), var(--sa-terracotta));
+        }
+        .page-hero-card--download { --hero-accent: #668f86; --hero-tint: #edf2e8; --hero-ink: #3e554d; }
+        .page-hero-card--guides { --hero-accent: #89603b; --hero-tint: #f5e6c9; --hero-ink: #5e402a; }
+        .page-hero-card--events { --hero-accent: #bd6540; --hero-tint: #f8e3d2; --hero-ink: #713d2b; }
+        .page-hero-card--auth { --hero-accent: #6d833f; --hero-tint: #edf1dc; --hero-ink: #45552e; }
+        .page-hero-card--member { --hero-accent: #7b8248; --hero-tint: #f0efd9; --hero-ink: #4e5131; }
+        .page-hero-card--recharge { --hero-accent: #b47a2f; --hero-tint: #f8e9c8; --hero-ink: #694721; }
+        .page-hero-card--support { --hero-accent: #76844a; --hero-tint: #edf0dc; --hero-ink: #49532f; }
+        .page-hero-card--terms { --hero-accent: #74604b; --hero-tint: #eee5d5; --hero-ink: #4e3d2f; }
+        .page-hero-card .section-sub,
+        .page-hero-note p:last-child { color: var(--sa-muted) !important; }
+        .page-hero-note {
+            border-color: color-mix(in srgb, var(--hero-accent) 22%, var(--sa-line));
+            background: rgba(255, 249, 235, 0.78);
+        }
+        .player-page-header__icon {
+            border-color: rgba(255, 246, 222, 0.84) !important;
+            box-shadow: 0 10px 24px -15px color-mix(in srgb, var(--hero-accent) 68%, #39261b) !important;
+        }
+
+        .player-shell .section-kicker {
+            color: #526832;
+            background: #e8efd5;
+            border-color: rgba(109, 131, 63, 0.3);
+        }
+        .player-shell .content-prose { color: #5c5042; }
+        .player-shell .content-prose h2,
+        .player-shell .content-prose h3 { color: #503824; }
+        .player-shell .content-prose a {
+            color: #627b3c;
+            text-decoration-color: rgba(109, 131, 63, 0.42);
+        }
+        .player-shell .ux-empty {
+            border-color: rgba(109, 131, 63, 0.34);
+            background: linear-gradient(145deg, rgba(239, 244, 220, 0.9), rgba(255, 244, 218, 0.82));
+        }
+        .player-section-nav {
+            border-color: rgba(110, 76, 45, 0.16) !important;
+            background: rgba(255, 249, 235, 0.9) !important;
+            box-shadow: 0 16px 40px -32px rgba(79, 52, 32, 0.55);
+        }
+        .player-shell input:not([type="checkbox"]):not([type="radio"]),
+        .player-shell select,
+        .player-shell textarea {
+            border-color: #d8c19a;
+            background-color: #fffaf0;
+            color: var(--sa-ink);
+        }
+        .player-shell input:not([type="checkbox"]):not([type="radio"]):focus,
+        .player-shell select:focus,
+        .player-shell textarea:focus {
+            border-color: var(--sa-moss) !important;
+            box-shadow: 0 0 0 3px rgba(109, 131, 63, 0.14) !important;
+        }
+        .player-shell input[type="checkbox"],
+        .player-shell input[type="radio"] { accent-color: var(--sa-moss); }
+
+        .auth-story-panel {
+            background:
+                radial-gradient(circle at 88% 12%, rgba(226, 182, 76, 0.2), transparent 17rem),
+                radial-gradient(circle at 10% 92%, rgba(141, 170, 82, 0.16), transparent 16rem),
+                linear-gradient(145deg, #5c3e2b 0%, #3b2b21 68%, #2d211a 100%) !important;
+            box-shadow: 0 30px 70px -42px rgba(51, 34, 24, 0.92);
+        }
+        .player-shell .auth-form-card {
+            border-color: rgba(109, 131, 63, 0.24);
+            background: #fffaf0;
+            box-shadow: 0 28px 68px -38px rgba(79, 52, 32, 0.65);
+        }
+        .player-context-section {
+            background:
+                radial-gradient(circle at 85% 20%, rgba(226, 182, 76, 0.2), transparent 20rem),
+                linear-gradient(135deg, #5b673b, #374229);
+            box-shadow: 0 30px 70px -46px rgba(51, 44, 30, 0.88);
+        }
+        .recharge-page .recharge-flow-card {
+            border-color: rgba(180, 122, 47, 0.23);
+            background: #fffaf0;
+            box-shadow: 0 18px 46px -35px rgba(99, 66, 32, 0.5);
+        }
+        .recharge-trust-strip article {
+            border-color: rgba(180, 122, 47, 0.21);
+            background: rgba(255, 249, 235, 0.87);
+        }
+
+        /* 舊頁面色彩統一到同一套遊戲語言；Discord／LINE 保留品牌識別色。 */
+        .player-shell .text-teal-500,
+        .player-shell .text-teal-600,
+        .player-shell .text-teal-700,
+        .player-shell .text-emerald-500,
+        .player-shell .text-emerald-600,
+        .player-shell .text-emerald-700,
+        .player-shell .text-green-600,
+        .player-shell .text-green-700 { color: #61793b !important; }
+        .player-shell .bg-teal-50,
+        .player-shell .bg-teal-100,
+        .player-shell .bg-emerald-50,
+        .player-shell .bg-emerald-100,
+        .player-shell .bg-green-50,
+        .player-shell .bg-green-100 { background-color: #edf2dc !important; }
+        .player-shell .bg-teal-500,
+        .player-shell .bg-teal-600,
+        .player-shell .bg-emerald-500,
+        .player-shell .bg-emerald-600,
+        .player-shell .bg-green-500,
+        .player-shell .bg-green-600 { background-color: #718844 !important; }
+        .player-shell .border-teal-100,
+        .player-shell .border-teal-200,
+        .player-shell .border-emerald-100,
+        .player-shell .border-emerald-200,
+        .player-shell .border-green-100,
+        .player-shell .border-green-200 { border-color: #cad6a8 !important; }
+        .player-shell .text-sky-500,
+        .player-shell .text-sky-600,
+        .player-shell .text-sky-700 { color: #557d75 !important; }
+        .player-shell .bg-sky-50,
+        .player-shell .bg-sky-100 { background-color: #e9f0e8 !important; }
+        .player-shell .border-sky-100,
+        .player-shell .border-sky-200 { border-color: #c1d3ca !important; }
+        .player-shell .text-violet-500,
+        .player-shell .text-violet-600,
+        .player-shell .text-violet-700,
+        .player-shell .text-purple-500,
+        .player-shell .text-purple-600,
+        .player-shell .text-purple-700 { color: #795036 !important; }
+        .player-shell .bg-violet-50,
+        .player-shell .bg-violet-100,
+        .player-shell .bg-purple-50,
+        .player-shell .bg-purple-100 { background-color: #f5e6cc !important; }
+        .player-shell .bg-violet-500,
+        .player-shell .bg-violet-600,
+        .player-shell .bg-purple-500,
+        .player-shell .bg-purple-600 { background-color: #8a5a38 !important; }
+        .player-shell .border-violet-200,
+        .player-shell .border-violet-300,
+        .player-shell .border-violet-500,
+        .player-shell .border-purple-200,
+        .player-shell .border-purple-300,
+        .player-shell .border-purple-500 { border-color: #d6b78d !important; }
+        .player-shell .text-stone-900 { color: #3f3024 !important; }
+        .player-shell .text-stone-800 { color: #49382b !important; }
+        .player-shell .text-stone-700 { color: #584535 !important; }
+        .player-shell .text-stone-600 { color: #6d5946 !important; }
+        .player-shell .text-stone-500 { color: #806f5d !important; }
+        .player-shell .bg-stone-50 { background-color: #fffaf0 !important; }
+        .player-shell .bg-stone-100 { background-color: #f7ecd6 !important; }
+        .player-shell .border-stone-100,
+        .player-shell .border-stone-200 { border-color: #e3cfaa !important; }
+
+        footer.player-footer {
+            background:
+                radial-gradient(circle at 10% 0%, rgba(141,170,82,0.13), transparent 24rem),
+                radial-gradient(circle at 90% 20%, rgba(226,182,76,0.11), transparent 24rem),
+                linear-gradient(180deg, #493226, #2b1e17) !important;
+        }
+        .player-footer__link { color: #c8b9a3; }
+        .player-footer__link:hover { color: #f2d477; }
+        footer.player-footer [class*="text-teal-300"],
+        footer.player-footer [class*="text-emerald-200"] { color: #d8c66f !important; }
+        .player-shell .mobile-bottom-nav .pointer-events-auto {
+            border-color: rgba(205, 164, 91, 0.46);
+            background: linear-gradient(180deg, rgba(77, 51, 35, 0.98), rgba(43, 29, 22, 0.99));
+            box-shadow: 0 -12px 42px rgba(51, 34, 24, 0.48) !important;
+        }
         </style>
 </head>
 <body>
@@ -3455,9 +3761,9 @@
 
         // 按鈕樣式調整：更圓潤、陰影更柔和
         const BUTTON_VARIANTS = {
-            primary: "bg-fire-500 text-white shadow-lg shadow-fire-200 hover:bg-fire-600 hover:shadow-[0_0_25px_rgba(255,107,107,0.3)] border-2 border-transparent transition-all duration-300",
-            secondary: "bg-stone-100 text-stone-600 hover:bg-stone-200 border-2 border-stone-200 transition-all duration-300",
-            gold: "bg-gradient-to-br from-gold-400 to-gold-500 text-white shadow-lg shadow-gold-200 hover:to-gold-600 hover:shadow-[0_0_30px_rgba(251,191,36,0.35)] border-2 border-transparent transition-all duration-300",
+            primary: "bg-[#c96a3d] text-white shadow-lg shadow-[#c96a3d]/20 hover:bg-[#ad5633] hover:shadow-[0_0_25px_rgba(201,106,61,0.24)] border-2 border-[#9e4d2e]/20 transition-all duration-300",
+            secondary: "bg-[#f8efdc] text-[#5f4937] hover:bg-[#ead9ba] border-2 border-[#d6bd94] transition-all duration-300",
+            gold: "bg-gradient-to-br from-[#f2d477] to-[#dca63f] text-[#3f2d20] shadow-lg shadow-[#dca63f]/20 hover:to-[#c78d32] hover:shadow-[0_0_30px_rgba(220,166,63,0.28)] border-2 border-[#b77c2c]/20 transition-all duration-300",
             discord: "bg-[#5865F2] text-white shadow-lg shadow-indigo-200 hover:bg-[#4752C4] hover:shadow-[0_0_25px_rgba(88,101,242,0.35)] border-2 border-transparent transition-all duration-300",
             line: "bg-[#06C755] text-white shadow-lg shadow-green-200 hover:bg-[#05B34C] hover:shadow-[0_0_25px_rgba(6,199,85,0.35)] border-2 border-transparent transition-all duration-300"
         };
@@ -3589,8 +3895,8 @@
 
             return (
                 <div className="mobile-bottom-nav fixed bottom-0 inset-x-0 z-50 pb-safe md:hidden pointer-events-none px-2 pb-2">
-                    <div className="pointer-events-auto mx-auto max-w-lg rounded-[1.35rem] border-2 border-teal-500/50 bg-gradient-to-t from-[#050807] via-[#0f172a] to-[#134e4a]/90 shadow-[0_-8px_40px_rgba(0,0,0,0.55)] ring-1 ring-teal-400/30 backdrop-blur-xl">
-                    <div className="h-[3px] w-full rounded-t-[1.25rem] bg-gradient-to-r from-teal-400 via-amber-400 to-teal-500" aria-hidden />
+                    <div className="pointer-events-auto mx-auto max-w-lg rounded-[1.35rem] border-2 border-[#9b774d]/70 bg-gradient-to-t from-[#2b1d15] via-[#3f2b20] to-[#5b3a27]/95 shadow-[0_-8px_40px_rgba(42,28,19,0.55)] ring-1 ring-[#e2bd68]/25 backdrop-blur-xl">
+                    <div className="h-[3px] w-full rounded-t-[1.25rem] bg-gradient-to-r from-[#7d963f] via-[#e3b64c] to-[#c96a3d]" aria-hidden />
                     <p className="sr-only" id="mobile-nav-hint">圖示下方為功能名稱，點選可前往該頁</p>
                     <div className="flex justify-between items-stretch min-h-[56px] px-1.5 py-2 gap-0.5" role="navigation" aria-label="手機底部選單" aria-describedby="mobile-nav-hint">
                         {navItems.map((item) => {
@@ -3600,13 +3906,13 @@
                                     key={item.path} 
                                     to={item.path} 
                                     title={item.hint || item.label}
-                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-[0.97] active:opacity-90 ${isActive ? 'text-amber-200' : 'text-stone-500 active:text-stone-400'}`}
+                                    className={`flex flex-col items-center justify-center flex-1 min-w-0 rounded-2xl transition-all duration-200 active:scale-[0.97] active:opacity-90 ${isActive ? 'text-[#f3d476]' : 'text-[#bfae96] active:text-[#e2d3bb]'}`}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <span className={`flex items-center justify-center w-11 h-11 rounded-2xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-teal-400 to-emerald-600 text-stone-950 shadow-[0_4px_14px_rgba(45,212,191,0.5)] ring-1 ring-white/30' : 'bg-slate-800/95 border border-slate-600/80'}`}>
-                                        <item.icon size={22} strokeWidth={isActive ? 2.35 : 2} className={isActive ? '' : 'text-slate-400'} aria-hidden />
+                                    <span className={`flex items-center justify-center w-11 h-11 rounded-2xl mb-0.5 transition-all ${isActive ? 'bg-gradient-to-b from-[#f1cf68] to-[#c98f32] text-[#39261a] shadow-[0_4px_14px_rgba(213,165,59,0.4)] ring-1 ring-white/30' : 'bg-[#34241b]/95 border border-[#715039]/80'}`}>
+                                        <item.icon size={22} strokeWidth={isActive ? 2.35 : 2} className={isActive ? '' : 'text-[#aa9279]'} aria-hidden />
                                     </span>
-                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-teal-100' : 'text-slate-500'}`}>{item.label}</span>
+                                    <span className={`text-[11px] font-bold font-display tracking-wide truncate max-w-full leading-tight px-0.5 ${isActive ? 'text-[#f6df9a]' : 'text-[#aa9279]'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}
@@ -3636,8 +3942,8 @@
                                 return (
                                     <React.Fragment key={step.n}>
                                         {step.external ? (
-                                            <a href={step.to} target="_blank" rel="noopener noreferrer" className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-indigo-600 text-white shadow-md' : done ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
-                                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-white text-indigo-700' : done ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-600'}`}>
+                                            <a href={step.to} target="_blank" rel="noopener noreferrer" className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs sm:text-sm font-black transition-colors ${active ? 'bg-[#6d833f] text-white shadow-md' : done ? 'bg-[#edf2dc] text-[#526832] hover:bg-[#e3ebca]' : 'text-stone-500 hover:bg-stone-100'}`} aria-current={active ? 'step' : undefined}>
+                                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${active ? 'bg-[#fff7e7] text-[#526832]' : done ? 'bg-[#7f9949] text-white' : 'bg-stone-200 text-stone-600'}`}>
                                                     {done ? <Check size={14} /> : step.n}
                                                 </span>
                                                 <span className="truncate">{step.label}</span>
@@ -5873,17 +6179,17 @@
                 {
                     label: '準備儲值', title: '我要儲值', desc: '先確認已有遊戲帳號；註冊網站會員時輸入遊戲主帳號，就會同步綁定旗下角色。',
                     cta: '查看儲值流程', to: '/recharge', icon: Coins,
-                    accent: 'text-teal-700 bg-teal-100', glow: 'rgba(45, 212, 191, 0.2)'
+                    accent: 'text-[#536b35] bg-[#e8efd5]', glow: 'rgba(109, 131, 63, 0.18)'
                 },
                 {
                     label: '已經在玩', title: '找攻略與活動', desc: '快速查看新手教學、寵物、副本與限時活動，不用在聊天紀錄裡翻資料。',
                     cta: '前往攻略中心', to: '/guides', icon: BookOpen,
-                    accent: 'text-violet-700 bg-violet-100', glow: 'rgba(139, 92, 246, 0.16)'
+                    accent: 'text-[#70462d] bg-[#f1dfbf]', glow: 'rgba(132, 83, 49, 0.16)'
                 },
                 {
                     label: '遇到問題', title: '我需要有人幫忙', desc: '下載、登入、角色資料或付款問題，都能直接找到真人客服。',
                     cta: '前往客服', to: '/support', icon: MessageCircle,
-                    accent: 'text-sky-700 bg-sky-100', glow: 'rgba(56, 189, 248, 0.18)'
+                    accent: 'text-[#9b4d31] bg-[#f7dfcf]', glow: 'rgba(201, 106, 61, 0.16)'
                 }
             ];
 
@@ -9492,8 +9798,8 @@
                                     { n: '03', title: '一次說清楚', text: '描述發生時間與操作步驟，客服能更快協助。', icon: Send },
                                 ].map(({ n, title, text, icon: HelpIcon }) => (
                                     <article key={n} className="flex gap-3 rounded-2xl border border-white bg-white/80 p-4">
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white"><HelpIcon size={19} /></span>
-                                        <div><p className="text-[10px] font-black tracking-wider text-indigo-500">STEP {n}</p><h2 className="mt-0.5 font-black text-stone-900">{title}</h2><p className="mt-1 text-xs font-semibold leading-5 text-stone-600">{text}</p></div>
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#718844] text-white"><HelpIcon size={19} /></span>
+                                        <div><p className="text-[10px] font-black tracking-wider text-[#61793b]">STEP {n}</p><h2 className="mt-0.5 font-black text-stone-900">{title}</h2><p className="mt-1 text-xs font-semibold leading-5 text-stone-600">{text}</p></div>
                                     </article>
                                 ))}
                             </div>
@@ -9501,13 +9807,13 @@
                         
                         {/* 先分流需求，再提供對應管道 */}
                         <div id="support-channels" className="grid scroll-mt-24 gap-5 md:grid-cols-2">
-                            <article className="stone-panel relative overflow-hidden border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-6 text-stone-800 sm:p-8">
-                                <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-indigo-200/30 blur-2xl" aria-hidden />
+                            <article className="stone-panel relative overflow-hidden border-[#d7c19b] bg-gradient-to-br from-[#fff8e8] to-[#edf2dc] p-6 text-stone-800 sm:p-8">
+                                <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#dce7bd]/60 blur-2xl" aria-hidden />
                                 <div className="relative">
-                                    <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200">
+                                    <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e5ecd0] text-[#5f763b] ring-1 ring-[#c6d2a4]">
                                         <MessageCircle size={29} aria-hidden />
                                     </span>
-                                    <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-600">玩家社群</p>
+                                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#61793b]">玩家社群</p>
                                     <h2 className="mt-2 font-display text-2xl font-black">新手交流、活動消息、找隊友</h2>
                                     <p className="mt-3 min-h-[4rem] text-sm font-medium leading-7 text-stone-600">一般遊戲問題與玩家交流，推薦先到 Discord；消息最快，也更容易找到一起玩的夥伴。</p>
                                     <button type="button" onClick={handleDiscord} className="mt-6 inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-black text-white hover:bg-indigo-500 transition-colors">
