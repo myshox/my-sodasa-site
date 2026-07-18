@@ -1960,7 +1960,7 @@
             Edit, Edit2, Settings, UserPlus, Calendar, Tag, SkipForward, Music, FolderOpen, MessageCircle,
             ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, BarChart3,
             BookOpen, ArrowLeft, Clock, Users, LayoutGrid, List, Type, Share2, Gift,
-            Laptop, Gamepad2, QrCode, Circle, Zap
+            Laptop, Gamepad2, QrCode, Circle, Zap, PawPrint, Swords
         } from 'lucide-react';
         
         // --- Supabase 配置 ---
@@ -3465,7 +3465,7 @@
             const steps = purpose === 'recharge' ? [
                 { n: 1, label: '先有遊戲帳號', to: '/download' },
                 { n: 2, label: '註冊＋同步綁定', to: '/auth?mode=register' },
-                { n: 3, label: '加入 Discord', to: DISCORD_INVITE_URL, external: true }
+                { n: 3, label: '前往安心儲值', to: '/recharge' }
             ] : [
                 { n: 1, label: '下載遊戲', to: '/download' },
                 { n: 2, label: '遊戲內註冊', to: '/download' },
@@ -4100,28 +4100,31 @@
                                             最後請到信箱點擊驗證連結；驗證後即可登入網站會員並使用儲值。
                                         </div>
                                     )}
-                                    <a
-                                        href={DISCORD_INVITE_URL}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-2xl bg-indigo-600 px-5 py-4 text-lg font-black text-white shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5 hover:bg-indigo-500"
-                                    >
-                                        <MessageCircle size={23} /> 加入 Discord 玩家部落 <ExternalLink size={18} />
-                                    </a>
-                                    <p className="text-center text-sm font-semibold leading-6 text-stone-500">新手公告、活動消息與玩家交流都在 Discord；加入後先到新手區報到。</p>
                                     {registrationComplete.needsEmailConfirmation ? (
                                         <button
                                             type="button"
                                             onClick={() => { setRegistrationComplete(null); setIsLogin(true); setError(''); }}
-                                            className="w-full rounded-xl border-2 border-stone-200 bg-white px-4 py-3 font-black text-stone-700 transition-colors hover:bg-stone-50"
+                                            className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-amber-300 to-amber-500 px-5 py-4 text-lg font-black text-stone-900 shadow-lg transition-colors hover:from-amber-200 hover:to-amber-400"
                                         >
-                                            我已驗證 Email，前往登入
+                                            我已驗證 Email，前往登入 <ArrowRight size={19} />
                                         </button>
                                     ) : (
-                                        <Link to="/member" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-stone-200 bg-white px-4 py-3 font-black text-stone-700 transition-colors hover:bg-stone-50">
-                                            前往會員中心 <ArrowRight size={18} />
+                                        <Link to="/recharge" className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-amber-300 to-amber-500 px-5 py-4 text-lg font-black text-stone-900 shadow-lg transition-colors hover:from-amber-200 hover:to-amber-400">
+                                            綁定完成，前往儲值 <ArrowRight size={19} />
                                         </Link>
                                     )}
+                                    <Link to="/member" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-stone-200 bg-white px-4 py-3 font-black text-stone-700 transition-colors hover:bg-stone-50">
+                                        先查看會員中心 <ArrowRight size={18} />
+                                    </Link>
+                                    <a
+                                        href={DISCORD_INVITE_URL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3.5 font-black text-indigo-700 transition-colors hover:bg-indigo-100"
+                                    >
+                                        <MessageCircle size={21} /> 加入 Discord 玩家部落 <ExternalLink size={16} />
+                                    </a>
+                                    <p className="text-center text-sm font-semibold leading-6 text-stone-500">新手公告、活動消息與玩家交流都在 Discord；加入後先到新手區報到。</p>
                                 </div>
                             ) : isRecoveryMode ? (
                                 <form onSubmit={handleUpdatePassword} className="space-y-4">
@@ -5676,6 +5679,10 @@
             const navigate = useNavigate();
             const [events, setEvents] = useState([]);
             const [banners, setBanners] = useState([]);
+            const [savedPlatform] = useState(() => {
+                try { return localStorage.getItem('sodasa-player-platform') || ''; } catch { return ''; }
+            });
+            const hasStartedDownload = Boolean(savedPlatform);
 
             useEffect(() => {
                 const loadHomeData = async () => {
@@ -5706,6 +5713,11 @@
                     label: '準備儲值', title: '我要儲值', desc: '先確認已有遊戲帳號；註冊網站會員時輸入遊戲主帳號，就會同步綁定旗下角色。',
                     cta: '查看儲值流程', to: '/recharge', icon: Coins,
                     accent: 'text-teal-700 bg-teal-100', glow: 'rgba(45, 212, 191, 0.2)'
+                },
+                {
+                    label: '已經在玩', title: '找攻略與活動', desc: '快速查看新手教學、寵物、副本與限時活動，不用在聊天紀錄裡翻資料。',
+                    cta: '前往攻略中心', to: '/guides', icon: BookOpen,
+                    accent: 'text-violet-700 bg-violet-100', glow: 'rgba(139, 92, 246, 0.16)'
                 },
                 {
                     label: '遇到問題', title: '我需要有人幫忙', desc: '下載、登入、角色資料或付款問題，都能直接找到真人客服。',
@@ -5758,11 +5770,11 @@
 
                                         <div className="mt-8 flex flex-col sm:flex-row gap-3.5">
                                             <button
-                                                onClick={() => navigate('/download')}
+                                                onClick={() => navigate(hasStartedDownload ? '/guides?from=start' : '/download')}
                                                 className="group inline-flex min-h-[56px] items-center justify-center gap-3 rounded-2xl bg-gradient-to-b from-amber-300 to-amber-500 px-7 py-4 text-lg font-black text-stone-900 shadow-[0_12px_35px_rgba(245,184,46,0.3),0_4px_0_#9a5b12] transition-all hover:-translate-y-0.5 hover:from-amber-200 hover:to-amber-400 active:translate-y-1 active:shadow-none"
                                             >
-                                                <Download size={22} strokeWidth={2.7} />
-                                                免費下載，開始遊戲
+                                                {hasStartedDownload ? <BookOpen size={22} strokeWidth={2.7} /> : <Download size={22} strokeWidth={2.7} />}
+                                                {hasStartedDownload ? '繼續完成新手步驟' : '免費下載，開始遊戲'}
                                                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
                                             </button>
                                             <Link
@@ -5792,8 +5804,8 @@
                                         <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-28 lg:h-32 w-auto object-contain mx-auto drop-shadow-[0_10px_25px_rgba(0,0,0,0.45)]" alt="蘇打石器" priority />
                                         <div className="mt-5 flex items-end justify-between gap-4 border-b border-white/10 pb-5">
                                             <div>
-                                                <p className="text-xs font-black tracking-[0.18em] text-amber-300">NEW PLAYER ROUTE</p>
-                                                <h2 className="mt-1.5 text-2xl font-black text-white">第一次玩？照這條路走</h2>
+                                                <p className="text-xs font-black tracking-[0.18em] text-amber-300">{hasStartedDownload ? 'WELCOME BACK' : 'NEW PLAYER ROUTE'}</p>
+                                                <h2 className="mt-1.5 text-2xl font-black text-white">{hasStartedDownload ? '歡迎回來，接著建立角色' : '第一次玩？照這條路走'}</h2>
                                             </div>
                                             <span className="hidden sm:inline-flex rounded-full bg-emerald-400/15 px-3 py-1.5 text-xs font-bold text-emerald-200 border border-emerald-300/20">約 3 分鐘</span>
                                         </div>
@@ -5810,8 +5822,8 @@
                                             ))}
                                         </ol>
 
-                                        <Link to="/download" className="mt-5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3.5 font-black text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-400">
-                                            帶我開始 <ArrowRight size={18} />
+                                        <Link to={hasStartedDownload ? '/guides?from=start' : '/download'} className="mt-5 flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3.5 font-black text-white shadow-lg shadow-emerald-950/40 transition-colors hover:bg-emerald-400">
+                                            {hasStartedDownload ? '查看安裝與新手攻略' : '帶我開始'} <ArrowRight size={18} />
                                         </Link>
                                         <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-indigo-300/25 bg-indigo-500/20 px-5 py-3 font-black text-indigo-100 transition-colors hover:bg-indigo-500/35">
                                             <MessageCircle size={18} /> 加入 Discord 玩家部落 <ExternalLink size={15} />
@@ -5827,6 +5839,24 @@
                             </div>
                         </div>
                     </section>
+
+                    {hasStartedDownload && (
+                        <section className="border-b border-emerald-200 bg-emerald-50/95 px-5 py-4" aria-label="繼續上次進度">
+                            <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-start gap-3">
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white"><CheckCircle size={20} /></span>
+                                    <div>
+                                        <p className="font-black text-stone-900">你已經開啟過 {savedPlatform === 'pc' ? 'Windows' : savedPlatform === 'android' ? 'Android' : 'iOS'} 下載</p>
+                                        <p className="mt-0.5 text-sm font-semibold text-stone-600">下一步是安裝遊戲、在登入畫面建立遊戲帳號，再建立第一個角色。</p>
+                                    </div>
+                                </div>
+                                <div className="flex shrink-0 gap-2">
+                                    <Link to="/download" className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-black text-emerald-800">查看安裝</Link>
+                                    <Link to="/guides?from=start" className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white">繼續下一步 <ArrowRight size={16} /></Link>
+                                </div>
+                            </div>
+                        </section>
+                    )}
 
                     {banners.length > 0 && (
                         <section className="border-b border-amber-300/40 bg-amber-100/90">
@@ -5849,7 +5879,7 @@
                                 <h2 id="choose-path-title" className="mt-4 font-display text-3xl sm:text-4xl font-black tracking-tight text-stone-900">不用找選單，選你現在的狀況</h2>
                                 <p className="mt-3 text-stone-600 font-semibold leading-7">每一條路都只保留現在真正需要的資訊。</p>
                             </div>
-                            <div className="mt-9 grid md:grid-cols-3 gap-5">
+                            <div className="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
                                 {playerPaths.map((path) => (
                                     <Link key={path.title} to={path.to} className="home-v3-path-card group rounded-3xl p-6 sm:p-7" style={{ '--path-glow': path.glow }}>
                                         <div className={`relative z-10 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${path.accent}`}><path.icon size={24} /></div>
@@ -6642,6 +6672,12 @@
             const [searchTerm, setSearchTerm] = useState('');
 
             useEffect(() => {
+                if (guideSearchParams.get('from') === 'start' && !guideIdFromUrl) {
+                    setCategory('beginner');
+                }
+            }, [guideIdFromUrl]);
+
+            useEffect(() => {
                 loadGuides();
             }, [category]);
 
@@ -6797,6 +6833,27 @@
                             icon={BookOpen}
                             kicker="新手友善 · 慢慢看"
                         />
+
+                        <section className="mb-6 rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-emerald-50 p-5 shadow-sm sm:p-6" aria-labelledby="guide-need-title">
+                            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <p className="text-xs font-black tracking-[0.16em] text-amber-700">不用先懂攻略分類</p>
+                                    <h2 id="guide-need-title" className="mt-1.5 text-xl font-black text-stone-900">你現在卡在哪裡？</h2>
+                                    <p className="mt-1 text-sm font-semibold text-stone-600">選一個最接近的狀況，我們幫你先整理內容。</p>
+                                </div>
+                                <div className="grid gap-2 sm:grid-cols-3 lg:min-w-[34rem]">
+                                    {[
+                                        { label: '剛建立角色', category: 'beginner', icon: Sparkles },
+                                        { label: '想找寵物攻略', category: 'pet', icon: PawPrint },
+                                        { label: '副本或任務卡關', category: 'pve', icon: Swords },
+                                    ].map(({ label, category: needCategory, icon: NeedIcon }) => (
+                                        <button key={needCategory} type="button" onClick={() => { setCategory(needCategory); setSearchTerm(''); }} className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-black transition-colors ${category === needCategory ? 'border-teal-600 bg-teal-600 text-white' : 'border-stone-200 bg-white text-stone-700 hover:border-teal-300 hover:bg-teal-50'}`}>
+                                            <NeedIcon size={17} /> {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
 
                         {/* 搜尋 + 檢視切換（單一區塊，減少層次） */}
                         <div className="stone-panel bg-white/90 p-3 sm:p-4 mb-6">
@@ -7750,6 +7807,9 @@
 
         // 下載頁面
         const DownloadPage = () => {
+            const [downloadedPlatform, setDownloadedPlatform] = useState(() => {
+                try { return localStorage.getItem('sodasa-player-platform') || ''; } catch { return ''; }
+            });
             const recommendedPlatform = useMemo(() => {
                 const ua = navigator.userAgent || '';
                 if (/iPhone|iPad|iPod/i.test(ua)) return { id: 'ios', label: 'iOS（iPhone／iPad）' };
@@ -7758,6 +7818,7 @@
             }, []);
             const rememberDownload = (platform) => {
                 try { localStorage.setItem('sodasa-player-platform', platform); } catch {}
+                setDownloadedPlatform(platform);
             };
             const handlePcDownload = () => {
                 rememberDownload('pc');
@@ -7811,8 +7872,12 @@
                             </div>
                         </div>
 
-                        <div className="max-w-5xl mx-auto mb-6 rounded-2xl border border-teal-200 bg-teal-50/90 px-4 py-3 text-center text-sm font-bold text-teal-800">
-                            <span aria-hidden>✨</span> 依你目前的裝置，建議選擇 <strong>{recommendedPlatform.label}</strong>
+                        <div className={`max-w-5xl mx-auto mb-6 rounded-2xl border px-4 py-3 text-center text-sm font-bold ${downloadedPlatform ? 'border-emerald-200 bg-emerald-50/95 text-emerald-800' : 'border-teal-200 bg-teal-50/90 text-teal-800'}`}>
+                            {downloadedPlatform ? (
+                                <><CheckCircle size={17} className="mr-1.5 inline" />已開啟過下載。若已安裝完成，請直接開啟遊戲並從登入畫面建立遊戲帳號。</>
+                            ) : (
+                                <><span aria-hidden>✨</span> 依你目前的裝置，建議選擇 <strong>{recommendedPlatform.label}</strong></>
+                            )}
                         </div>
                         {/* 平台卡片 */}
                     <div className="max-w-5xl mx-auto relative">
@@ -7821,7 +7886,7 @@
                             <motion.div
                                 whileHover={{ y: -6 }}
                                 transition={{ type: 'spring', stiffness: 300 }}
-                                className="feature-card group"
+                                className={`feature-card group ${recommendedPlatform.id === 'pc' ? 'ring-4 ring-sky-200/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-water-500 to-water-600">
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.22),transparent)]" />
@@ -7841,7 +7906,7 @@
                                         className="mt-auto w-full py-3.5 rounded-xl bg-water-500 hover:bg-water-600 text-white font-bold text-base shadow-btn hover:shadow-btn-press hover:translate-y-0.5 transition-all flex items-center justify-center gap-2"
                                         aria-label="下載 Windows PC 版"
                                     >
-                                        <Download size={20} /> 下載 PC 版
+                                        <Download size={20} /> {downloadedPlatform === 'pc' ? '重新開啟 PC 下載' : '下載 PC 版'}
                                     </button>
                                     <p className="text-stone-500 text-xs text-center mt-2">Windows 7+</p>
                                 </div>
@@ -7851,7 +7916,7 @@
                             <motion.div
                                 whileHover={{ y: -6 }}
                                 transition={{ type: 'spring', stiffness: 300 }}
-                                className="feature-card group"
+                                className={`feature-card group ${recommendedPlatform.id === 'android' ? 'ring-4 ring-emerald-200/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-wind-500 to-wind-600">
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.22),transparent)]" />
@@ -7871,7 +7936,7 @@
                                         className="mt-auto w-full py-3.5 rounded-xl bg-wind-500 hover:bg-wind-600 text-white font-bold text-base shadow-btn hover:shadow-btn-press hover:translate-y-0.5 transition-all flex items-center justify-center gap-2"
                                         aria-label="下載 Android 版"
                                     >
-                                        <Download size={20} /> 下載 Android
+                                        <Download size={20} /> {downloadedPlatform === 'android' ? '重新開啟 Android 下載' : '下載 Android'}
                                     </button>
                                     <p className="text-stone-500 text-xs text-center mt-2">Android 5.0+</p>
                                 </div>
@@ -7881,7 +7946,7 @@
                             <motion.div
                                 whileHover={{ y: -6 }}
                                 transition={{ type: 'spring', stiffness: 300 }}
-                                className="feature-card group sm:col-span-2 lg:col-span-1"
+                                className={`feature-card group sm:col-span-2 lg:col-span-1 ${recommendedPlatform.id === 'ios' ? 'ring-4 ring-stone-300/70' : ''}`}
                             >
                                 <div className="feature-card__head bg-gradient-to-br from-stone-500 to-stone-700">
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,255,255,0.15),transparent)]" />
@@ -7901,7 +7966,7 @@
                                         className="mt-auto w-full py-3.5 rounded-xl bg-stone-600 hover:bg-stone-700 text-white font-bold text-base shadow-btn hover:shadow-btn-press hover:translate-y-0.5 transition-all flex items-center justify-center gap-2"
                                         aria-label="下載 iOS 版"
                                     >
-                                        <Download size={20} /> 下載 iOS
+                                        <Download size={20} /> {downloadedPlatform === 'ios' ? '重新開啟 iOS 下載' : '下載 iOS'}
                                     </button>
                                     <p className="text-stone-500 text-xs text-center mt-2">iPhone、iPad</p>
                                 </div>
@@ -8394,19 +8459,20 @@
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="page-content min-h-screen">
                         <PageHeader title="金幣贊助" subtitle="謝謝你願意支持部落。填完資料後會先請你截圖，再安心前往付款。" icon={Crown} color="text-gold-500" kicker="自願贊助 · 感謝有你" />
                         <div className="max-w-2xl mx-auto mt-8">
-                            <div className="bg-white rounded-3xl border-2 border-red-300 shadow-xl overflow-hidden">
-                                <div className="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6 flex items-center gap-4">
+                            <div className="overflow-hidden rounded-3xl border-2 border-amber-300 bg-white shadow-xl">
+                                <div className="flex items-center gap-4 bg-gradient-to-r from-teal-700 to-emerald-600 px-6 py-6 sm:px-8">
                                     <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                                        <AlertCircle size={28} className="text-white" />
+                                        <Key size={28} className="text-white" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-black text-white">尚未綁定遊戲主帳號</h2>
-                                        <p className="text-red-100 text-sm mt-0.5">新會員通常已在註冊時完成綁定；舊會員可在會員中心補綁</p>
+                                        <p className="text-xs font-black tracking-[0.14em] text-emerald-100">儲值前的安全確認</p>
+                                        <h2 className="mt-1 text-xl font-black text-white">還差一步：綁定遊戲主帳號</h2>
+                                        <p className="mt-1 text-sm text-emerald-50">確認金幣要發到哪一個帳號，避免送錯角色。</p>
                                     </div>
                                 </div>
                                 <div className="p-8 space-y-5">
                                     <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3">
-                                        <p className="text-stone-700 font-bold text-base">📋 舊會員補綁步驟：</p>
+                                        <p className="text-stone-800 font-black text-base">只要完成一次，以後不必重複：</p>
                                         <p className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">還沒有遊戲帳號？請先下載並從遊戲登入畫面完成註冊，網站無法建立遊戲帳號。</p>
                                         <ol className="space-y-2 text-stone-700 text-sm font-medium list-none">
                                             <li className="flex items-start gap-3">
