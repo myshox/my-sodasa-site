@@ -11,3 +11,5 @@ for (const entry of await readdir(root, { withFileTypes: true })) {
 }
 await mkdir(join(dist, "server"), { recursive: true });
 await writeFile(join(dist, "server", "index.js"), `export default { async fetch(request, env) { return env.ASSETS.fetch(request); } };\n`);
+await mkdir(join(dist, ".openai"), { recursive: true });
+await cp(join(root, ".openai", "hosting.json"), join(dist, ".openai", "hosting.json"));
