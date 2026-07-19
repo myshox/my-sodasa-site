@@ -33,19 +33,6 @@ Allow: /
 User-agent: Baiduspider
 Allow: /
 
-# AI 爬蟲：允許收錄供 AI 工具引用
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
 # 過於積極的 SEO 工具爬蟲：完全封鎖
 User-agent: AhrefsBot
 Disallow: /
