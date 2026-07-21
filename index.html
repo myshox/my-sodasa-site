@@ -4215,7 +4215,7 @@
         const ASSETS = {
         LOGO: 'images/logo-official-transparent-v2.png',
         HERO: 'images/hero.webp',
-        HERO_AWAKENING: 'images/og-ux-v2.jpg',
+        HERO_AWAKENING: 'images/hero-awakening-official.webp',
             LINE_LOGO: 'images/LINE_logo.jpg',
             LINE_PAY_LOGO: 'images/LINEPAY.jpg', 
             JKOPAY_LOGO: 'images/jkopay.jpg', 
@@ -7854,6 +7854,13 @@
                             <div className="grid lg:grid-cols-[1.08fr_.92fr] gap-10 lg:gap-14 items-center">
                                 <div className="text-white max-w-2xl">
                                     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                        <SmartImage
+                                            src={getAssetUrl(ASSETS.LOGO)}
+                                            fallbackType="logo"
+                                            className="mb-5 h-24 w-auto max-w-[78vw] object-contain object-left drop-shadow-[0_12px_28px_rgba(0,0,0,0.5)] sm:h-28 lg:h-32"
+                                            alt="蘇打石器"
+                                            priority
+                                        />
                                         <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-300/30 bg-emerald-950/60 px-4 py-2 text-sm font-black text-emerald-100 backdrop-blur-md shadow-lg">
                                             <span className="relative flex h-2.5 w-2.5">
                                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60"></span>
@@ -7905,8 +7912,7 @@
                                     aria-label="新玩家快速開始"
                                 >
                                     <div className="relative z-10">
-                                        <SmartImage src={getAssetUrl(ASSETS.LOGO)} fallbackType="logo" className="h-24 sm:h-28 lg:h-32 w-auto object-contain mx-auto drop-shadow-[0_10px_25px_rgba(0,0,0,0.45)]" alt="蘇打石器" priority />
-                                        <div className="mt-5 flex items-end justify-between gap-4 border-b border-white/10 pb-5">
+                                        <div className="flex items-end justify-between gap-4 border-b border-white/10 pb-5">
                                             <div>
                                                 <p className="text-xs font-black tracking-[0.18em] text-amber-300">{hasStartedDownload ? 'WELCOME BACK' : 'NEW PLAYER ROUTE'}</p>
                                                 <h2 className="mt-1.5 text-2xl font-black text-white">{hasStartedDownload ? '歡迎回來，接著建立角色' : '第一次玩？照這條路走'}</h2>
