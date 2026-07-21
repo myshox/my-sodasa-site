@@ -3289,6 +3289,698 @@
             .terms-summary article { min-height: 0; }
             .support-channels article { min-height: 0; }
         }
+
+        /* ========== 全站第三代改版：覺醒冒險大廳 ========== */
+        :root {
+            --awaken-forest-950: #13241f;
+            --awaken-forest-900: #1b312a;
+            --awaken-forest-800: #28483a;
+            --awaken-forest-700: #37614c;
+            --awaken-wood-950: #271a13;
+            --awaken-wood-900: #382419;
+            --awaken-wood-800: #533421;
+            --awaken-gold-500: #e4ad43;
+            --awaken-gold-300: #f1cf77;
+            --awaken-clay-500: #c86a3e;
+            --awaken-paper: #fffaf0;
+            --awaken-sand: #f2e3c7;
+            --awaken-line: rgba(91, 60, 36, 0.2);
+            --awaken-shadow: 0 20px 52px -38px rgba(43, 27, 17, 0.72);
+        }
+
+        body {
+            color: #34261e;
+            background: var(--awaken-wood-950);
+        }
+
+        .player-shell {
+            background: var(--awaken-wood-950);
+        }
+
+        /* 主導覽：一眼看懂目前位置，品牌與主要動作保持清楚 */
+        .player-shell .player-top-nav {
+            border-color: rgba(241, 207, 119, 0.28) !important;
+            background:
+                radial-gradient(circle at 12% -120%, rgba(228, 173, 67, 0.2), transparent 22rem),
+                linear-gradient(180deg, rgba(38, 26, 19, 0.98), rgba(24, 39, 33, 0.98)) !important;
+            box-shadow: 0 16px 40px rgba(24, 16, 11, 0.36), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+        }
+        .player-shell .player-top-nav::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.18;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.32) 1px, transparent 0);
+            background-size: 19px 19px;
+            mask-image: linear-gradient(90deg, #000, transparent 62%);
+        }
+        .player-shell .player-top-nav::after {
+            height: 4px !important;
+            background: linear-gradient(90deg, transparent, #78974e 18%, #efc85f 50%, #d06f42 82%, transparent) !important;
+        }
+        .player-shell .player-top-nav > div {
+            max-width: none !important;
+        }
+        .player-shell .player-nav-cluster {
+            flex-shrink: 0;
+            border: 1px solid rgba(241, 207, 119, 0.15);
+            background: rgba(18, 30, 26, 0.58);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .player-shell .player-nav-link {
+            flex-shrink: 0;
+            white-space: nowrap;
+            color: #cbbda8;
+        }
+        .player-shell .player-nav-link:hover {
+            color: #fff7e9;
+            background: rgba(255,255,255,0.07);
+        }
+        .player-shell .player-nav-link.is-active {
+            color: #2f2117;
+            background: linear-gradient(180deg, #f4d785, #dda53c);
+            box-shadow: 0 4px 0 #845326, 0 10px 20px -12px rgba(228,173,67,0.75);
+        }
+
+        /* 內頁共同場景：深色冒險入口，往下自然過渡至高可讀內容區 */
+        .player-route:not(.player-route--admin) {
+            --route-accent: #7b964e;
+            --route-accent-2: #e0aa42;
+            --route-dark: #243e33;
+            --route-soft: #edf1d8;
+            --route-paper: #fffaf0;
+            color: #35271f;
+            background:
+                radial-gradient(circle at 8% 6rem, color-mix(in srgb, var(--route-accent) 28%, transparent), transparent 24rem),
+                radial-gradient(circle at 94% 15rem, rgba(228, 173, 67, 0.2), transparent 26rem),
+                linear-gradient(180deg, #182c26 0, #294438 23rem, #ead9b9 40rem, #f8efdf 61rem, #f7efdf 100%);
+        }
+        .player-route:not(.player-route--admin)::before {
+            opacity: 0.26;
+            background-image:
+                linear-gradient(30deg, rgba(241,207,119,0.06) 12%, transparent 12.5%, transparent 87%, rgba(241,207,119,0.06) 87.5%),
+                linear-gradient(150deg, rgba(241,207,119,0.04) 12%, transparent 12.5%, transparent 87%, rgba(241,207,119,0.04) 87.5%);
+            background-size: 48px 84px;
+            mask-image: linear-gradient(#000 0 28rem, transparent 50rem);
+        }
+        .player-route--download { --route-accent: #4f8a7d; --route-accent-2: #e5b24c; --route-dark: #24483f; --route-soft: #deeee6; }
+        .player-route--guides { --route-accent: #a06a3d; --route-accent-2: #e1ac47; --route-dark: #513522; --route-soft: #f3e0c0; }
+        .player-route--events { --route-accent: #ca6840; --route-accent-2: #f0b44d; --route-dark: #6b3424; --route-soft: #f8dfd0; }
+        .player-route--auth { --route-accent: #78964b; --route-accent-2: #e4b34d; --route-dark: #344c2b; --route-soft: #e8eed3; }
+        .player-route--member { --route-accent: #6f8d49; --route-accent-2: #dfaa43; --route-dark: #34472d; --route-soft: #e7ecd4; }
+        .player-route--recharge { --route-accent: #c28432; --route-accent-2: #78924a; --route-dark: #61401f; --route-soft: #f5e3bf; }
+        .player-route--support { --route-accent: #62864f; --route-accent-2: #ce7047; --route-dark: #34472d; --route-soft: #e7edd6; }
+        .player-route--terms { --route-accent: #806650; --route-accent-2: #a9b16b; --route-dark: #453528; --route-soft: #ece1cf; }
+
+        .player-route:not(.player-route--admin) .page-content {
+            max-width: 92rem;
+        }
+        .player-route:not(.player-route--admin) .section-kicker {
+            color: color-mix(in srgb, var(--route-accent) 76%, #5a3923);
+            background: color-mix(in srgb, var(--route-soft) 72%, #fffaf0);
+            border: 1px solid color-mix(in srgb, var(--route-accent) 22%, transparent);
+            border-radius: 999px;
+            padding: 0.42rem 0.7rem;
+        }
+
+        /* 內頁標題改成一致的冒險任務板，資訊密度更舒服 */
+        .player-page-header {
+            max-width: 78rem;
+            margin-bottom: 2rem !important;
+        }
+        .player-page-header > nav {
+            margin-bottom: 0.8rem !important;
+            color: #d8c9b1;
+        }
+        .player-page-header > nav a { color: #f1cf77 !important; }
+        .player-page-header > nav a:hover { color: #fff0bb !important; }
+        .player-page-header > nav span { color: #c6b79f !important; }
+        .player-page-header .page-hero-card {
+            min-height: 11.5rem;
+            border: 1px solid rgba(242, 209, 131, 0.34);
+            border-left: 6px solid var(--hero-accent);
+            border-radius: 1.35rem;
+            background:
+                radial-gradient(circle at 82% 4%, color-mix(in srgb, var(--hero-accent) 28%, transparent), transparent 20rem),
+                linear-gradient(120deg, rgba(25, 48, 40, 0.98), rgba(51, 37, 27, 0.98));
+            box-shadow: 0 22px 48px -25px rgba(16, 11, 8, 0.72), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .player-page-header .page-hero-card::before {
+            height: 4px;
+            background: linear-gradient(90deg, var(--hero-accent), #f1c95f 54%, #cb6a40, transparent 92%);
+        }
+        .player-page-header .page-hero-card::after {
+            opacity: 0.12;
+            background-image:
+                radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1.2px),
+                linear-gradient(45deg, transparent 46%, rgba(255,255,255,0.07) 47%, rgba(255,255,255,0.07) 53%, transparent 54%);
+            background-size: 23px 23px, 52px 52px;
+        }
+        .page-hero-card__frame {
+            min-height: 11.5rem;
+            grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem) !important;
+            gap: 2rem !important;
+            padding: 1.6rem 2rem !important;
+        }
+        .player-page-header .section-kicker {
+            color: #f1cf77 !important;
+            border-color: rgba(241,207,119,0.2) !important;
+            background: rgba(228,173,67,0.1) !important;
+        }
+        .player-page-header .section-title {
+            color: #fffaf0 !important;
+            text-shadow: 0 3px 16px rgba(0,0,0,0.22);
+        }
+        .player-page-header .section-sub {
+            max-width: 43rem;
+            color: #e4d8c3 !important;
+            line-height: 1.75;
+        }
+        .player-page-header__icon {
+            width: 4.25rem !important;
+            height: 4.25rem !important;
+            border: 1px solid rgba(255,255,255,0.18) !important;
+            border-radius: 1.15rem !important;
+            background: linear-gradient(145deg, color-mix(in srgb, var(--hero-accent) 82%, #f3d67c), var(--hero-accent)) !important;
+            box-shadow: 0 5px 0 color-mix(in srgb, var(--hero-accent) 48%, #25170f), 0 14px 24px -16px #000 !important;
+        }
+        .page-hero-card__stamp {
+            right: 1.25rem;
+            bottom: -0.45rem;
+            color: #fff6df;
+            font-size: clamp(3rem, 6vw, 5.8rem);
+            opacity: 0.045;
+        }
+        .page-hero-fact {
+            color: #f8ecd6;
+            background: rgba(255,255,255,0.08);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.11);
+        }
+        .page-hero-note {
+            min-height: 7.75rem;
+            border: 1px solid rgba(241,207,119,0.22) !important;
+            border-radius: 1rem !important;
+            background:
+                radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--hero-accent) 30%, transparent), transparent 12rem),
+                linear-gradient(145deg, rgba(83,52,32,0.88), rgba(34,25,20,0.9)) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important;
+        }
+        .page-hero-note p:first-child { color: #f1cf77 !important; }
+        .page-hero-note p:last-child { color: #eee1cd !important; }
+
+        /* 全站內容板塊：統一紙張、邊線、留白與互動 */
+        .player-route:not(.player-route--admin) .stone-panel,
+        .player-route:not(.player-route--admin) .feature-card,
+        .player-route:not(.player-route--admin) .card-base,
+        .player-route:not(.player-route--admin) .player-status-card {
+            border: 1px solid var(--awaken-line);
+            border-radius: 1.15rem;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.7), transparent 38%),
+                #fffaf0;
+            box-shadow: var(--awaken-shadow), inset 0 1px 0 rgba(255,255,255,0.95);
+        }
+        .player-route:not(.player-route--admin) .stone-panel::before {
+            right: 1rem;
+            left: 1rem;
+            height: 3px;
+            opacity: 0.68;
+        }
+        .player-route:not(.player-route--admin) .player-status-card {
+            border-left: 4px solid var(--route-accent);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .player-route:not(.player-route--admin) .stone-panel:hover,
+            .player-route:not(.player-route--admin) .feature-card:hover,
+            .player-route:not(.player-route--admin) .card-base:hover {
+                border-color: color-mix(in srgb, var(--route-accent) 38%, #b78c58);
+                transform: translateY(-2px);
+                box-shadow: 0 24px 56px -38px rgba(43, 27, 17, 0.76), inset 0 1px 0 #fff;
+            }
+        }
+        .player-route:not(.player-route--admin) input:not([type="checkbox"]):not([type="radio"]),
+        .player-route:not(.player-route--admin) select,
+        .player-route:not(.player-route--admin) textarea {
+            min-height: 3.25rem;
+            border: 1.5px solid #cfb389 !important;
+            border-radius: 0.8rem !important;
+            color: #3a2b22 !important;
+            background: #fffdf7 !important;
+        }
+        .player-route:not(.player-route--admin) input:not([type="checkbox"]):not([type="radio"]):focus,
+        .player-route:not(.player-route--admin) select:focus,
+        .player-route:not(.player-route--admin) textarea:focus {
+            border-color: var(--route-accent) !important;
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--route-accent) 16%, transparent) !important;
+        }
+        .player-journey {
+            max-width: 54rem;
+        }
+        .player-journey__board {
+            border: 1px solid rgba(241,207,119,0.25) !important;
+            border-radius: 1.1rem !important;
+            background: rgba(38, 29, 23, 0.88) !important;
+            box-shadow: 0 18px 34px -24px rgba(20,13,9,0.76) !important;
+        }
+        .player-journey__board a { color: #d9cbb6 !important; }
+        .player-journey__board a > span:first-child { color: #4b392b; }
+        .player-journey__board a:hover { background: rgba(255,255,255,0.07) !important; }
+        .player-journey__board a[aria-current="step"] {
+            color: #2c2017 !important;
+            background: linear-gradient(180deg, #f2d17a, #dba13c) !important;
+            box-shadow: 0 4px 0 #855326 !important;
+        }
+        .player-section-nav--quest,
+        .terms-index {
+            top: 5.35rem;
+            border: 1px solid rgba(241,207,119,0.2) !important;
+            border-radius: 0.95rem !important;
+            background: rgba(36, 29, 23, 0.96) !important;
+            box-shadow: 0 16px 32px -22px rgba(20,13,9,0.8) !important;
+        }
+        .toast-stack {
+            top: 5.85rem !important;
+            max-width: 31rem !important;
+        }
+
+        /* 首頁：主視覺更接近石器覺醒，重要動作不遮住角色場景 */
+        .player-route--home {
+            background: #f7efdf;
+        }
+        .player-route--home .home-v3-hero {
+            min-height: 92dvh;
+            border-bottom: 5px solid #d39a35;
+            background: #18261f;
+            box-shadow: 0 26px 70px -40px rgba(34,22,14,0.9);
+        }
+        .player-route--home .home-v3-hero > .absolute img {
+            object-position: 62% center !important;
+            filter: saturate(1.06) contrast(1.03);
+        }
+        .player-route--home .home-v3-hero::before {
+            background:
+                linear-gradient(90deg, #17251f 0%, rgba(23,37,31,0.99) 42%, rgba(25,31,26,0.64) 64%, rgba(18,23,20,0.12) 100%),
+                linear-gradient(180deg, rgba(19,28,24,0.2), transparent 50%, rgba(26,20,15,0.74));
+        }
+        .player-route--home .home-v3-hero h1 {
+            max-width: 45rem;
+            font-size: clamp(2.8rem, 5.3vw, 5.2rem);
+            letter-spacing: -0.055em;
+        }
+        .player-route--home .home-v3-hero h1 span {
+            background-image: linear-gradient(90deg, #fff0ad, #f2bd4e 55%, #e78042);
+        }
+        .player-route--home .home-v3-panel {
+            border: 1px solid rgba(241,207,119,0.33);
+            border-radius: 1.35rem;
+            background:
+                radial-gradient(circle at 92% 0%, rgba(125,157,76,0.24), transparent 15rem),
+                linear-gradient(150deg, rgba(43,32,24,0.95), rgba(21,39,32,0.95));
+            box-shadow: 0 28px 65px rgba(20,14,10,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .home-v3-step span:first-child {
+            border-color: rgba(241,207,119,0.3) !important;
+            background: rgba(228,173,67,0.13) !important;
+        }
+        .home-v4-entrances {
+            background:
+                radial-gradient(circle at 8% 0%, rgba(104,139,74,0.13), transparent 22rem),
+                linear-gradient(180deg, #f4e5ca, #fff8ec);
+        }
+        .home-v4-path-grid {
+            gap: 1rem !important;
+        }
+        .home-v4-path-grid .home-v3-path-card {
+            min-height: 16.25rem;
+            border: 1px solid rgba(91,60,36,0.18);
+            border-top: 4px solid var(--path-accent);
+            border-left-width: 1px;
+            border-radius: 1.15rem;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.78), transparent 48%),
+                #fff8e9;
+            box-shadow: 0 20px 44px -36px rgba(52,33,21,0.75);
+        }
+        .home-v4-path-grid .home-v3-path-card::before {
+            top: 1rem;
+            right: 1rem;
+            width: 0.55rem;
+            height: 0.55rem;
+        }
+        .home-v4-news-section {
+            padding-top: 4.5rem;
+            background: #fff8ec;
+        }
+        .home-v4-news-section .home-v3-news {
+            border: 1px solid rgba(241,207,119,0.24);
+            border-radius: 1.25rem;
+            background:
+                radial-gradient(circle at 94% 0%, rgba(228,173,67,0.18), transparent 22rem),
+                linear-gradient(135deg, #213d32, #162921 62%, #35291f);
+            box-shadow: 0 26px 60px -38px rgba(19,13,9,0.9);
+        }
+        .home-v4-devices {
+            background: linear-gradient(180deg, #efe0c5, #f8f0df) !important;
+        }
+        .home-v4-devices .home-v3-platform {
+            border-top: 4px solid #638263;
+            border-radius: 1rem;
+            background: #fffaf0;
+            box-shadow: 0 18px 40px -34px rgba(48,31,19,0.7);
+        }
+        .home-v4-values { background: #f8f0df; }
+        .home-v4-values .grid > div {
+            border-top: 4px solid #728f4c !important;
+            border-radius: 1rem !important;
+            background: #fffaf0 !important;
+        }
+        .home-v4-final-cta { background: #f8f0df; }
+        .home-v4-final-cta > div {
+            border: 1px solid #9a642c;
+            border-radius: 1.15rem !important;
+            background:
+                radial-gradient(circle at 88% 0%, rgba(100,132,69,0.36), transparent 18rem),
+                linear-gradient(115deg, #f2ca67, #dfa63d 58%, #c9693d) !important;
+            box-shadow: 0 6px 0 #7a4a24, 0 28px 50px -32px rgba(75,44,21,0.82) !important;
+        }
+
+        /* 下載：PC 入口更突出，手機版本仍可快速比較 */
+        .download-account-guide,
+        .download-notes > div,
+        .download-next-step {
+            border-radius: 1.1rem !important;
+        }
+        .download-account-guide {
+            border-left: 5px solid var(--route-accent) !important;
+            background: linear-gradient(110deg, #fff9ec, #e8f0df) !important;
+        }
+        .download-recommendation {
+            border: 1px solid rgba(241,207,119,0.28) !important;
+            border-radius: 1rem !important;
+            background: linear-gradient(100deg, #24483f, #4f6d3d) !important;
+            box-shadow: 0 5px 0 #18352f, 0 18px 32px -22px rgba(25,48,41,0.82) !important;
+        }
+        .download-platform-grid {
+            align-items: stretch;
+        }
+        .download-platform-grid .feature-card {
+            border-radius: 1.1rem;
+            overflow: hidden;
+        }
+        .download-platform-grid .feature-card__head {
+            min-height: 10.75rem;
+        }
+        .download-platform-grid .feature-card__body {
+            padding: 1.5rem;
+        }
+        .download-platform-grid .feature-card button {
+            border-radius: 0.75rem;
+            background: linear-gradient(180deg, #f0cc71, #d99c34) !important;
+            box-shadow: 0 4px 0 #805024 !important;
+        }
+        .download-notes > div,
+        .download-next-step {
+            background: #fffaf0 !important;
+        }
+
+        /* 攻略、活動：資料更像可快速掃讀的遊戲情報中心 */
+        .guides-needs,
+        .guides-toolbar,
+        .guides-categories,
+        .events-summary {
+            border-radius: 1rem !important;
+        }
+        .guides-needs {
+            border-top: 4px solid var(--route-accent) !important;
+            border-left-width: 1px !important;
+            background: #fff7e7 !important;
+        }
+        .guides-toolbar,
+        .guides-categories {
+            background: rgba(255,250,240,0.94) !important;
+        }
+        .player-route--guides .stone-panel {
+            border-left: 1px solid var(--awaken-line);
+            border-top: 4px solid color-mix(in srgb, var(--route-accent) 65%, #c99b61);
+        }
+        .events-summary {
+            border: 1px solid var(--awaken-line);
+            background: rgba(255,250,240,0.94);
+            box-shadow: var(--awaken-shadow);
+        }
+        .events-board article {
+            border-top: 4px solid var(--route-accent) !important;
+            border-radius: 1.1rem !important;
+        }
+        .events-board article:first-of-type {
+            background: radial-gradient(circle at 100% 0%, rgba(202,104,64,0.12), transparent 18rem), #fffaf0;
+        }
+
+        /* 登入註冊：帳號差異、綁定與下一步保持在同一視線 */
+        .player-route--auth .auth-experience {
+            max-width: 78rem;
+        }
+        .player-route--auth .auth-story-panel {
+            border: 1px solid rgba(241,207,119,0.27);
+            border-radius: 1.15rem;
+            background:
+                radial-gradient(circle at 88% 5%, rgba(228,173,67,0.2), transparent 17rem),
+                linear-gradient(145deg, #294638, #2c211a 78%) !important;
+            box-shadow: 0 26px 58px -34px rgba(22,14,10,0.86);
+        }
+        .player-route--auth .auth-form-card {
+            border: 1px solid rgba(107,76,44,0.22) !important;
+            border-top: 5px solid var(--route-accent) !important;
+            border-radius: 1.15rem !important;
+            background: #fffaf0 !important;
+            box-shadow: 0 28px 62px -42px rgba(51,32,19,0.82) !important;
+        }
+
+        /* 會員中心：狀態、角色與紀錄各自分區，但視覺語言一致 */
+        .player-route--member .page-content > .max-w-4xl { max-width: 74rem; }
+        .player-route--member [aria-label="帳號準備狀態"] .player-status-card {
+            min-height: 8rem;
+            background: #fffaf0;
+        }
+        #member-profile,
+        #member-vip,
+        #member-orders,
+        #member-roles {
+            border-radius: 1.1rem !important;
+        }
+        #member-profile,
+        #member-vip,
+        #member-orders {
+            border-left: 1px solid var(--awaken-line) !important;
+            border-top: 4px solid var(--route-accent) !important;
+        }
+        #member-roles {
+            border: 1px solid rgba(178,124,51,0.28) !important;
+            background: linear-gradient(145deg, #fff4d6, #fffaf0) !important;
+        }
+
+        /* 儲值：像清楚的結帳流程，不像一整片表單 */
+        .player-route--recharge .recharge-progress__board,
+        .player-route--recharge .recharge-flow-card,
+        .player-route--recharge .recharge-summary,
+        .player-route--recharge .recharge-method-card,
+        .player-route--recharge .recharge-plan-card {
+            border-radius: 1rem !important;
+        }
+        .player-route--recharge .recharge-progress__board {
+            border: 1px solid rgba(113,78,45,0.2) !important;
+            background: #fffaf0 !important;
+        }
+        .player-route--recharge .recharge-flow-card {
+            border-top: 5px solid var(--route-accent) !important;
+            background: #fffaf0 !important;
+        }
+        .player-route--recharge .recharge-step__heading {
+            border-left: 4px solid var(--route-accent);
+            background: linear-gradient(90deg, color-mix(in srgb, var(--route-soft) 72%, #fff), transparent);
+        }
+        .player-route--recharge .recharge-method-card,
+        .player-route--recharge .recharge-plan-card {
+            background: #fffdf8 !important;
+        }
+        .player-route--recharge .recharge-method-card.is-selected,
+        .player-route--recharge .recharge-plan-card.is-selected {
+            border-color: #d59a34 !important;
+            box-shadow: 0 0 0 3px rgba(228,173,67,0.13), 0 16px 34px -28px rgba(89,54,22,0.7) !important;
+        }
+        .player-route--recharge .recharge-summary {
+            border: 1px solid rgba(241,207,119,0.25) !important;
+            background: linear-gradient(145deg, #3d2b20, #20392f) !important;
+        }
+
+        /* 客服與條款：先看到該找誰／該讀哪段 */
+        .player-route--support .page-content > .max-w-4xl { max-width: 74rem; }
+        .support-prep,
+        .support-channels article,
+        #support-faq,
+        #support-fraud,
+        #support-report,
+        .terms-summary article,
+        .player-route--terms [id^="terms-"] {
+            border-radius: 1.1rem !important;
+        }
+        .support-prep {
+            border-left: 5px solid var(--route-accent) !important;
+            background: linear-gradient(110deg, #e8efdb, #fffaf0) !important;
+        }
+        .support-channels article {
+            min-height: 20rem;
+            border-top: 5px solid var(--route-accent) !important;
+        }
+        .terms-summary article {
+            min-height: 10.25rem;
+            border-top: 4px solid var(--route-accent) !important;
+            background: #fffaf0 !important;
+        }
+        .player-route--terms [id^="terms-"] {
+            border-left: 4px solid var(--route-accent) !important;
+        }
+
+        /* 每頁結尾與頁尾：下一步明確，避免內容突然結束 */
+        .player-context-section {
+            border: 1px solid rgba(241,207,119,0.25) !important;
+            border-radius: 1.15rem !important;
+            background:
+                radial-gradient(circle at 90% 0%, rgba(228,173,67,0.2), transparent 20rem),
+                linear-gradient(135deg, #294739, #30251d) !important;
+            box-shadow: 0 28px 60px -40px rgba(18,12,8,0.9) !important;
+        }
+        footer.player-footer {
+            border-top: 4px solid #d8a33c !important;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(118,151,75,0.2), transparent 26rem),
+                linear-gradient(180deg, #2d231c, #17110d) !important;
+        }
+
+        /* 手機版：卡片更緊湊、導覽更像遊戲快捷列、避免首屏塞滿 */
+        @media (min-width: 1180px) {
+            .home-v4-path-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+            .download-platform-grid { grid-template-columns: 1.15fr 0.925fr 0.925fr !important; }
+        }
+        @media (max-width: 1023px) {
+            .player-shell .nav-top-actions > a[href] {
+                display: none !important;
+            }
+            .player-route:not(.player-route--admin) {
+                background:
+                    radial-gradient(circle at 8% 5rem, color-mix(in srgb, var(--route-accent) 26%, transparent), transparent 18rem),
+                    linear-gradient(180deg, #182c26 0, #294438 20rem, #ead9b9 34rem, #f8efdf 52rem, #f7efdf 100%);
+            }
+            .page-hero-card__frame {
+                grid-template-columns: 1fr !important;
+            }
+            .page-hero-note {
+                min-height: auto;
+            }
+            .player-section-nav--quest,
+            .terms-index { top: 4.5rem; }
+        }
+        @media (max-width: 767px) {
+            .toast-stack {
+                top: 4.65rem !important;
+                max-width: calc(100% - 1rem) !important;
+                padding-right: 0 !important;
+                padding-left: 0 !important;
+            }
+            .player-route:not(.player-route--admin) .page-content,
+            .player-route:not(.player-route--admin) .page-content--compact-top {
+                padding-top: max(5.75rem, calc(3.8rem + env(safe-area-inset-top, 0px))) !important;
+                padding-left: max(0.9rem, env(safe-area-inset-left, 0px));
+                padding-right: max(0.9rem, env(safe-area-inset-right, 0px));
+            }
+            .player-page-header {
+                margin-bottom: 1.25rem !important;
+            }
+            .player-page-header .page-hero-card {
+                border-left-width: 4px;
+                border-radius: 1rem;
+            }
+            .page-hero-card__frame {
+                min-height: 0;
+                gap: 0.9rem !important;
+                padding: 1rem !important;
+            }
+            .page-hero-card__main {
+                align-items: flex-start;
+            }
+            .player-page-header__icon {
+                width: 3.2rem !important;
+                height: 3.2rem !important;
+                border-radius: 0.85rem !important;
+            }
+            .player-page-header .section-title {
+                font-size: clamp(1.65rem, 8vw, 2.15rem) !important;
+            }
+            .player-page-header .section-sub {
+                font-size: 0.9rem !important;
+                line-height: 1.65;
+            }
+            .page-hero-fact { padding: 0.32rem 0.55rem !important; }
+            .page-hero-note { padding: 0.8rem !important; }
+            .player-journey {
+                margin-bottom: 1.2rem;
+            }
+            .player-journey__board {
+                border-radius: 0.9rem !important;
+                padding: 0.55rem !important;
+            }
+            .player-journey__board a {
+                min-height: 3.3rem;
+                padding: 0.45rem 0.35rem !important;
+            }
+            .player-journey__board a span:last-child {
+                white-space: normal;
+                line-height: 1.3;
+                text-align: center;
+            }
+            .player-route--home .home-v3-hero {
+                min-height: auto;
+                padding-top: 6.2rem !important;
+            }
+            .player-route--home .home-v3-hero > .absolute img {
+                object-position: 68% center !important;
+            }
+            .player-route--home .home-v3-hero::before {
+                background:
+                    linear-gradient(180deg, rgba(22,31,26,0.72), rgba(24,30,25,0.82) 38%, rgba(27,25,21,0.96) 100%),
+                    linear-gradient(90deg, rgba(24,29,24,0.75), transparent);
+            }
+            .player-route--home .home-v3-hero h1 {
+                font-size: clamp(2.35rem, 12vw, 3.5rem);
+            }
+            .player-route--home .home-v3-panel {
+                border-radius: 1rem;
+                padding: 1.1rem !important;
+            }
+            .home-v4-path-grid .home-v3-path-card,
+            .download-platform-grid .feature-card,
+            .events-board article,
+            .support-channels article,
+            .terms-summary article {
+                border-radius: 1rem !important;
+            }
+            .home-v4-path-grid .home-v3-path-card {
+                min-height: 0;
+                padding: 1.25rem !important;
+            }
+            .mobile-bottom-nav > div {
+                border-color: rgba(241,207,119,0.28) !important;
+                border-radius: 1.1rem !important;
+                background: linear-gradient(180deg, rgba(40,31,24,0.98), rgba(20,37,31,0.98)) !important;
+                box-shadow: 0 -12px 34px rgba(19,12,8,0.4) !important;
+            }
+            .mobile-bottom-nav a > span:first-of-type {
+                border-radius: 0.85rem !important;
+            }
+            .support-channels article,
+            .terms-summary article { min-height: 0; }
+        }
         </style>
 </head>
 <body>
@@ -3523,6 +4215,7 @@
         const ASSETS = {
         LOGO: 'images/logo-official-transparent-v2.png',
         HERO: 'images/hero.webp',
+        HERO_AWAKENING: 'images/og-ux-v2.jpg',
             LINE_LOGO: 'images/LINE_logo.jpg',
             LINE_PAY_LOGO: 'images/LINEPAY.jpg', 
             JKOPAY_LOGO: 'images/jkopay.jpg', 
@@ -4679,7 +5372,7 @@
             };
 
             return (
-                <div className="fixed top-20 md:top-6 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none w-full max-w-md px-4">
+                <div className="toast-stack fixed top-20 md:top-6 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none w-full max-w-md px-4">
                     <AnimatePresence>
                         {toasts.map((toast) => {
                             const { bg, icon: Icon, color, ring } = getToastStyle(toast.type);
@@ -7153,7 +7846,7 @@
                 >
                     <section className="home-v3-hero relative min-h-[92dvh] overflow-hidden pt-[max(6.5rem,calc(5rem+env(safe-area-inset-top,0px)))] pb-14 md:pt-28 md:pb-20">
                         <div className="absolute inset-0 z-0">
-                            <SmartImage src={getAssetUrl(ASSETS.HERO)} alt="尼斯大陸與可愛恐龍" className="w-full h-full object-cover object-center" priority />
+                            <SmartImage src={getAssetUrl(ASSETS.HERO_AWAKENING)} alt="尼斯大陸冒險者與恐龍夥伴" className="w-full h-full object-cover object-center" priority />
                         </div>
                         <HeroParticles />
 
