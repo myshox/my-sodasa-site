@@ -36,6 +36,10 @@
 | 044 | `044_announcements_banner.sql` | 公告橫幅系統 (`announcements` 表) |
 | 045 | `045_update_user_profile.sql` | 註冊用戶編輯：資料、角色、遊戲特殊編號 (`update_user_profile` + `get_all_users` 擴充) |
 | 046 | `046_five_role_special_ids.sql` | 五個角色各自特殊編號：`game_special_ids` 陣列、列表 5 欄、編輯 Modal 改版 |
+| 047 | `047_update_user_game_binding.sql` | 管理員更新會員遊戲綁定 |
+| 048 | `048_admin_create_user.sql` | 管理員建立網站會員 |
+| 049 | `049_update_user_game_binding_master2.sql` | 第二組遊戲主帳號綁定 |
+| 050 | `050_bonus_gold_coupons.sql` | 滿額自動發送加送金幣券、下次儲值套用與核銷 |
 
 ---
 
@@ -48,4 +52,4 @@
 
 ---
 
-**最後更新：2026-02-16**
+**最後更新：2026-08-15**
